@@ -9,3 +9,5 @@ All point-in-time transformations take an explicit as-of date and may only use o
 The source-driven normalization stage is bounded by `--start` and `--end`. For example, `india-equity-data normalize-market-data --start 2006-01-01 --end 2006-12-31` reads only matching immutable NSE bhavcopy files and writes non-raw intermediates. An empty or invalid range fails instead of producing a partial success.
 
 The current NSE source adapter builds identity rows, raw prices, active snapshots, and liquidity features as one coupled pass. The CLI exposes these as separate names for pipeline compatibility, but each name runs the same deterministic core pass and does not imply an independent source transformation.
+
+Observations without one dated identity are not discarded. They are written to `data/canonical/unresolved_observed_trading.jsonl` with raw OHLCV, source hashes, candidate IDs, and an `UNRESOLVED` status. They cannot enter the canonical active universe until identity review resolves them.

@@ -62,6 +62,7 @@ def main() -> None:
         by_key.setdefault(key, []).append(row)
         by_symbol.setdefault((row["exchange"], row["symbol"], row["series"]), []).append(row)
     raw_rows = []
+    unresolved_rows = []
     for item in observations:
         applicable = [override for override in overrides if override["exchange"] == item.exchange and override["series"] == item.series and override["symbol"] == item.symbol and override["effective_from"] <= item.date <= override["effective_to"]]
         if len(applicable) > 1:
@@ -73,6 +74,7 @@ def main() -> None:
             candidates = exact or (by_symbol.get((item.exchange, item.symbol, item.series), []) if not item.isin else [])
         if len(candidates) != 1:
             findings.append({"source_file_id": item.source_file_id, "severity": "ERROR", "check": "IDENTITY_AMBIGUOUS", "security_id": None, "observed_date": item.date.isoformat(), "message": f"No unique identity for {item.exchange}:{item.symbol}:{item.series} with ISIN {item.isin!r}"})
+            unresolved_rows.append({"date": item.date, "exchange": item.exchange, "symbol": item.symbol, "series": item.series, "isin": item.isin, "company_name": item.company_name, "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "source_quality": item.source_quality, "resolution_status": "UNRESOLVED", "candidate_security_ids": [row["security_id"] for row in candidates]})
             continue
         identity = candidates[0]
         raw_rows.append({"date": item.date, "security_id": identity["security_id"], "issuer_id": identity["issuer_id"], "listing_episode_id": identity["listing_episode_id"], "symbol_at_date": item.symbol, "isin": item.isin, "company_name": item.company_name, "series": item.series, "instrument_type": identity["instrument_type"], "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source": item.source_quality, "quality": "OFFICIAL_SOURCE_UNREVIEWED", "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "parser_version": "nse-bhavcopy-v2", "canonicalization_version": "identity-v1"})
@@ -83,10 +85,11 @@ def main() -> None:
     write_jsonl(root / "canonical/security_master.jsonl", identities, overwrite=True)
     write_jsonl(root / "canonical/symbol_history.jsonl", symbol_history, overwrite=True)
     write_jsonl(root / "canonical/daily_prices_raw.jsonl", raw_rows, overwrite=True)
+    write_jsonl(root / "canonical/unresolved_observed_trading.jsonl", unresolved_rows, overwrite=True)
     write_jsonl(root / "derived/active_universe_daily.jsonl", universe, overwrite=True)
     write_jsonl(root / "derived/liquidity_features.jsonl", features, overwrite=True)
     write_jsonl(root / "derived/data_quality_findings.jsonl", findings, overwrite=True)
-    print(f"dates={len(paths)} observations={len(raw_rows)} securities={len(identities)} active_rows={len(universe)} findings={len(findings)}")
+    print(f"dates={len(paths)} observations={len(raw_rows)} unresolved_observations={len(unresolved_rows)} securities={len(identities)} active_rows={len(universe)} findings={len(findings)}")
 
 
 if __name__ == "__main__":
