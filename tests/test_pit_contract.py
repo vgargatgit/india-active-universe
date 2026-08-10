@@ -71,9 +71,11 @@ def test_strict_platform_rejects_out_of_range_dates():
     platform = DataPlatform(strict=True)
     platform.coverage_start = date(2006, 1, 2)
     platform.coverage_end = date(2026, 8, 10)
+    platform.verified_start = date(2010, 1, 1)
+    platform.verified_end = date(2020, 12, 31)
     platform.universe = UniverseStore([])
     with pytest.raises(CoverageError):
-        platform.active_on("2006-01-01")
+        platform.active_on("2009-12-31")
 
 
 def test_raw_and_adjusted_history_are_separate():

@@ -258,6 +258,9 @@ class DataPlatform:
         self.strict = strict
         self.coverage_start: date | None = None
         self.coverage_end: date | None = None
+        self.verified_start: date | None = None
+        self.verified_end: date | None = None
+        self.quality_tier: str | None = None
         self.security_master = SecurityMaster()
         self.company_names = CompanyNameHistoryStore()
         self.isins = IsinHistoryStore()
@@ -270,8 +273,10 @@ class DataPlatform:
 
     def _check_date(self, value: str | date) -> date:
         point = _as_date(value)
-        if self.strict and ((self.coverage_start and point < self.coverage_start) or (self.coverage_end and point > self.coverage_end)):
-            raise CoverageError(f"Date {point} is outside release coverage {self.coverage_start} through {self.coverage_end}")
+        start = self.verified_start or self.coverage_start
+        end = self.verified_end or self.coverage_end
+        if self.strict and ((start and point < start) or (end and point > end)):
+            raise CoverageError(f"Date {point} is outside trusted release coverage {start} through {end}")
         return point
 
     def active_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
@@ -348,6 +353,10 @@ class DataPlatform:
             coverage = json.loads(manifest_path.read_text(encoding="utf-8")).get("coverage", {})
             platform.coverage_start = _as_date(coverage["observed_start"]) if coverage.get("observed_start") else None
             platform.coverage_end = _as_date(coverage["observed_end"]) if coverage.get("observed_end") else None
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            platform.verified_start = _as_date(manifest["verified_start_date"]) if manifest.get("verified_start_date") else None
+            platform.verified_end = _as_date(manifest["verified_end_date"]) if manifest.get("verified_end_date") else None
+            platform.quality_tier = manifest.get("quality_tier")
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)
