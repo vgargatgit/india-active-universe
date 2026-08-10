@@ -1,0 +1,25 @@
+{
+  "title": "manual_identity_overrides",
+  "type": "object",
+  "required": ["overrides"],
+  "properties": {
+    "overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["exchange", "symbol", "series", "effective_from", "effective_to", "security_id", "evidence_references", "rationale", "review_status"],
+        "properties": {
+          "exchange": {"type": "string", "const": "NSE"},
+          "symbol": {"type": "string"},
+          "series": {"type": "string", "const": "EQ"},
+          "effective_from": {"type": "string", "format": "date"},
+          "effective_to": {"type": "string", "format": "date"},
+          "security_id": {"type": "string"},
+          "evidence_references": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "rationale": {"type": "string", "minLength": 1},
+          "review_status": {"type": "string", "const": "APPROVED"}
+        }
+      }
+    }
+  }
+}
