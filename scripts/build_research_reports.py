@@ -95,6 +95,7 @@ def main() -> None:
           ) WHERE previous_end IS NOT NULL AND status_start <= previous_end
         """)
         max_absent = scalar(connection, f"SELECT COALESCE(MAX(absent_observation_days_60), 0) FROM read_parquet('{r}/research_universe_monthly.parquet')")
+        required_count = scalar(connection, f"SELECT COUNT(*) FROM read_parquet('{r}/required_research_security.parquet')")
         coverage = connection.execute(f"SELECT MIN(date), MAX(date) FROM read_parquet('{r}/research_universe_monthly.parquet')").fetchone()
     finally:
         connection.close()
@@ -119,7 +120,7 @@ Required research securities: `{counts[3]}` liquid names and `{counts[4]}` Top-7
 
 The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
 """)
-    identity_text = ["# Research identity promotion", "", f"Required liquid securities: `{counts[3]}`.", f"Identity failures in LIQUID_V1: `{identity_failure_count}`.", "", "| Research identity quality | Securities |", "|---|---:|"]
+    identity_text = ["# Research identity promotion", "", f"Required research securities: `{required_count}`.", f"Identity failures in LIQUID_V1: `{identity_failure_count}`.", "", "| Research identity quality | Securities |", "|---|---:|"]
     identity_text.extend(f"| `{quality_name}` | {number} |" for quality_name, number in identity_rows)
     identity_text.extend(["", "A `RECONSTRUCTED_TRADING_IDENTITY` is accepted only when the release has one non-conflicting listing episode and one stable series for the security.", f"Promotion gate: `{'PASS' if identity_failure_count == 0 else 'FAIL'}`."])
     write(reports / "research_identity_promotion.md", "\n".join(identity_text))
@@ -147,7 +148,7 @@ Weekend and holiday dates are not part of any window.
 """)
     write(reports / "research_identity_priority.md", f"""# Research identity priority queue
 
-The required scope contains `{counts[4]}` securities that enter LIQUID_V1 or PIT Top-750.
+The required scope contains `{required_count}` securities that enter LIQUID_V1 or PIT Top-750.
 
 The current release has `{identity_failure_count}` identity failures inside LIQUID_V1.
 Low-liquidity securities outside this scope remain in the exploratory archive and are not silently promoted.
@@ -157,7 +158,7 @@ Low-liquidity securities outside this scope remain in the exploratory archive an
         "git_sha": git_sha,
         "research_quality": {"status": quality, "start": str(coverage[0]), "end": str(coverage[1]), "universe_profile": "NSE_BROAD_LIQUID_PIT_V1", "profile_version": "LIQUID_V1", "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750"},
         "source_coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10", "research_start": str(coverage[0]), "research_end": str(coverage[1])},
-        "required_research_securities": int(counts[4]),
+        "required_research_securities": int(required_count),
         "liquid_v1_securities": int(counts[3]),
         "identity_failures": identity_failure_count,
         "material_price_action_missing_factors": missing_factor_count,
