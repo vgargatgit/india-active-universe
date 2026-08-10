@@ -1,0 +1,25 @@
+{
+  "title": "liquidity_features",
+  "type": "object",
+  "required": ["date", "security_id", "history_sessions", "listing_age_sessions", "listing_age_calendar_days", "price", "listing_status", "median_traded_value_60", "feature_as_of_date"],
+  "properties": {
+    "date": {"type": "string", "format": "date"},
+    "security_id": {"type": "string"},
+    "history_sessions": {"type": "integer"},
+    "listing_age_sessions": {"type": "integer"},
+    "listing_age_calendar_days": {"type": "integer"},
+    "price": {"type": ["number", "null"]},
+    "listing_status": {"type": "string"},
+    "valid_trade_days_20": {"type": "integer"},
+    "valid_trade_days_60": {"type": "integer"},
+    "valid_trade_days_126": {"type": "integer"},
+    "valid_trade_days_252": {"type": "integer"},
+    "median_traded_value_20": {"type": ["number", "null"]},
+    "median_traded_value_60": {"type": ["number", "null"]},
+    "median_traded_value_126": {"type": ["number", "null"]},
+    "median_traded_value_252": {"type": ["number", "null"]},
+    "liquidity_percentile_60": {"type": ["number", "null"]},
+    "liquidity_bucket_60": {"type": ["string", "null"]},
+    "feature_as_of_date": {"type": "string", "format": "date"}
+  }
+}

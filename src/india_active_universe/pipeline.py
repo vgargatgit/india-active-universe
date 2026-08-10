@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date
-from statistics import median
+from statistics import mean, median
 from typing import Any, Iterable
 
 from .models import DailyObservation, InstrumentType, TradingStatus
@@ -52,18 +52,46 @@ def build_active_snapshot(observations: Iterable[dict[str, Any]], as_of_date: da
     return result
 
 
-def liquidity_features(rows: Iterable[dict[str, Any]], *, window: int = 60) -> list[dict[str, Any]]:
+def liquidity_features(rows: Iterable[dict[str, Any]], *, windows: tuple[int, ...] = (20, 60, 126, 252), window: int | None = None) -> list[dict[str, Any]]:
+    if window is not None:
+        windows = (window,)
     by_security: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         by_security[row["security_id"]].append(row)
     output = []
     for security_id, history in by_security.items():
         history.sort(key=lambda row: row["date"])
+        first_date = date.fromisoformat(history[0]["date"]) if isinstance(history[0]["date"], str) else history[0]["date"]
         for index, row in enumerate(history):
-            window_rows = history[max(0, index - window + 1):index + 1]
-            values = [item["traded_value"] for item in window_rows if item.get("traded_value") is not None]
-            positive_volume = sum(1 for item in window_rows if (item.get("volume") or 0) > 0)
-            output.append({**row, "history_sessions": index + 1, "valid_trade_days_60": len(values), "zero_volume_days_60": len(window_rows) - positive_volume, "median_traded_value_60": median(values) if values else None, "feature_as_of_date": row["date"]})
+            point = date.fromisoformat(row["date"]) if isinstance(row["date"], str) else row["date"]
+            result = {**row, "history_sessions": index + 1, "listing_age_sessions": index + 1, "listing_age_calendar_days": (point - first_date).days, "price": row.get("raw_close"), "series": row.get("series", "EQ"), "listing_status": "ACTIVE_TRADING", "stale_price_days_60": 0, "feature_as_of_date": row["date"]}
+            for window in windows:
+                window_rows = history[max(0, index - window + 1):index + 1]
+                values = [item["traded_value"] for item in window_rows if item.get("traded_value") is not None]
+                positive_volume = sum(1 for item in window_rows if (item.get("volume") or 0) > 0)
+                closes = [item.get("raw_close") for item in window_rows]
+                stale = sum(1 for current, previous in zip(closes[1:], closes[:-1]) if current is not None and previous is not None and current == previous)
+                result[f"valid_trade_days_{window}"] = len(values)
+                result[f"zero_volume_days_{window}"] = len(window_rows) - positive_volume
+                result[f"median_traded_value_{window}"] = median(values) if values else None
+                result[f"average_traded_value_{window}"] = mean(values) if values else None
+                if window == 60:
+                    result["stale_price_days_60"] = stale
+            output.append(result)
+    by_date: dict[Any, list[dict[str, Any]]] = defaultdict(list)
+    for row in output:
+        if row.get("median_traded_value_60") is not None:
+            by_date[row["date"]].append(row)
+    for point_rows in by_date.values():
+        ranked = sorted(point_rows, key=lambda item: item["median_traded_value_60"])
+        count = len(ranked)
+        for rank, row in enumerate(ranked, start=1):
+            percentile = rank / count
+            row["liquidity_percentile_60"] = percentile
+            row["liquidity_bucket_60"] = "LIQUIDITY_Q1" if percentile > 0.8 else "LIQUIDITY_Q2" if percentile > 0.6 else "LIQUIDITY_Q3" if percentile > 0.4 else "LIQUIDITY_Q4" if percentile > 0.2 else "LIQUIDITY_Q5"
+    for row in output:
+        row.setdefault("liquidity_percentile_60", None)
+        row.setdefault("liquidity_bucket_60", None)
     return output
 
 

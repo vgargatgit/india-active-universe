@@ -68,7 +68,7 @@ class UniverseStore:
         rows = self.active_on(as_of_date)
         return [row for row in rows if (min_price is None or (row.get("close") is not None and row["close"] >= min_price)) and row.get("history_sessions", 0) >= min_history_sessions and (min_median_traded_value_60 is None or row.get("median_traded_value_60", 0) >= min_median_traded_value_60)]
 
-    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_60") -> list[dict[str, Any]]:
+    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
         rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
@@ -105,12 +105,12 @@ class ParquetUniverseStore(UniverseStore):
             by_security = {row["security_id"]: row for row in feature_rows}
             for row in output:
                 feature = by_security.get(row["security_id"], {})
-                for key in ("history_sessions", "valid_trade_days_60", "zero_volume_days_60", "median_traded_value_60", "feature_as_of_date"):
+                for key in ("history_sessions", "listing_age_sessions", "listing_age_calendar_days", "price", "series", "listing_status", "valid_trade_days_20", "valid_trade_days_60", "valid_trade_days_126", "valid_trade_days_252", "zero_volume_days_20", "zero_volume_days_60", "zero_volume_days_126", "zero_volume_days_252", "median_traded_value_20", "median_traded_value_60", "median_traded_value_126", "median_traded_value_252", "average_traded_value_20", "average_traded_value_60", "average_traded_value_126", "average_traded_value_252", "stale_price_days_60", "liquidity_percentile_60", "liquidity_bucket_60", "feature_as_of_date"):
                     if key in feature:
                         row[key] = feature[key]
         return output
 
-    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_60") -> list[dict[str, Any]]:
+    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
         rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
