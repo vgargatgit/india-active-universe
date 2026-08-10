@@ -1,0 +1,14 @@
+{
+  "title": "isin_history",
+  "type": "object",
+  "required": ["security_id", "isin", "effective_from", "event_type", "source", "identity_quality"],
+  "properties": {
+    "security_id": {"type": "string"},
+    "isin": {"type": "string"},
+    "effective_from": {"type": "string", "format": "date"},
+    "effective_to": {"type": ["string", "null"], "format": "date"},
+    "event_type": {"type": "string"},
+    "source": {"type": "string"},
+    "identity_quality": {"type": "string"}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "title": "company_name_history",
+  "type": "object",
+  "required": ["issuer_id", "company_name", "effective_from", "identity_quality", "source"],
+  "properties": {
+    "issuer_id": {"type": "string"},
+    "company_name": {"type": "string"},
+    "effective_from": {"type": "string", "format": "date"},
+    "effective_to": {"type": ["string", "null"], "format": "date"},
+    "identity_quality": {"type": "string"},
+    "source": {"type": "string"}
+  }
+}

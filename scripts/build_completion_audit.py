@@ -16,6 +16,7 @@ REQUIRED = [
     "corporate_actions.parquet", "trading_status.parquet", "active_universe_daily.parquet",
     "liquidity_features.parquet", "terminal_events.parquet", "data_release_manifest.json",
     "trading_calendar.parquet",
+    "company_name_history.parquet", "isin_history.parquet",
 ]
 
 
