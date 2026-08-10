@@ -25,6 +25,7 @@
 - PASS: `daily_prices_adjusted.parquet`
 - PASS: `corporate_actions.parquet`
 - PASS: `trading_status.parquet`
+- PASS: `trading_status_intervals.parquet`
 - PASS: `active_universe_daily.parquet`
 - PASS: `liquidity_features.parquet`
 - PASS: `terminal_events.parquet`
