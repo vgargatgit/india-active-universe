@@ -1,0 +1,62 @@
+{
+  "artifacts": {
+    "canonical/daily_prices_raw.jsonl": "41ddecc150a2ed35beb330cb4237bd9715926cf16bff113a8283bc44febdc376",
+    "canonical/security_master.jsonl": "85176e52bf6eda22591825f0afeca37d84fb129284c7e29f358e92a2f26deaca",
+    "derived/active_universe_daily.jsonl": "c39fdef6b11e4ba9ae2a44f5dce83e12d0a71d9857b57b0e47c16775d3617c15",
+    "derived/data_quality_findings.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "derived/liquidity_features.jsonl": "4d633663bc5cee3285915d8004b3018160aafcd68515038caf1baa531f90f5e5",
+    "release/active_universe_daily.parquet": "18d452d77262b4fa8cae8f280a02a3643768ff327429fa32da674c9e0095fc3f",
+    "release/corporate_actions.parquet": "464254aff68ba71346266f053ca2f037e8ad832b99fdff1dc68a7022e99a49a5",
+    "release/daily_prices_adjusted.parquet": "ff4d378fbf6c29ff88010a966b65a6cd8b003440df3ec587f97559c8a89ea4c3",
+    "release/daily_prices_raw.parquet": "a3a0abab0945631230fa96b0e186dd36aecd35313a88350dbb540277590a8069",
+    "release/delisting_notice_inventory.parquet": "3cbc3e5364c4cf32945d80bfbd9e1af127380f52ccfff0074fef245d0b3c7d4d",
+    "release/issuer_master.parquet": "41f71f549461c21a88850a03f774337af3763fcdd25513cd1c069ce595e2d361",
+    "release/liquidity_features.parquet": "a307e9fbfac0b85f4bc84df61dbe2b46d02e016fc408eaec6c5422d668b24287",
+    "release/listing_episodes.parquet": "6138dfc8f52ff5996df836512f7ba3f1c733ed9ee8baa50022257d9d750b22df",
+    "release/security_master.parquet": "587aa1a4f3f6978b023e3f6fab04554378ee2bcbde572ff165b720300dd07add",
+    "release/source_manifest.json": "dafcd86827d2c091897ce1ad883ae23324ce3433f50b0422389f6f2ca5443656",
+    "release/suspension_events_resolved.parquet": "e7c769fe5d8398f6a81dc89c8fd172746a51f6beba3b45a6cf0d98acf47bf8bd",
+    "release/suspension_notice_events.parquet": "3cd8eefce967da38ba7ad2d37a97a907c9227eba0364a1971ed8c1a5783ee18a",
+    "release/suspension_notice_evidence.parquet": "593d779b4d18f5d673023bc5dada742372112487d4e93f67aa1ee87047ea2a64",
+    "release/suspension_source_manifest.json": "8359cbf577bac7c396bc246b364494d35b2fb995430b0382506cd68027a34f3f",
+    "release/symbol_history.parquet": "97b6eb08ea415b11c11d408c49d8a2c9db4d8e8474a7bca8bee7d7882c086db3",
+    "release/terminal_events.parquet": "63ef10fb1b70a4a9f6129ee8b4c536bfe363e2b661979aaa5e13c6ef986538d0",
+    "release/trading_status.parquet": "ebc0d2ec4e446aec34811f8e8a8db850492b54d338d98ff796e63a2eb8353f01",
+    "release/trading_status_intervals.parquet": "7f95b3c565840cbedf90c06dc3417ecbb2810f1802ebe78520a2572c75b5092e"
+  },
+  "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
+  "coverage": {
+    "observation_count": 7545021,
+    "observed_end": "2026-08-10",
+    "observed_start": "2006-01-02",
+    "security_count": 3784
+  },
+  "definition": "ACTIVE_V1",
+  "git_commit": "8bf7dbf",
+  "manifest_note": "Data artifacts built from the committed v1.9 pipeline state before API-only documentation updates.",
+  "notes": "Normalizes nullable terminal-event value fields to the stable published schema: terminal_value DOUBLE and terminal_value_basis VARCHAR.",
+  "parent_release_id": "india_equity_data_v1.9.0",
+  "parser_versions": {
+    "canonicalization": "identity-v1",
+    "nse_bhavcopy": "nse-bhavcopy-v2"
+  },
+  "project_id": "india-active-universe",
+  "quality": {
+    "exact_terminal_event_count": 1,
+    "identity_quality": {
+      "PARTIAL": 861,
+      "SINGLE_OFFICIAL_SOURCE": 3303
+    },
+    "quality_findings": 0,
+    "status_interval_count": 5145,
+    "terminal_event_schema": "terminal_value:DOUBLE; terminal_value_basis:VARCHAR",
+    "verified_suspended_interval_count": 2,
+    "verified_suspension_event_count": 18
+  },
+  "quality_tier": "DATASET_EXPLORATORY",
+  "release_id": "india_equity_data_v1.10.0",
+  "source": "NSE_OFFICIAL_BHAVCOPY",
+  "source_manifest_sha256": "dafcd86827d2c091897ce1ad883ae23324ce3433f50b0422389f6f2ca5443656",
+  "verified_end_date": "2026-08-10",
+  "verified_start_date": "2006-01-02"
+}

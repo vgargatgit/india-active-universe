@@ -21,7 +21,7 @@ python -m pip install -e '.[dev]'
 india-equity-data --help
 ```
 
-The current materialized release is `india_equity_data_v1.9.0`: official NSE observations, corporate actions with split, bonus, and cash-dividend fields, separate price-return and partial total-return prices, full PIT liquidity features, delisting evidence inventory, resolved suspension evidence, non-overlapping effective-dated status intervals, and raw-source manifests from 2006-01-02 through 2026-08-10, published as compressed Parquet. Identity and event quality remain date- and field-specific; unresolved cases are explicit. This is an exploratory release. It is not a claim that all suspensions, terminal events, or adjusted returns are resolved.
+The current materialized release is `india_equity_data_v1.10.0`: official NSE observations, corporate actions with split, bonus, and cash-dividend fields, separate price-return and partial total-return prices, full PIT liquidity features, delisting evidence inventory, resolved suspension evidence, non-overlapping effective-dated status intervals, and raw-source manifests from 2006-01-02 through 2026-08-10, published as compressed Parquet. Nullable terminal-event value fields use a stable schema. Identity and event quality remain date- and field-specific; unresolved cases are explicit. This is an exploratory release. It is not a claim that all suspensions, terminal events, or adjusted returns are resolved.
 
 Published release artifacts are compressed Parquet. JSONL files under `data/` are build intermediates and audit/debug outputs, not the downstream storage contract.
 
