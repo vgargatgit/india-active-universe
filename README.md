@@ -25,6 +25,8 @@ The current materialized release is `india_equity_data_v1.14.0`: official NSE ob
 
 Published release artifacts are compressed Parquet. JSONL files under `data/` are build intermediates and audit/debug outputs, not the downstream storage contract.
 
+To create an immutable cached promotion, use `india-equity-data build --source-release releases/india_equity_data_v1.14.0 --release-id india_equity_data_v1.14.1`. The command verifies parent hashes and records the parent release. It does not claim to re-download or re-parse source files.
+
 ## Independence
 
 This repository has no dependency on `vgargatgit/india500-alpha-lab`, NIFTY 500 membership, index constituents, strategy code, or future-performance labels.

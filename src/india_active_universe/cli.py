@@ -24,6 +24,7 @@ def main() -> None:
     parser.add_argument("--end")
     parser.add_argument("--root", default=".")
     parser.add_argument("--release-id")
+    parser.add_argument("--source-release")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     root = Path(args.root)
@@ -54,10 +55,19 @@ def main() -> None:
     elif args.command == "build":
         for layer in ("data/raw", "data/normalized", "data/canonical", "data/derived", "releases", "reports"):
             (root / layer).mkdir(parents=True, exist_ok=True)
-        if args.release_id and (root / "releases" / args.release_id).exists():
+        if args.source_release:
+            if not args.release_id:
+                raise SystemExit("build with --source-release requires --release-id")
+            command = [sys.executable, str(root / "scripts/build_cached_release.py"), "--root", str(root), "--source-release", args.source_release, "--release-id", args.release_id]
+            if args.dry_run:
+                print(" ".join(command))
+                return
+            subprocess.run(command, check=True)
+            audit_release(args.release_id)
+        elif args.release_id and (root / "releases" / args.release_id).exists():
             audit_release(args.release_id)
         else:
-            print(f"Initialized build workspace at {root}; no release was audited")
+            raise SystemExit("build requires --source-release and --release-id, or an existing --release-id")
     else:
         print(f"Stage '{args.command}' requires its source-specific adapter; no files were changed")
 
