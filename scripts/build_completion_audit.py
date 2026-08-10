@@ -53,6 +53,9 @@ def main() -> None:
     validation_report = report_dir / f"research_invariant_validation_{release.name}.json"
     if not validation_report.exists():
         missing_reports.append(validation_report.name)
+    test_result_report = report_dir / f"test_results_{release.name}.xml"
+    if not test_result_report.exists():
+        missing_reports.append(test_result_report.name)
     manifest_mismatch = manifest.get("release_id") != release.name
     research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
     if missing or missing_reports or manifest_mismatch or not research_quality_ok:
@@ -86,6 +89,9 @@ def main() -> None:
     validation_path = report_dir / f"research_invariant_validation_{release.name}.json"
     if validation_expected and (not validation_path.is_file() or sha256(validation_path) != validation_expected):
         hash_mismatches.append(f"report/{validation_path.name}")
+    test_expected = research_manifest.get("test_result_sha256")
+    if test_expected and (not test_result_report.is_file() or sha256(test_result_report) != test_expected):
+        hash_mismatches.append(f"report/{test_result_report.name}")
     if hash_mismatches:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Artifact hash checks", ""]
         rows.extend(f"- FAIL: `{key}`" if key in hash_mismatches else f"- PASS: `{key}`" for key in sorted(manifest.get("artifacts", {})))

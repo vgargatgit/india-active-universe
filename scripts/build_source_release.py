@@ -58,6 +58,7 @@ def main() -> None:
         [sys.executable, str(root / "scripts/build_identity_history_artifacts.py"), "--master", str(release / "security_master.parquet"), "--out-dir", str(release)],
         [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", "2013-01-01", "--end", args.end or "2026-08-10"],
         [sys.executable, str(root / "scripts/validate_research_release.py"), "--release", str(release), "--out", str(root / "reports" / f"research_invariant_validation_{args.release_id}.json")],
+        [sys.executable, "-m", "pytest", "-q", "--junitxml", str(root / "reports" / f"test_results_{args.release_id}.xml")],
         [sys.executable, str(root / "scripts/report_universe.py"), "--root", str(work), "--release-id", args.release_id, "--release-dir", str(release), "--reports-dir", str(root / "reports"), "--config", str(root / "config/default.yaml")],
         [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
