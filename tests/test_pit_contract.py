@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import CoverageError, DataPlatform, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
+from india_active_universe.api import CalendarStore, CoverageError, DataPlatform, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import classify_instrument_type, discover_securities
 
@@ -79,3 +79,8 @@ def test_optional_positive_volume_filter_is_downstream_only():
         {"date": date(2020, 1, 1), "security_id": "B", "active": True, "close": 20.0, "history_sessions": 60, "zero_volume_days_60": 5, "median_traded_value_60": 6_000_000},
     ])
     assert [row["security_id"] for row in store.eligible_on("2020-01-01", min_positive_volume_days_60=55)] == ["B"]
+
+
+def test_calendar_returns_only_official_sessions():
+    store = CalendarStore([{"date": "2020-01-02", "session_evidence": "OFFICIAL_NSE_MARKET_DATA"}, {"date": "2020-01-03", "session_evidence": "OFFICIAL_NSE_MARKET_DATA"}])
+    assert [row["date"].isoformat() for row in store.sessions_between("2020-01-01", "2020-01-05")] == ["2020-01-02", "2020-01-03"]

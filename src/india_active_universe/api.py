@@ -166,6 +166,28 @@ class TerminalEventStore:
         return output
 
 
+class CalendarStore:
+    """Official market sessions; no synthetic weekday generation."""
+
+    def __init__(self, rows: Iterable[dict[str, Any]] = ()) -> None:
+        self.rows = [_normalize_dates(row) for row in rows]
+
+    def sessions_between(self, start: str | date, end: str | date) -> list[dict[str, Any]]:
+        begin, finish = _as_date(start), _as_date(end)
+        return sorted((row for row in self.rows if begin <= row["date"] <= finish), key=lambda row: row["date"])
+
+
+class ParquetCalendarStore(CalendarStore):
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
+        super().__init__()
+
+    def sessions_between(self, start: str | date, end: str | date) -> list[dict[str, Any]]:
+        import pyarrow.parquet as parquet
+        begin, finish = _as_date(start).isoformat(), _as_date(end).isoformat()
+        return parquet.read_table(self.path, filters=[("date", ">=", begin), ("date", "<=", finish)]).to_pylist()
+
+
 class DataPlatform:
     def __init__(self, root: str | Path = ".", *, strict: bool = False) -> None:
         self.root = Path(root)
@@ -177,6 +199,7 @@ class DataPlatform:
         self.universe = UniverseStore()
         self.status = StatusStore()
         self.terminal_events = TerminalEventStore()
+        self.calendar = CalendarStore()
 
     def _check_date(self, value: str | date) -> date:
         point = _as_date(value)
@@ -207,6 +230,10 @@ class DataPlatform:
             if history:
                 last_price = history[-1].get("raw_close", history[-1].get("close"))
         return self.terminal_events.recovery_scenarios(security_id, last_observed_price=last_price)
+
+    def sessions_between(self, start: str | date, end: str | date) -> list[dict[str, Any]]:
+        begin, finish = self._check_date(start), self._check_date(end)
+        return self.calendar.sessions_between(begin, finish)
 
     def get_active_universe(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.active_on(as_of_date)
@@ -249,6 +276,8 @@ class DataPlatform:
         platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
         terminal_path = base / "terminal_events.parquet"
         platform.terminal_events = TerminalEventStore(parquet.read_table(terminal_path).to_pylist() if terminal_path.exists() else [])
+        calendar_path = base / "trading_calendar.parquet"
+        platform.calendar = ParquetCalendarStore(calendar_path) if calendar_path.exists() else CalendarStore()
         return platform
 
 
