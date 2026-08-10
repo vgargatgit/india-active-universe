@@ -15,8 +15,8 @@
     "release/issuer_master.parquet": "9926d1489a589b23d776888ddc4cd100908c44fa80900c2f4881647016ba861a",
     "release/liquidity_features.parquet": "a3bc114a41b46a6abdedc22b4956a72a6c13927ab2b8e7ef4547ee14c9a679a4",
     "release/listing_episodes.parquet": "21e478459c34b35aa43731d4cc1beb93110fe90fa2ace4b518cb4d26616b0576",
-    "release/required_research_security.parquet": "ecf59c0170912e0a089b1eb54349b4bf05a131eb353ff08faf4d5070727a0066",
-    "release/research_universe_monthly.parquet": "362c8aebe52b092bdfc0c487e7a100eb24d06895d201c5e8266495e93940f99c",
+    "release/required_research_security.parquet": "d8a9314bd8c8b61296d74837ac66822c1ccbbbf7713642f66818d2a1348650cf",
+    "release/research_universe_monthly.parquet": "4372fed3f2684ba0c1e5ddd35791e881d91521eb8b748549c7e230e99754e382",
     "release/security_master.parquet": "9ef7dfb8a65a2710ad4650bc8e26f8f0bd6efa3a2777352624ed24b84cc0edda",
     "release/source_manifest.json": "482b9995f8e3834ebcc65ba7e19240d86bf62ebd41f3c06890f6d390145ae096",
     "release/symbol_history.parquet": "6f32a53baf5dd212648b689afdc8a50c45ee4ad8855a5d134613b5772c9d7b27",
@@ -40,7 +40,7 @@
     "security_count": 5745
   },
   "definition": "ACTIVE_V1",
-  "git_commit": "5210cff4e40c2417ae5747ac9c0199599b27b8c8",
+  "git_commit": "ed39bcb97c2133594dc4b2c2eb8b94a01e3c9e6f",
   "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
   "parser_versions": {
     "canonicalization": "identity-v1",

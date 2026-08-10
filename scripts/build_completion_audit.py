@@ -23,7 +23,7 @@ REQUIRED = [
 ]
 
 REQUIRED_RESEARCH_REPORTS = [
-    "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md",
+    "data_source_coverage.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md",
     "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md",
     "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md",
     "current_survivor_comparison.md", "research_scale.md",
@@ -166,7 +166,7 @@ def main() -> None:
         "",
         "## Explicit limitations",
         "",
-        "- The release is exploratory, not confirmatory-ready.",
+        "- The complete 2006 onward archive is exploratory; the scoped 2013 onward research universe is RESEARCH_HIGH_CONFIDENCE.",
         "- Scanned delisting notices require external OCR tooling and remain evidence-only.",
         "- Many terminal-event identities, merger events, insolvency outcomes, and terminal values remain unresolved.",
         "- Cash-dividend and total-return adjustment coverage is partial.",

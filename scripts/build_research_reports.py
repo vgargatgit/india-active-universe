@@ -70,7 +70,7 @@ def main() -> None:
         identity_rows = connection.execute(f"""
           SELECT research_identity_quality, COUNT(DISTINCT security_id)
           FROM read_parquet('{r}/research_universe_monthly.parquet')
-          WHERE NSE_BROAD_LIQUID_PIT_V1_eligible
+          WHERE NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity
           GROUP BY 1 ORDER BY 1
         """).fetchall()
         adjustment_rows = connection.execute(f"""
@@ -182,35 +182,60 @@ def main() -> None:
           WHERE u.NSE_BROAD_LIQUID_PIT_V1_eligible AND l.last_seen = DATE '2026-08-10'
         """)
         historical_eligible = scalar(connection, f"SELECT COUNT(DISTINCT security_id) FROM read_parquet('{r}/research_universe_monthly.parquet') WHERE NSE_BROAD_LIQUID_PIT_V1_eligible")
+        required_scope_failure_count = scalar(connection, f"""
+          SELECT COUNT(DISTINCT security_id)
+          FROM read_parquet('{r}/research_universe_monthly.parquet')
+          WHERE (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
+            AND NOT research_identity_ok
+        """)
+        yearly_required_rows = connection.execute(f"""
+          SELECT EXTRACT(YEAR FROM date)::INTEGER AS year,
+            COUNT(DISTINCT security_id) FILTER (WHERE top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AS required_count,
+            COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND research_identity_ok) AS identity_passing,
+            COUNT(DISTINCT security_id) FILTER (WHERE (top750_liQUIDITY OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND NOT research_identity_ok) AS identity_failures,
+            COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND NOT price_adjustment_ok) AS price_action_failures,
+            COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND status_quality = 'UNKNOWN_STATUS') AS unknown_status_exclusions
+          FROM read_parquet('{r}/research_universe_monthly.parquet')
+          GROUP BY 1 ORDER BY 1
+        """).fetchall()
+        terminal_sensitivity_count = scalar(connection, f"""
+          SELECT COUNT(DISTINCT q.security_id)
+          FROM read_parquet('{r}/required_research_security.parquet') q
+          JOIN read_parquet('{r}/terminal_events.parquet') t USING (security_id)
+          WHERE t.terminal_value IS NULL OR t.terminal_value_quality IN ('UNKNOWN', 'UNRESOLVED')
+        """)
     finally:
         connection.close()
 
     identity_failure_count = int(counts[5])
     missing_factor_count = sum(int(row[2]) for row in event_rows)
-    gate_pass = identity_failure_count == 0 and missing_factor_count == 0 and int(status_overlap) == 0
+    gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(status_overlap) == 0
     quality = "RESEARCH_HIGH_CONFIDENCE" if gate_pass else "RESEARCH_EXPLORATORY"
     research_start = "2013-01-01"
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     validation_path = reports / f"research_invariant_validation_{release.name}.json"
     test_result_path = reports / f"test_results_{release.name}.xml"
 
-    year_text = ["| Year | Active ordinary | LIQUID_V1 | Top-750 | Identity failures | Sparse names |", "|---:|---:|---:|---:|---:|---:|"]
-    year_text.extend(f"| {int(y)} | {a} | {l} | {t} | {i} | {s} |" for y, a, l, t, i, s in year_rows)
+    year_map = {int(row[0]): row[1:] for row in yearly_required_rows}
+    year_text = ["| Year | Active ordinary | LIQUID_V1 | Top-750 | Required | Identity passing | Identity failures | Price-action failures | Unknown-status exclusions | Sparse names |", "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for y, a, l, t, _old_i, s in year_rows:
+        required, passing, failures, price_failures, unknown_status = year_map[int(y)]
+        year_text.append(f"| {int(y)} | {a} | {l} | {t} | {required} | {passing} | {failures} | {price_failures} | {unknown_status} | {s} |")
     write(reports / "research_universe_coverage.md", f"""# Research universe coverage
 
 Profile: `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 
 Coverage: `{coverage[0]}` through `{coverage[1]}`.
 
-Required research securities: `{counts[3]}` liquid names and `{counts[4]}` Top-750 names.
+Required research securities: `{required_count}` total (`{counts[3]}` LIQUID_V1 names and `{counts[4]}` Top-750 names).
 
 {chr(10).join(year_text)}
 
 The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
 """)
-    identity_text = ["# Research identity promotion", "", f"Required research securities: `{required_count}`.", f"Identity failures in LIQUID_V1: `{identity_failure_count}`.", "", "| Research identity quality | Securities |", "|---|---:|"]
+    identity_text = ["# Research identity promotion", "", f"Required research securities: `{required_count}`.", f"Identity failures in the full required scope: `{required_scope_failure_count}`.", "", "| Research identity quality | Securities |", "|---|---:|"]
     identity_text.extend(f"| `{quality_name}` | {number} |" for quality_name, number in identity_rows)
-    identity_text.extend(["", "A `RECONSTRUCTED_TRADING_IDENTITY` is accepted only when the release has one non-conflicting listing episode and one stable series for the security.", f"Promotion gate: `{'PASS' if identity_failure_count == 0 else 'FAIL'}`."])
+    identity_text.extend(["", "A `RECONSTRUCTED_TRADING_IDENTITY` is accepted when dated master rows resolve to one listing episode, one series, and no conflicting ISIN evidence. Multiple rows can represent symbol or name history within that episode.", f"Promotion gate: `{'PASS' if int(required_scope_failure_count) == 0 else 'FAIL'}`."])
     write(reports / "research_identity_promotion.md", "\n".join(identity_text))
     event_text = ["# Research universe corporate-action audit", "", "Material price actions are `SPLIT`, `REVERSE_SPLIT`, and `BONUS`.", "", "| Event type | Events | Missing factors |", "|---|---:|---:|"]
     event_text.extend(f"| `{kind}` | {events} | {missing} |" for kind, events, missing in event_rows)
@@ -246,6 +271,10 @@ Weekend and holiday dates are not part of any window.
     write(reports / "research_identity_priority.md", "\n".join(identity_priority_text))
     dates = sorted({row[0] for row in monthly_detail_rows})
     by_date = {point: {row[1] for row in monthly_detail_rows if row[0] == point and row[2]} for point in dates}
+    top750_by_date = {point: {row[1] for row in monthly_detail_rows if row[0] == point and row[3]} for point in dates}
+    overlap_values = []
+    for previous, current in zip(dates, dates[1:]):
+        overlap_values.append(len(top750_by_date[previous] & top750_by_date[current]) / max(1, len(top750_by_date[previous] | top750_by_date[current])))
     stability_text = ["# Research universe stability", "", "Monthly entry, exit, and turnover counts use the PIT `LIQUID_V1` membership.", "", "| Date | Size | Entries | Exits | Turnover |", "|---|---:|---:|---:|---:|"]
     previous = set()
     for point in dates:
@@ -277,6 +306,11 @@ This is a QA comparison only. The current survivor set does not construct histor
 - Unique `LIQUID_V1` securities: `{historical_eligible}`.
 - Later-disappeared observed securities: `{disappeared_count}`.
 - Current-date survivors among historical eligible securities: `{current_survivor_eligible}`.
+- Average month-to-month Top-750 Jaccard overlap: `{sum(overlap_values) / max(1, len(overlap_values)):.4f}`.
+- Top-750 overlap observations: `{len(overlap_values)}`.
+- Required securities needing terminal-event sensitivity: `{terminal_sensitivity_count}`.
+
+Top-750 overlap is the intersection divided by the union of consecutive monthly PIT Top-750 sets. Terminal-event sensitivity includes required securities with an unknown or unresolved terminal value.
 """)
     manifest = {
         "release_id": release.name,
@@ -285,7 +319,7 @@ This is a QA comparison only. The current survivor set does not construct histor
         "source_coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10", "research_start": research_start, "research_end": str(coverage[1])},
         "required_research_securities": int(required_count),
         "liquid_v1_securities": int(counts[3]),
-        "identity_failures": identity_failure_count,
+        "identity_failures": int(required_scope_failure_count),
         "material_price_action_missing_factors": missing_factor_count,
         "boundary_validation": dict(boundary_rows),
         "status_interval_overlaps": int(status_overlap),
@@ -294,11 +328,11 @@ This is a QA comparison only. The current survivor set does not construct histor
         "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet")},
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
-        "quality_reports": {name: sha256(reports / name) for name in ("research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},
+        "quality_reports": {name: sha256(reports / name) for name in ("data_source_coverage.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},
         "known_policy": {"signals": "price-return adjusted close", "execution": "raw nominal OHLC", "terminal_values": "explicit recovery scenarios; no invented canonical value"},
     }
     (release / "research_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"quality": quality, "liquid_v1": counts[3], "required": required_count, "identity_failures": identity_failure_count, "missing_price_action_factors": missing_factor_count}, sort_keys=True))
+    print(json.dumps({"quality": quality, "liquid_v1": counts[3], "required": required_count, "identity_failures": int(required_scope_failure_count), "missing_price_action_factors": missing_factor_count}, sort_keys=True))
 
 
 if __name__ == "__main__":

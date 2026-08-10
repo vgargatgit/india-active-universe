@@ -40,7 +40,7 @@
 
 ## Explicit limitations
 
-- The release is exploratory, not confirmatory-ready.
+- The complete 2006 onward archive is exploratory; the scoped 2013 onward research universe is RESEARCH_HIGH_CONFIDENCE.
 - Scanned delisting notices require external OCR tooling and remain evidence-only.
 - Many terminal-event identities, merger events, insolvency outcomes, and terminal values remain unresolved.
 - Cash-dividend and total-return adjustment coverage is partial.

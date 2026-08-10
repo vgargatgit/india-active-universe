@@ -1,11 +1,11 @@
 # Research identity promotion
 
-Required research securities: `2646`.
-Identity failures in LIQUID_V1: `0`.
+Required research securities: `2680`.
+Identity failures in the full required scope: `0`.
 
 | Research identity quality | Securities |
 |---|---:|
-| `RECONSTRUCTED_TRADING_IDENTITY` | 2081 |
+| `RECONSTRUCTED_TRADING_IDENTITY` | 2680 |
 
-A `RECONSTRUCTED_TRADING_IDENTITY` is accepted only when the release has one non-conflicting listing episode and one stable series for the security.
+A `RECONSTRUCTED_TRADING_IDENTITY` is accepted when dated master rows resolve to one listing episode, one series, and no conflicting ISIN evidence. Multiple rows can represent symbol or name history within that episode.
 Promotion gate: `PASS`.

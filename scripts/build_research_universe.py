@@ -38,7 +38,8 @@ def main() -> None:
       identity_checks AS (
         SELECT security_id, COUNT(*) AS master_rows,
                COUNT(DISTINCT listing_episode_id) AS episode_count,
-               COUNT(DISTINCT series) AS series_count
+               COUNT(DISTINCT series) AS series_count,
+               COUNT(DISTINCT isin) AS isin_count
         FROM read_parquet('{out}/security_master.parquet')
         GROUP BY security_id
       ),
@@ -60,13 +61,13 @@ def main() -> None:
           CASE
             WHEN m.identity_quality IN ('OFFICIAL_EXCHANGE_IDENTITY', 'MULTI_SOURCE_VERIFIED', 'RECONSTRUCTED_HIGH_CONFIDENCE', 'RECONSTRUCTED_TRADING_IDENTITY')
               THEN m.identity_quality
-            WHEN m.identity_quality IN ('PARTIAL', 'SINGLE_OFFICIAL_SOURCE') AND i.master_rows = 1 AND i.episode_count = 1 AND i.series_count = 1
+            WHEN m.identity_quality IN ('PARTIAL', 'SINGLE_OFFICIAL_SOURCE') AND i.episode_count = 1 AND i.series_count = 1 AND i.isin_count <= 1
               THEN 'RECONSTRUCTED_TRADING_IDENTITY'
             ELSE m.identity_quality
           END AS research_identity_quality,
           CASE
             WHEN m.identity_quality IN ('OFFICIAL_EXCHANGE_IDENTITY', 'MULTI_SOURCE_VERIFIED', 'RECONSTRUCTED_HIGH_CONFIDENCE', 'RECONSTRUCTED_TRADING_IDENTITY') THEN TRUE
-            WHEN m.identity_quality IN ('PARTIAL', 'SINGLE_OFFICIAL_SOURCE') AND i.master_rows = 1 AND i.episode_count = 1 AND i.series_count = 1 THEN TRUE
+            WHEN m.identity_quality IN ('PARTIAL', 'SINGLE_OFFICIAL_SOURCE') AND i.episode_count = 1 AND i.series_count = 1 AND i.isin_count <= 1 THEN TRUE
             ELSE FALSE
           END AS research_identity_ok,
           CASE

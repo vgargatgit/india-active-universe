@@ -5,40 +5,41 @@
     "daily_prices_adjusted.parquet": "9bb9123d015553654b78737823d3b9cc66580b290399cedd3d1ab86c5dcb747b",
     "daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
     "liquidity_features.parquet": "a3bc114a41b46a6abdedc22b4956a72a6c13927ab2b8e7ef4547ee14c9a679a4",
-    "required_research_security.parquet": "ecf59c0170912e0a089b1eb54349b4bf05a131eb353ff08faf4d5070727a0066",
-    "research_universe_monthly.parquet": "362c8aebe52b092bdfc0c487e7a100eb24d06895d201c5e8266495e93940f99c",
+    "required_research_security.parquet": "d8a9314bd8c8b61296d74837ac66822c1ccbbbf7713642f66818d2a1348650cf",
+    "research_universe_monthly.parquet": "4372fed3f2684ba0c1e5ddd35791e881d91521eb8b748549c7e230e99754e382",
     "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
   },
   "boundary_validation": {
-    "MISSING_BOUNDARY_PRICE": 261,
-    "PASS": 421,
-    "WARNING_LARGE_BOUNDARY_MOVE": 59
+    "MISSING_BOUNDARY_PRICE": 267,
+    "PASS": 424,
+    "WARNING_LARGE_BOUNDARY_MOVE": 60
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "5210cff4e40c2417ae5747ac9c0199599b27b8c8",
+  "git_sha": "ed39bcb97c2133594dc4b2c2eb8b94a01e3c9e6f",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
     "signals": "price-return adjusted close",
     "terminal_values": "explicit recovery scenarios; no invented canonical value"
   },
-  "liquid_v1_securities": 2081,
+  "liquid_v1_securities": 2352,
   "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
   "material_price_action_missing_factors": 0,
   "quality_reports": {
-    "current_survivor_comparison.md": "9b5ee9d9428ed71e23bb3c07f163a08f884a9da541963ac461222f8533ed2b3c",
-    "research_identity_priority.md": "ff567b60ac9b3d501179931b6641ddacd10cdfa32dc3f87d5c6357d0827de1dc",
-    "research_identity_promotion.md": "ae3d9480c24560027ddd4ab24cfacc95a961946ebad9cdb0aa6c173364e69142",
-    "research_price_adjustment_promotion.md": "58e2261b4228ab92642a2d4acf54d47925516e9c475ff507fabab74393a51836",
-    "research_scale.md": "faea7f41b0425d616ee532dea8fce412686fbce27572fb0370cc2f10e88c4cce",
-    "research_universe_corporate_action_audit.md": "f066f9a6e05f11b3e596f524f00ec56b39ee60e05a898adee48ac6acfc781f05",
-    "research_universe_coverage.md": "e489e6b36d6a8c6020d72111731803e39e75ddb8d43b5d336111ef48b51176a4",
-    "research_universe_stability.md": "b18deb6cebe6b648cba132398e3b5d96e3db4c8357bdf174791317cee88a1cc1",
+    "current_survivor_comparison.md": "478823e955d848c12028356360b7c2ff3b96b2df909517d6722c71bf7994b7af",
+    "data_source_coverage.md": "4a8d50c73699c17a81c4c1f17c0fafdf1066a71f37b64cae0084b766819f969a",
+    "research_identity_priority.md": "c42dc5fab3489f1ee01390093ad51707aca0122ebae5ec8834fe9e20dd62e93d",
+    "research_identity_promotion.md": "1075816b73feb2a0e46844f6a65995f7fa81d767962aa01e93783f54fa65ae95",
+    "research_price_adjustment_promotion.md": "e357ea69b991bc6f1ce8d404a143e84d05e0b566907432a3bd2171bd0409cb55",
+    "research_scale.md": "bea072ee0ce46bcd32d1b667897cf3f4d98e1ebcbb512b10c1c8fede533392e7",
+    "research_universe_corporate_action_audit.md": "1003670108b721e4601e2bf94687e021d5b0cdfc3a2c2bcc6b97422da8715847",
+    "research_universe_coverage.md": "ae1d6b978d99f2dda4c45ce1cd0ccc5b819f21bf05563bebd746b75816a3e539",
+    "research_universe_stability.md": "b7d0be2d0b470d1f480b8e5571e21ec1f3289186877bafb8bc06fda3bdcf5756",
     "session_correct_liquidity_audit.md": "b79a4ec60304a00fdf16e8ecf8f4028edde28f2ade78bbe6399fe9c1fd8d0337",
-    "survivorship_audit.md": "74470302565214f29f11508d9c48ba5c055dd5a491f29f79e7d2f1ee15f9c981"
+    "survivorship_audit.md": "e05fb2acd0b09ac43ea39eacce18c8a8a73a792f0e4e7b7032ac130c416d9a45"
   },
   "release_id": "india_equity_data_v2.0.0",
-  "required_research_securities": 2646,
+  "required_research_securities": 2680,
   "research_invariant_validation_sha256": "70b61f64e95580636169050910dbdea278f7fbbc336ab10b204923f1ba82e936",
   "research_quality": {
     "end": "2026-08-10",
