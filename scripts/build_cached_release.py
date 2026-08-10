@@ -20,6 +20,7 @@ REQUIRED = (
     "daily_prices_adjusted.parquet",
     "corporate_actions.parquet",
     "trading_status.parquet",
+    "trading_status_intervals.parquet",
     "active_universe_daily.parquet",
     "liquidity_features.parquet",
     "terminal_events.parquet",
