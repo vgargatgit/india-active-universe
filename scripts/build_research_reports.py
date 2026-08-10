@@ -170,7 +170,7 @@ Low-liquidity securities outside this scope remain in the exploratory archive an
         "known_policy": {"signals": "price-return adjusted close", "execution": "raw nominal OHLC", "terminal_values": "explicit recovery scenarios; no invented canonical value"},
     }
     (release / "research_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"quality": quality, "liquid_v1": counts[3], "required": counts[4], "identity_failures": identity_failure_count, "missing_price_action_factors": missing_factor_count}, sort_keys=True))
+    print(json.dumps({"quality": quality, "liquid_v1": counts[3], "required": required_count, "identity_failures": identity_failure_count, "missing_price_action_factors": missing_factor_count}, sort_keys=True))
 
 
 if __name__ == "__main__":
