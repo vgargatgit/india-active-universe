@@ -87,6 +87,17 @@ def main() -> None:
           WHERE ca.event_type IN {MATERIAL_ACTIONS}
           GROUP BY 1 ORDER BY 1
         """).fetchall()
+        event_detail_rows = connection.execute(f"""
+          SELECT ca.security_id, ca.symbol_at_event, ca.event_date, ca.event_type,
+            ca.price_factor, ca.share_factor, v.pre_event_close, v.post_event_close,
+            v.holder_value_ratio, v.validation_status
+          FROM read_parquet('{r}/corporate_actions.parquet') ca
+          JOIN read_parquet('{r}/required_research_security.parquet') q USING (security_id)
+          LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v
+            ON v.event_id = ca.event_id
+          WHERE ca.event_type IN {MATERIAL_ACTIONS}
+          ORDER BY CAST(ca.event_date AS DATE), ca.security_id
+        """).fetchall()
         boundary_rows = connection.execute(f"""
           SELECT v.validation_status, COUNT(DISTINCT v.event_id)
           FROM read_parquet('{r}/corporate_action_boundary_validation.parquet') v
@@ -104,6 +115,69 @@ def main() -> None:
         max_absent = scalar(connection, f"SELECT COALESCE(MAX(absent_observation_days_60), 0) FROM read_parquet('{r}/research_universe_monthly.parquet')")
         required_count = scalar(connection, f"SELECT COUNT(*) FROM read_parquet('{r}/required_research_security.parquet')")
         coverage = connection.execute(f"SELECT MIN(date), MAX(date) FROM read_parquet('{r}/research_universe_monthly.parquet')").fetchone()
+        monthly_detail_rows = connection.execute(f"""
+          SELECT date, security_id, NSE_BROAD_LIQUID_PIT_V1_eligible, top750_liquidity,
+                 top500_liquidity, top1000_liquidity
+          FROM read_parquet('{r}/research_universe_monthly.parquet')
+        """).fetchall()
+        identity_priority_rows = connection.execute(f"""
+          SELECT q.security_id,
+            MIN(m.symbol) AS symbol,
+            MIN(m.company_name) AS company_name,
+            MIN(m.first_seen) AS first_seen,
+            MAX(m.last_seen) AS last_seen,
+            MAX(u.liquidity_rank_126) AS max_liquidity_rank_126,
+            COUNT(DISTINCT u.date) FILTER (WHERE u.NSE_BROAD_LIQUID_PIT_V1_eligible) AS liquid_dates,
+            MIN(m.identity_quality) AS identity_quality,
+            STRING_AGG(DISTINCT m.isin, ', ') FILTER (WHERE m.isin IS NOT NULL) AS isin_evidence,
+            COUNT(DISTINCT m.company_name) AS company_name_count,
+            COUNT(DISTINCT m.symbol) AS symbol_count,
+            MAX(u.absent_observation_days_60) AS max_absent_days_60,
+            MAX(CASE WHEN u.research_identity_ok THEN 1 ELSE 0 END)::BOOLEAN AS research_identity_ok
+          FROM read_parquet('{r}/required_research_security.parquet') q
+          JOIN read_parquet('{r}/security_master.parquet') m USING (security_id)
+          LEFT JOIN read_parquet('{r}/research_universe_monthly.parquet') u USING (security_id)
+          GROUP BY q.security_id
+          ORDER BY max_liquidity_rank_126 NULLS LAST, q.security_id
+        """).fetchall()
+        disappeared_rows = connection.execute(f"""
+          WITH eligible AS (
+            SELECT security_id, MAX(CAST(date AS DATE)) AS last_eligible_date
+            FROM read_parquet('{r}/research_universe_monthly.parquet')
+            WHERE NSE_BROAD_LIQUID_PIT_V1_eligible
+            GROUP BY security_id
+          ), last_seen AS (
+            SELECT security_id, MAX(CAST(date AS DATE)) AS last_observed_date
+            FROM read_parquet('{r}/daily_prices_raw.parquet')
+            GROUP BY security_id
+          ), symbols AS (
+            SELECT security_id, MIN(symbol) AS symbol
+            FROM read_parquet('{r}/security_master.parquet') GROUP BY security_id
+          ), terminal AS (
+            SELECT security_id, STRING_AGG(DISTINCT terminal_event_type, ', ') AS terminal_types
+            FROM read_parquet('{r}/terminal_events.parquet') GROUP BY security_id
+          )
+          SELECT e.security_id, s.symbol, e.last_eligible_date, l.last_observed_date,
+                 COALESCE(t.terminal_types, 'UNKNOWN_TERMINAL_EVENT')
+          FROM eligible e JOIN last_seen l USING (security_id) JOIN symbols s USING (security_id)
+          LEFT JOIN terminal t USING (security_id)
+          WHERE l.last_observed_date < DATE '2026-08-10'
+          ORDER BY e.last_eligible_date DESC, e.security_id
+          LIMIT 25
+        """).fetchall()
+        disappeared_count = scalar(connection, f"""
+          SELECT COUNT(*) FROM (
+            SELECT security_id, MAX(CAST(date AS DATE)) AS last_observed
+            FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id
+          ) WHERE last_observed < DATE '2026-08-10'
+        """)
+        current_survivor_eligible = scalar(connection, f"""
+          SELECT COUNT(DISTINCT u.security_id)
+          FROM read_parquet('{r}/research_universe_monthly.parquet') u
+          JOIN (SELECT security_id, MAX(CAST(date AS DATE)) AS last_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) l USING (security_id)
+          WHERE u.NSE_BROAD_LIQUID_PIT_V1_eligible AND l.last_seen = DATE '2026-08-10'
+        """)
+        historical_eligible = scalar(connection, f"SELECT COUNT(DISTINCT security_id) FROM read_parquet('{r}/research_universe_monthly.parquet') WHERE NSE_BROAD_LIQUID_PIT_V1_eligible")
     finally:
         connection.close()
 
@@ -113,6 +187,7 @@ def main() -> None:
     quality = "RESEARCH_HIGH_CONFIDENCE" if gate_pass else "RESEARCH_EXPLORATORY"
     research_start = "2013-01-01"
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+    validation_path = reports / f"research_invariant_validation_{release.name}.json"
 
     year_text = ["| Year | Active ordinary | LIQUID_V1 | Top-750 | Identity failures | Sparse names |", "|---:|---:|---:|---:|---:|---:|"]
     year_text.extend(f"| {int(y)} | {a} | {l} | {t} | {i} | {s} |" for y, a, l, t, i, s in year_rows)
@@ -136,6 +211,8 @@ The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
     event_text.extend(f"| `{kind}` | {events} | {missing} |" for kind, events, missing in event_rows)
     event_text.extend(["", f"Material events with missing price/share factors: `{missing_factor_count}`.", f"Promotion gate: `{'PASS' if missing_factor_count == 0 else 'FAIL'}`.", "", "## Boundary validation in the required scope", "", "| Boundary status | Distinct events |", "|---|---:|"])
     event_text.extend(f"| `{status}` | {number} |" for status, number in boundary_rows)
+    event_text.extend(["", "## Material event details", "", "| Security | Symbol | Event date | Type | Price factor | Share factor | Pre close | Post close | Holder value ratio | Validation |", "|---|---|---|---|---:|---:|---:|---:|---:|---|"])
+    event_text.extend(f"| `{sid}` | `{symbol}` | `{event_date}` | `{event_type}` | {price_factor} | {share_factor} | {pre_close} | {post_close} | {holder_ratio} | `{status}` |" for sid, symbol, event_date, event_type, price_factor, share_factor, pre_close, post_close, holder_ratio, status in event_detail_rows)
     event_text.extend(["", "A missing boundary price means that the adjacent official price is unavailable for continuity validation. It does not change the official factor or raw price. These cases remain explicit limitations.", "", "Rows remain traceable to `corporate_actions.parquet`; this report does not alter raw nominal prices."])
     write(reports / "research_universe_corporate_action_audit.md", "\n".join(event_text))
     adjustment_text = ["# Research price-adjustment promotion", "", "The recommended signal series is the price-return adjusted close. Raw nominal prices remain the execution series.", "", "| Adjustment quality | Rows |", "|---|---:|"]
@@ -156,12 +233,45 @@ Liquidity windows use official NSE session positions from `trading_calendar.parq
 The feature artifact contains `liquidity_window_definition = OFFICIAL_NSE_SESSION_WINDOW`.
 Weekend and holiday dates are not part of any window.
 """)
-    write(reports / "research_identity_priority.md", f"""# Research identity priority queue
+    identity_priority_text = ["# Research identity priority queue", "", "One row is included for every required research security.", "", "| Security | Symbol | Company | First seen | Last seen | Max rank | Liquid dates | Identity quality | ISIN evidence | Name count | Ticker count | Max absent 60d | Recommendation |", "|---|---|---|---|---|---:|---:|---|---|---:|---:|---:|---|"]
+    for row in identity_priority_rows:
+        sid, symbol, company, first_seen, last_seen, max_rank, liquid_dates, identity_quality, isin_evidence, name_count, symbol_count, max_absent_days, identity_ok = row
+        recommendation = "ACCEPT_RESEARCH_IDENTITY" if identity_ok else "REVIEW_REQUIRED"
+        identity_priority_text.append(f"| `{sid}` | `{symbol}` | `{company}` | `{first_seen}` | `{last_seen}` | {max_rank} | {liquid_dates} | `{identity_quality}` | `{isin_evidence or ''}` | {name_count} | {symbol_count} | {max_absent_days} | `{recommendation}` |")
+    write(reports / "research_identity_priority.md", "\n".join(identity_priority_text))
+    dates = sorted({row[0] for row in monthly_detail_rows})
+    by_date = {point: {row[1] for row in monthly_detail_rows if row[0] == point and row[2]} for point in dates}
+    stability_text = ["# Research universe stability", "", "Monthly entry, exit, and turnover counts use the PIT `LIQUID_V1` membership.", "", "| Date | Size | Entries | Exits | Turnover |", "|---|---:|---:|---:|---:|"]
+    previous = set()
+    for point in dates:
+        current = by_date[point]
+        entries, exits = len(current - previous), len(previous - current)
+        denominator = max(1, (len(current) + len(previous)) / 2)
+        stability_text.append(f"| {point} | {len(current)} | {entries} | {exits} | {(entries + exits) / denominator:.4f} |")
+        previous = current
+    write(reports / "research_universe_stability.md", "\n".join(stability_text))
+    survivor_text = ["# Survivorship audit", "", f"Historically observed security IDs that do not have an observation on the latest source date: `{disappeared_count}`.", "", "| Security | Symbol | Last liquid date | Last observed date | Terminal evidence |", "|---|---|---|---|---|"]
+    survivor_text.extend(f"| `{sid}` | `{symbol}` | {eligible_date} | {observed_date} | `{terminal_types}` |" for sid, symbol, eligible_date, observed_date, terminal_types in disappeared_rows)
+    write(reports / "survivorship_audit.md", "\n".join(survivor_text))
+    write(reports / "current_survivor_comparison.md", f"""# Current-survivor comparison
 
-The required scope contains `{required_count}` securities that enter LIQUID_V1 or PIT Top-750.
+- Unique securities entering `LIQUID_V1`: `{historical_eligible}`.
+- Securities still observed on the latest source date: `{current_survivor_eligible}`.
+- Historical eligible securities not observed on the latest source date: `{historical_eligible - current_survivor_eligible}`.
 
-The current release has `{identity_failure_count}` identity failures inside LIQUID_V1.
-Low-liquidity securities outside this scope remain in the exploratory archive and are not silently promoted.
+This is a QA comparison only. The current survivor set does not construct historical membership.
+""")
+    average_size = sum(len(values) for values in by_date.values()) / max(1, len(by_date))
+    sizes = [len(values) for values in by_date.values()]
+    write(reports / "research_scale.md", f"""# Research universe scale
+
+- Monthly snapshots: `{len(by_date)}`.
+- Average `LIQUID_V1` size: `{average_size:.1f}`.
+- Minimum size: `{min(sizes) if sizes else 0}`.
+- Maximum size: `{max(sizes) if sizes else 0}`.
+- Unique `LIQUID_V1` securities: `{historical_eligible}`.
+- Later-disappeared observed securities: `{disappeared_count}`.
+- Current-date survivors among historical eligible securities: `{current_survivor_eligible}`.
 """)
     manifest = {
         "release_id": release.name,
@@ -174,10 +284,11 @@ Low-liquidity securities outside this scope remain in the exploratory archive an
         "material_price_action_missing_factors": missing_factor_count,
         "boundary_validation": dict(boundary_rows),
         "status_interval_overlaps": int(status_overlap),
+        "research_invariant_validation_sha256": sha256(validation_path) if validation_path.exists() else None,
         "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet")},
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
-        "quality_reports": {name: sha256(reports / name) for name in ("research_universe_coverage.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md")},
+        "quality_reports": {name: sha256(reports / name) for name in ("research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},
         "known_policy": {"signals": "price-return adjusted close", "execution": "raw nominal OHLC", "terminal_values": "explicit recovery scenarios; no invented canonical value"},
     }
     (release / "research_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")

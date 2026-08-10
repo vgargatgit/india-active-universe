@@ -242,6 +242,10 @@ class TerminalEventStore:
                 output.append({**common, "scenario": "DOCUMENTED_VALUE", "value": event["terminal_value"], "value_basis": event.get("terminal_value_basis"), "canonical": True})
         return output
 
+    def resolution_queue_for_holdings(self, security_ids: Iterable[str]) -> list[dict[str, Any]]:
+        held = set(security_ids)
+        return [row for row in self.rows if row.get("security_id") in held]
+
 
 class CalendarStore:
     """Official market sessions; no synthetic weekday generation."""
@@ -342,9 +346,14 @@ class DataPlatform:
         begin, finish = self._check_date(start), self._check_date(end)
         return self.prices.history(security_id, begin, finish)
 
-    def adjusted_history(self, security_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
+    def adjusted_history(self, security_id: str, start: str | date, end: str | date, *, series: str = "PRICE_RETURN") -> list[dict[str, Any]]:
+        if series not in {"PRICE_RETURN", "TOTAL_RETURN"}:
+            raise ValueError(f"Unknown adjusted-price series: {series}")
         begin, finish = self._check_date(start), self._check_date(end)
-        return self.adjusted_prices.history(security_id, begin, finish)
+        rows = self.adjusted_prices.history(security_id, begin, finish)
+        value_field = "research_adjusted_close" if series == "PRICE_RETURN" else "research_adjusted_close_total_return"
+        quality_field = "adjustment_quality" if series == "PRICE_RETURN" else "total_return_quality"
+        return [{**row, "adjusted_close": row.get(value_field), "adjusted_series": series, "adjusted_quality": row.get(quality_field)} for row in rows]
 
     def terminal_recovery_scenarios(self, security_id: str) -> list[dict[str, Any]]:
         last_price = None
@@ -353,6 +362,9 @@ class DataPlatform:
             if history:
                 last_price = history[-1].get("raw_close", history[-1].get("close"))
         return self.terminal_events.recovery_scenarios(security_id, last_observed_price=last_price)
+
+    def terminal_event_resolution_queue_for_holdings(self, security_ids: Iterable[str]) -> list[dict[str, Any]]:
+        return self.terminal_events.resolution_queue_for_holdings(security_ids)
 
     def sessions_between(self, start: str | date, end: str | date) -> list[dict[str, Any]]:
         begin, finish = self._check_date(start), self._check_date(end)

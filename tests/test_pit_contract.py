@@ -104,6 +104,13 @@ def test_raw_and_adjusted_history_are_separate():
     assert platform.adjusted_history("SEC1", "2020-01-01", "2020-01-01")[0]["research_adjusted_close"] == 50.0
 
 
+def test_adjusted_history_series_is_explicit():
+    platform = DataPlatform()
+    platform.adjusted_prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-01", "research_adjusted_close": 50.0, "research_adjusted_close_total_return": 55.0, "adjustment_quality": "PRICE_ACTION_ADJUSTED_VERIFIED", "total_return_quality": "TOTAL_RETURN_PARTIAL"}])
+    assert platform.adjusted_history("SEC1", "2020-01-01", "2020-01-01", series="PRICE_RETURN")[0]["adjusted_close"] == 50.0
+    assert platform.adjusted_history("SEC1", "2020-01-01", "2020-01-01", series="TOTAL_RETURN")[0]["adjusted_close"] == 55.0
+
+
 def test_symbol_reuse_with_isin_creates_separate_discovery_records():
     observations = [
         DailyObservation(date(2010, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, None, "a.zip", "a", "NSE", "INEOLD"),
@@ -123,6 +130,11 @@ def test_terminal_recovery_scenarios_do_not_create_canonical_value():
     scenarios = store.recovery_scenarios("DEAD", last_observed_price=12.5)
     assert {row["scenario"] for row in scenarios} == {"ZERO_RECOVERY", "LAST_OBSERVED_PRICE"}
     assert all(row["canonical"] is False for row in scenarios)
+
+
+def test_terminal_event_queue_accepts_downstream_holdings():
+    store = TerminalEventStore([{"security_id": "DEAD", "event_id": "E1", "terminal_event_type": "UNKNOWN_TERMINAL_EVENT"}, {"security_id": "LIVE", "event_id": "E2"}])
+    assert [row["event_id"] for row in store.resolution_queue_for_holdings(["DEAD"])] == ["E1"]
 
 
 def test_optional_positive_volume_filter_is_downstream_only():

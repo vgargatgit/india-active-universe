@@ -54,6 +54,9 @@ def main() -> None:
           f.absent_observation_days_60, f.zero_volume_days_60,
           f.liquidity_rank_126, f.liquidity_percentile_126,
           f.liquidity_bucket_126,
+          adj.adjustment_quality AS price_adjustment_quality,
+          adj.total_return_quality,
+          CASE WHEN adj.adjustment_quality IN ('NO_ADJUSTMENT_REQUIRED', 'PRICE_ACTION_ADJUSTED_VERIFIED') THEN TRUE ELSE FALSE END AS price_adjustment_ok,
           CASE
             WHEN m.identity_quality IN ('OFFICIAL_EXCHANGE_IDENTITY', 'MULTI_SOURCE_VERIFIED', 'RECONSTRUCTED_HIGH_CONFIDENCE', 'RECONSTRUCTED_TRADING_IDENTITY')
               THEN m.identity_quality
@@ -74,8 +77,13 @@ def main() -> None:
         FROM read_parquet('{out}/active_universe_daily.parquet') a
         JOIN read_parquet('{out}/liquidity_features.parquet') f
           ON f.security_id = a.security_id AND CAST(f.date AS DATE) = CAST(a.date AS DATE)
-        LEFT JOIN read_parquet('{out}/security_master.parquet') m
-          ON m.security_id = a.security_id
+        LEFT JOIN read_parquet('{out}/daily_prices_adjusted.parquet') adj
+          ON adj.security_id = a.security_id AND CAST(adj.date AS DATE) = CAST(a.date AS DATE)
+        LEFT JOIN (
+          SELECT security_id, MIN(identity_quality) AS identity_quality
+          FROM read_parquet('{out}/security_master.parquet')
+          GROUP BY security_id
+        ) m ON m.security_id = a.security_id
         LEFT JOIN identity_checks i ON i.security_id = a.security_id
         WHERE CAST(a.date AS DATE) >= DATE '{start}' {end_clause}
           AND a.active
@@ -90,6 +98,7 @@ def main() -> None:
              AND b.listing_age_sessions >= 272
              AND b.positive_volume_days_60 >= 40
              AND b.median_traded_value_60 >= 5000000
+             AND b.price_adjustment_ok
             THEN TRUE ELSE FALSE END AS liquid_v1_eligible
         FROM base b
         JOIN month_end me ON me.date = b.date

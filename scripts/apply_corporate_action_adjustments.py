@@ -52,7 +52,7 @@ def main() -> None:
     temp = target.with_suffix(target.suffix + ".tmp")
     writer = pq.ParquetWriter(temp, schema, compression="zstd", use_dictionary=True)
     batch = []
-    counts = {"RAW_ONLY": 0, "PRICE_ACTION_ADJUSTED": 0}
+    counts = {"NO_ADJUSTMENT_REQUIRED": 0, "PRICE_ACTION_ADJUSTED_VERIFIED": 0}
     try:
         for row in json_rows(Path(args.prices)):
             actions = events.get(row["security_id"], [])
@@ -60,13 +60,13 @@ def main() -> None:
             index = bisect.bisect_right(dates, row["date"])
             applicable = actions[index:]
             factor = math.prod(item[1] for item in applicable) if applicable else 1.0
-            quality = "PRICE_ACTION_ADJUSTED" if applicable else "RAW_ONLY"
+            quality = "PRICE_ACTION_ADJUSTED_VERIFIED" if applicable else "NO_ADJUSTMENT_REQUIRED"
             dividend_actions = dividends.get(row["security_id"], [])
             dividend_dates = [item[0] for item in dividend_actions]
             dividend_index = bisect.bisect_right(dividend_dates, row["date"])
             applicable_dividends = dividend_actions[dividend_index:]
             total_factor = math.prod(item[1] for item in applicable_dividends) if applicable_dividends else 1.0
-            total_quality = "PARTIALLY_ADJUSTED" if applicable_dividends else quality
+            total_quality = "TOTAL_RETURN_PARTIAL"
             counts[quality] += 1
             raw = row.get("raw_close")
             batch.append({"date": row["date"], "security_id": row["security_id"], "listing_episode_id": row["listing_episode_id"], "symbol_at_date": row["symbol_at_date"], "raw_close": raw, "research_adjusted_close": raw * factor if raw is not None else None, "research_adjustment_factor": factor, "adjustment_quality": quality, "source_event_ids": [item[2] for item in applicable], "research_adjusted_close_total_return": raw * factor * total_factor if raw is not None else None, "research_total_return_factor": factor * total_factor, "total_return_quality": total_quality, "total_return_event_ids": [item[2] for item in applicable_dividends]})
