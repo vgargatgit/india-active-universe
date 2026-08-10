@@ -6,9 +6,6 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from .raw import ImmutableRawStore
-
-
 COMMANDS = [
     "download-nse-history", "download-nse-reference-data", "normalize-market-data",
     "build-security-master", "resolve-identities", "build-listing-episodes",
@@ -42,9 +39,15 @@ def main() -> None:
         if args.dry_run:
             print(" ".join(command))
             return
-        subprocess.run(command, check=True)
+        subprocess.run(command, check=True, cwd=root)
 
-    if args.command == "normalize-market-data":
+    if args.command == "download-nse-history":
+        command = [str(root / "scripts/download_nse_history.sh"), args.start or "2006-01-01", args.end or date.today().isoformat(), str(root / args.raw)]
+        if args.dry_run:
+            print(" ".join(command))
+            return
+        subprocess.run(command, check=True, cwd=root)
+    elif args.command == "normalize-market-data":
         command = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(root / args.raw), "--out", str(root / "data"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")]
         if args.start:
             command.extend(["--start", args.start])
@@ -53,7 +56,7 @@ def main() -> None:
         if args.dry_run:
             print(" ".join(command))
             return
-        subprocess.run(command, check=True)
+        subprocess.run(command, check=True, cwd=root)
     elif args.command == "audit-data":
         if not args.release_id:
             raise SystemExit("audit-data requires --release-id")
@@ -73,14 +76,14 @@ def main() -> None:
             if args.dry_run:
                 print(" ".join(command))
                 return
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True, cwd=root)
             audit_release(args.release_id)
         elif args.release_id and (root / "releases" / args.release_id).exists():
             audit_release(args.release_id)
         else:
             raise SystemExit("build requires --source-release and --release-id, or an existing --release-id")
     else:
-        print(f"Stage '{args.command}' requires its source-specific adapter; no files were changed")
+        raise SystemExit(f"Stage '{args.command}' is not implemented by the current source adapter")
 
 
 if __name__ == "__main__":
