@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -18,6 +19,14 @@ REQUIRED = [
     "trading_calendar.parquet",
     "company_name_history.parquet", "isin_history.parquet",
 ]
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def main() -> None:
@@ -37,6 +46,22 @@ def main() -> None:
         Path(args.out).write_text("\n".join(rows) + "\n", encoding="utf-8")
         print(f"WROTE {args.out}")
         print("RELEASE_AUDIT_FAILED")
+        raise SystemExit(1)
+    hash_mismatches = []
+    for key, expected in manifest.get("artifacts", {}).items():
+        if not key.startswith("release/"):
+            continue
+        path = release / key.removeprefix("release/")
+        if path.is_file() and sha256(path) != expected:
+            hash_mismatches.append(key)
+    if hash_mismatches:
+        rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Artifact hash checks", ""]
+        rows.extend(f"- FAIL: `{key}`" if key in hash_mismatches else f"- PASS: `{key}`" for key in sorted(manifest.get("artifacts", {})))
+        Path(args.out).write_text("\n".join(rows) + "\n", encoding="utf-8")
+        print(f"WROTE {args.out}")
+        print("RELEASE_AUDIT_FAILED")
+        for key in hash_mismatches:
+            print(f"- artifact hash mismatch: {key}")
         raise SystemExit(1)
     con = duckdb.connect()
 
