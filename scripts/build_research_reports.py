@@ -90,6 +90,10 @@ def main() -> None:
         event_detail_rows = connection.execute(f"""
           SELECT ca.security_id, ca.symbol_at_event, ca.event_date, ca.event_type,
             ca.price_factor, ca.share_factor, v.pre_event_close, v.post_event_close,
+            CASE WHEN v.pre_event_close IS NOT NULL AND v.pre_event_close <> 0 AND v.post_event_close IS NOT NULL
+              THEN v.post_event_close / v.pre_event_close - 1 END AS raw_boundary_return,
+            CASE WHEN v.pre_event_close IS NOT NULL AND v.pre_event_close <> 0 AND v.post_event_close IS NOT NULL AND ca.price_factor IS NOT NULL AND ca.price_factor <> 0
+              THEN v.post_event_close / (v.pre_event_close * ca.price_factor) - 1 END AS adjusted_boundary_return,
             v.holder_value_ratio, v.validation_status
           FROM read_parquet('{r}/corporate_actions.parquet') ca
           JOIN read_parquet('{r}/required_research_security.parquet') q USING (security_id)
@@ -211,8 +215,8 @@ The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
     event_text.extend(f"| `{kind}` | {events} | {missing} |" for kind, events, missing in event_rows)
     event_text.extend(["", f"Material events with missing price/share factors: `{missing_factor_count}`.", f"Promotion gate: `{'PASS' if missing_factor_count == 0 else 'FAIL'}`.", "", "## Boundary validation in the required scope", "", "| Boundary status | Distinct events |", "|---|---:|"])
     event_text.extend(f"| `{status}` | {number} |" for status, number in boundary_rows)
-    event_text.extend(["", "## Material event details", "", "| Security | Symbol | Event date | Type | Price factor | Share factor | Pre close | Post close | Holder value ratio | Validation |", "|---|---|---|---|---:|---:|---:|---:|---:|---|"])
-    event_text.extend(f"| `{sid}` | `{symbol}` | `{event_date}` | `{event_type}` | {price_factor} | {share_factor} | {pre_close} | {post_close} | {holder_ratio} | `{status}` |" for sid, symbol, event_date, event_type, price_factor, share_factor, pre_close, post_close, holder_ratio, status in event_detail_rows)
+    event_text.extend(["", "## Material event details", "", "| Security | Symbol | Event date | Type | Price factor | Share factor | Pre close | Post close | Raw boundary return | Adjusted boundary return | Holder value ratio | Validation |", "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|"])
+    event_text.extend(f"| `{sid}` | `{symbol}` | `{event_date}` | `{event_type}` | {price_factor} | {share_factor} | {pre_close} | {post_close} | {raw_return} | {adjusted_return} | {holder_ratio} | `{status}` |" for sid, symbol, event_date, event_type, price_factor, share_factor, pre_close, post_close, raw_return, adjusted_return, holder_ratio, status in event_detail_rows)
     event_text.extend(["", "A missing boundary price means that the adjacent official price is unavailable for continuity validation. It does not change the official factor or raw price. These cases remain explicit limitations.", "", "Rows remain traceable to `corporate_actions.parquet`; this report does not alter raw nominal prices."])
     write(reports / "research_universe_corporate_action_audit.md", "\n".join(event_text))
     adjustment_text = ["# Research price-adjustment promotion", "", "The recommended signal series is the price-return adjusted close. Raw nominal prices remain the execution series.", "", "| Adjustment quality | Rows |", "|---|---:|"]
