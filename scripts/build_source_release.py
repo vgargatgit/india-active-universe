@@ -46,6 +46,7 @@ def main() -> None:
     commands.append(core)
     commands.extend([
         [sys.executable, str(root / "scripts/publish_parquet.py"), "--data", str(work), "--release", str(release)],
+        [sys.executable, str(root / "scripts/rebuild_liquidity_features_duckdb.py"), "--prices", str(release / "daily_prices_raw.parquet"), "--out", str(release / "liquidity_features.parquet")],
         [sys.executable, str(root / "scripts/publish_identity_artifacts.py"), "--master", str(work / "canonical/security_master.jsonl"), "--release", str(release)],
         [sys.executable, str(root / "scripts/normalize_corporate_actions.py"), "--raw", str(corporate_actions), "--master", str(work / "canonical/security_master.jsonl"), "--out", str(work / "canonical/corporate_actions.jsonl")],
         [sys.executable, str(root / "scripts/publish_corporate_actions.py"), "--input", str(work / "canonical/corporate_actions.jsonl"), "--out", str(work / "derived/corporate_actions.parquet")],
