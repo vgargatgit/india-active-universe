@@ -10,11 +10,12 @@ from .models import DailyObservation
 
 
 def legacy_url(point: date) -> str:
-    return f"https://archives.nseindia.com/content/historical/EQUITIES/{point:%Y}/{point:%b}.upper()/cm{point:%d}{point:%b}.upper(){point:%Y}bhav.csv.zip"
+    month = point.strftime("%b").upper()
+    return f"https://archives.nseindia.com/content/historical/EQUITIES/{point:%Y}/{month}/cm{point:%d}{month}{point:%Y}bhav.csv.zip"
 
 
 def legacy_url_correct(point: date) -> str:
-    return f"https://archives.nseindia.com/content/historical/EQUITIES/{point:%Y}/{point:%b}.upper()/cm{point:%d}{point:%b.upper()}{point:%Y}bhav.csv.zip"
+    return legacy_url(point)
 
 
 def udiff_url(point: date) -> str:
