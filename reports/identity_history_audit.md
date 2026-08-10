@@ -1,6 +1,6 @@
 # Identity history audit
 
-Release: `india_equity_data_v1.14.0`
+Release: `india_equity_data_v1.14.1`
 
 - Effective-dated company-name rows: 2,834
 - Effective-dated ISIN rows: 3,303
