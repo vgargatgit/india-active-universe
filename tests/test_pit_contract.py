@@ -73,6 +73,16 @@ def test_status_lookup_is_effective_dated():
     assert store.status_on("2018-01-01")[0]["trading_status"] == "DELISTED"
 
 
+def test_observation_status_distinguishes_session_and_security_states():
+    platform = DataPlatform()
+    platform.security_master = SecurityMaster([{"security_id": "SEC1", "exchange": "NSE", "series": "EQ", "effective_from": "2020-01-01", "effective_to": "2020-01-03"}])
+    platform.calendar = CalendarStore([{"date": "2020-01-02"}, {"date": "2020-01-03"}])
+    platform.prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-02", "volume": 0, "raw_close": 10.0}])
+    assert platform.observation_status("SEC1", "2020-01-01") == "NO_MARKET_SESSION"
+    assert platform.observation_status("SEC1", "2020-01-02") == "NO_TRADE"
+    assert platform.observation_status("SEC1", "2020-01-03") == "UNKNOWN"
+
+
 def test_strict_platform_rejects_out_of_range_dates():
     platform = DataPlatform(strict=True)
     platform.coverage_start = date(2006, 1, 2)

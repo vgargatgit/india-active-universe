@@ -291,6 +291,30 @@ class DataPlatform:
     def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.status.status_on(self._check_date(as_of_date))
 
+    def observation_status(self, security_id: str, as_of_date: str | date) -> str:
+        """Return explicit availability semantics for one security and date."""
+        point = self._check_date(as_of_date)
+        if not self.calendar.sessions_between(point, point):
+            return "NO_MARKET_SESSION"
+        identity = [
+            row for row in self.security_master.rows
+            if row.get("security_id") == security_id
+            and row.get("effective_from") <= point
+            and (row.get("effective_to") is None or point <= row["effective_to"])
+        ]
+        if not identity:
+            return "SECURITY_NOT_LISTED"
+        statuses = [row.get("trading_status") for row in self.status.status_on(point) if row.get("security_id") == security_id]
+        if "SUSPENDED" in statuses:
+            return "SECURITY_SUSPENDED"
+        if "DELISTED" in statuses:
+            return "SECURITY_NOT_LISTED"
+        rows = self.prices.history(security_id, point, point)
+        if rows:
+            volume = rows[0].get("volume")
+            return "NO_TRADE" if volume is None or volume <= 0 else "TRADED"
+        return "UNKNOWN"
+
     def company_name_at(self, issuer_id: str, as_of_date: str | date) -> str:
         return self.company_names.name_at(issuer_id, self._check_date(as_of_date))
 
