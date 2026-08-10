@@ -190,7 +190,7 @@ class ParquetUniverseStore(UniverseStore):
     def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
         if profile != "LIQUID_V1":
             raise ValueError(f"Unknown universe profile: {profile}")
-        point = _as_date(as_of_date).isoformat()
+        point = _as_date(as_of_date)
         import pyarrow.parquet as parquet
         return parquet.read_table(self.path, filters=[("date", "=", point), ("NSE_BROAD_LIQUID_PIT_V1_eligible", "=", True)]).to_pylist()
 
