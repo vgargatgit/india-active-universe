@@ -29,6 +29,70 @@ class SecurityMaster:
         return matches[0]
 
 
+class EffectiveHistoryStore:
+    """Lookup for an effective-dated history keyed by an entity ID."""
+
+    def __init__(self, rows: Iterable[dict[str, Any]] = (), *, id_field: str) -> None:
+        self.id_field = id_field
+        self.rows = [_normalize_dates(row) for row in rows]
+
+    def history(self, entity_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
+        begin, finish = _as_date(start), _as_date(end)
+        return sorted(
+            (row for row in self.rows if row.get(self.id_field) == entity_id and row.get("effective_from") <= finish and (row.get("effective_to") is None or row["effective_to"] >= begin)),
+            key=lambda row: row["effective_from"],
+        )
+
+    def at(self, entity_id: str, as_of_date: str | date) -> dict[str, Any]:
+        point = _as_date(as_of_date)
+        matches = [
+            row for row in self.rows
+            if row.get(self.id_field) == entity_id
+            and row.get("effective_from") <= point
+            and (row.get("effective_to") is None or point <= row["effective_to"])
+        ]
+        if len(matches) != 1:
+            raise LookupError(f"Expected one history row for {entity_id} on {point}, found {len(matches)}")
+        return matches[0]
+
+
+class CompanyNameHistoryStore(EffectiveHistoryStore):
+    def __init__(self, rows: Iterable[dict[str, Any]] = ()) -> None:
+        super().__init__(rows, id_field="issuer_id")
+
+    def name_at(self, issuer_id: str, as_of_date: str | date) -> str:
+        return self.at(issuer_id, as_of_date)["company_name"]
+
+
+class IsinHistoryStore(EffectiveHistoryStore):
+    def __init__(self, rows: Iterable[dict[str, Any]] = ()) -> None:
+        super().__init__(rows, id_field="security_id")
+
+    def isin_at(self, security_id: str, as_of_date: str | date) -> str | None:
+        return self.at(security_id, as_of_date).get("isin")
+
+
+class ParquetEffectiveHistoryStore(EffectiveHistoryStore):
+    def __init__(self, path: str | Path, *, id_field: str) -> None:
+        import pyarrow.parquet as parquet
+        self.path = Path(path)
+        super().__init__(parquet.read_table(self.path).to_pylist(), id_field=id_field)
+
+
+class ParquetCompanyNameHistoryStore(CompanyNameHistoryStore):
+    def __init__(self, path: str | Path) -> None:
+        import pyarrow.parquet as parquet
+        self.path = Path(path)
+        super().__init__(parquet.read_table(self.path).to_pylist())
+
+
+class ParquetIsinHistoryStore(IsinHistoryStore):
+    def __init__(self, path: str | Path) -> None:
+        import pyarrow.parquet as parquet
+        self.path = Path(path)
+        super().__init__(parquet.read_table(self.path).to_pylist())
+
+
 class PriceStore:
     def __init__(self, rows: Iterable[dict[str, Any]] = ()) -> None:
         self.rows = [_normalize_dates(row) for row in rows]
@@ -195,6 +259,8 @@ class DataPlatform:
         self.coverage_start: date | None = None
         self.coverage_end: date | None = None
         self.security_master = SecurityMaster()
+        self.company_names = CompanyNameHistoryStore()
+        self.isins = IsinHistoryStore()
         self.prices = PriceStore()
         self.universe = UniverseStore()
         self.status = StatusStore()
@@ -218,6 +284,12 @@ class DataPlatform:
 
     def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.status.status_on(self._check_date(as_of_date))
+
+    def company_name_at(self, issuer_id: str, as_of_date: str | date) -> str:
+        return self.company_names.name_at(issuer_id, self._check_date(as_of_date))
+
+    def isin_at(self, security_id: str, as_of_date: str | date) -> str | None:
+        return self.isins.isin_at(security_id, self._check_date(as_of_date))
 
     def history(self, security_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
         begin, finish = self._check_date(start), self._check_date(end)
@@ -249,6 +321,8 @@ class DataPlatform:
             path = base / name
             return read_jsonl(path) if path.exists() else []
         platform.security_master = SecurityMaster(load("data/canonical/security_master.jsonl"))
+        platform.company_names = CompanyNameHistoryStore(load("data/canonical/company_name_history.jsonl"))
+        platform.isins = IsinHistoryStore(load("data/canonical/isin_history.jsonl"))
         prices_path = base / "data/canonical/daily_prices_raw.jsonl"
         universe_path = base / "data/derived/active_universe_daily.jsonl"
         platform.prices = FilePriceStore(prices_path) if prices_path.exists() else PriceStore()
@@ -270,6 +344,12 @@ class DataPlatform:
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)
+        company_names = base / "company_name_history.parquet"
+        if company_names.exists():
+            platform.company_names = ParquetCompanyNameHistoryStore(company_names)
+        isin_history = base / "isin_history.parquet"
+        if isin_history.exists():
+            platform.isins = ParquetIsinHistoryStore(isin_history)
         platform.universe = ParquetUniverseStore(base / "active_universe_daily.parquet", base / "liquidity_features.parquet")
         platform.prices = ParquetPriceStore(base / "daily_prices_raw.parquet")
         status_path = base / "trading_status_intervals.parquet"

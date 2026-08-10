@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import CalendarStore, CoverageError, DataPlatform, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
+from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import classify_instrument_type, discover_securities
 
@@ -14,6 +14,21 @@ def test_symbol_rename_is_date_sensitive():
     ])
     assert master.resolve_symbol("ABC", "2017-01-01")["security_id"] == "SEC1"
     assert master.resolve_symbol("XYZ", "2019-01-01")["security_id"] == "SEC1"
+
+
+def test_effective_company_and_isin_histories_are_date_sensitive():
+    names = CompanyNameHistoryStore([
+        {"issuer_id": "ISS1", "company_name": "OLD NAME", "effective_from": "2010-01-01", "effective_to": "2015-12-31"},
+        {"issuer_id": "ISS1", "company_name": "NEW NAME", "effective_from": "2016-01-01", "effective_to": None},
+    ])
+    isins = IsinHistoryStore([
+        {"security_id": "SEC1", "isin": "OLDISIN", "effective_from": "2010-01-01", "effective_to": "2015-12-31"},
+        {"security_id": "SEC1", "isin": "NEWISIN", "effective_from": "2016-01-01", "effective_to": None},
+    ])
+    assert names.name_at("ISS1", "2014-01-01") == "OLD NAME"
+    assert names.name_at("ISS1", "2017-01-01") == "NEW NAME"
+    assert isins.isin_at("SEC1", "2014-01-01") == "OLDISIN"
+    assert isins.isin_at("SEC1", "2017-01-01") == "NEWISIN"
 
 
 def test_date_free_ambiguity_is_rejected():

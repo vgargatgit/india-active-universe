@@ -2,6 +2,6 @@
 
 __version__ = "0.1.0"
 
-from .api import DataPlatform, SecurityMaster, PriceStore, UniverseStore
+from .api import CompanyNameHistoryStore, DataPlatform, IsinHistoryStore, PriceStore, SecurityMaster, UniverseStore
 
-__all__ = ["DataPlatform", "SecurityMaster", "PriceStore", "UniverseStore"]
+__all__ = ["CompanyNameHistoryStore", "DataPlatform", "IsinHistoryStore", "SecurityMaster", "PriceStore", "UniverseStore"]
