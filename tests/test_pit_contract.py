@@ -36,7 +36,9 @@ def test_approved_manual_override_is_explicitly_applied():
     identities = [{"security_id": "SEC1", "exchange": "NSE", "series": "EQ", "effective_from": date(2010, 1, 1), "effective_to": date(2020, 12, 31), "identity_quality": "PARTIAL"}]
     overrides = [{"exchange": "NSE", "symbol": "ABC", "series": "EQ", "effective_from": date(2015, 1, 1), "effective_to": date(2015, 12, 31), "security_id": "SEC1", "evidence_references": ["NSE_NOTICE_1"], "rationale": "Official symbol notice", "review_status": "APPROVED"}]
     matches = apply_manual_overrides(identities, overrides)
-    assert identities[0]["identity_source"] == "MANUAL_APPROVED_OVERRIDE"
+    assert len(identities) == 3
+    assert identities[1]["identity_source"] == "MANUAL_APPROVED_OVERRIDE"
+    assert identities[1]["symbol"] == "ABC"
     assert matches[0]["security_id"] == "SEC1"
 
 

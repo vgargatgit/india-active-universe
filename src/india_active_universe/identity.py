@@ -73,23 +73,48 @@ def load_manual_overrides(path: str | Path) -> list[dict[str, Any]]:
 
 def apply_manual_overrides(identities: list[dict[str, Any]], overrides: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
     """Return compact dated overrides and annotate the affected canonical rows."""
-    by_security = {row["security_id"]: row for row in identities}
     applied = []
     for override in overrides:
-        identity = by_security.get(override["security_id"])
-        if identity is None:
+        matching = [row for row in identities if row["security_id"] == override["security_id"]]
+        if not matching:
             raise ValueError(f"manual override references unknown security_id {override['security_id']}")
-        if identity["exchange"] != override["exchange"] or identity["series"] != override["series"]:
+        if any(row["exchange"] != override["exchange"] or row["series"] != override["series"] for row in matching):
             raise ValueError(f"manual override security does not match exchange or series: {override['security_id']}")
-        if identity["effective_to"] < override["effective_from"] or override["effective_to"] < identity["effective_from"]:
+        if not any(row["effective_to"] >= override["effective_from"] and override["effective_to"] >= row["effective_from"] for row in matching):
             raise ValueError(f"manual override does not overlap security history: {override['security_id']}")
-        identity.update({
-            "identity_quality": IdentityQuality.MULTI_SOURCE_VERIFIED.value,
-            "identity_source": "MANUAL_APPROVED_OVERRIDE",
-            "review_status": "APPROVED",
-            "source_reference": ";".join(str(item) for item in override["evidence_references"]),
-            "notes": str(override["rationale"]),
-        })
+        replacement = []
+        for row in identities:
+            if row["security_id"] != override["security_id"]:
+                replacement.append(row)
+                continue
+            row_start = row["effective_from"]
+            row_end = row["effective_to"] or override["effective_to"]
+            overlap_start = max(row_start, override["effective_from"])
+            overlap_end = min(row_end, override["effective_to"])
+            if overlap_start > overlap_end:
+                replacement.append(row)
+                continue
+            if row_start < overlap_start:
+                before = dict(row)
+                before["effective_to"] = date.fromordinal(overlap_start.toordinal() - 1)
+                replacement.append(before)
+            reviewed = dict(row)
+            reviewed.update({
+                "symbol": override["symbol"],
+                "effective_from": overlap_start,
+                "effective_to": overlap_end,
+                "identity_quality": IdentityQuality.MULTI_SOURCE_VERIFIED.value,
+                "identity_source": "MANUAL_APPROVED_OVERRIDE",
+                "review_status": "APPROVED",
+                "source_reference": ";".join(str(item) for item in override["evidence_references"]),
+                "notes": str(override["rationale"]),
+            })
+            replacement.append(reviewed)
+            if row_end > overlap_end:
+                after = dict(row)
+                after["effective_from"] = date.fromordinal(overlap_end.toordinal() + 1)
+                replacement.append(after)
+        identities[:] = sorted(replacement, key=lambda row: (row["security_id"], row["effective_from"], row.get("symbol", "")))
         applied.append(override)
     return applied
 
