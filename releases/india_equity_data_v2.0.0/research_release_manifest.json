@@ -1,0 +1,53 @@
+{
+  "artifacts": {
+    "corporate_action_boundary_validation.parquet": "85a5d744bf839732b7c3900e2c674b12aba3791c55f55fb5b746574c1bf1092a",
+    "corporate_actions.parquet": "95b44d9e4ad4c1d95bef624f7ff015bd79d69c071cf9f18788fc1b13c15ae361",
+    "daily_prices_adjusted.parquet": "6aa43206b811f876cbc456be6c7866ace802b8b22e3f231264ec31023d072099",
+    "daily_prices_raw.parquet": "714d6631efd95ce00fad7b7f295ab29060f62e2263759902699dab275667b661",
+    "liquidity_features.parquet": "9fc5f1adff82aaf41fb9f536500288b8716f05a6b94b269fd3682c02156e8d28",
+    "required_research_security.parquet": "42873ff25a474356d923ccdd37780476c763cc68c9cb152f05c110734a327c53",
+    "research_universe_monthly.parquet": "dac2e60209a64f4e96a5885b603fbb89ce603a1321a2a0bc7baf3bdb335b366b",
+    "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
+  },
+  "boundary_validation": {
+    "MISSING_BOUNDARY_PRICE": 244,
+    "PASS": 411,
+    "WARNING_LARGE_BOUNDARY_MOVE": 55
+  },
+  "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
+  "git_sha": "334190430a0a2f26d968609192803d02476ba948",
+  "identity_failures": 0,
+  "known_policy": {
+    "execution": "raw nominal OHLC",
+    "signals": "price-return adjusted close",
+    "terminal_values": "explicit recovery scenarios; no invented canonical value"
+  },
+  "liquid_v1_securities": 2081,
+  "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
+  "material_price_action_missing_factors": 0,
+  "quality_reports": {
+    "research_identity_promotion.md": "41eff67d08ff9dbcee912318de9752af59abf6c6a531cc1ba811c2fc6e7960b3",
+    "research_price_adjustment_promotion.md": "1a0f8f358d7d66543bd6d96a9e12cb726f937bd4d435575279366fdc0a3dd1f1",
+    "research_universe_corporate_action_audit.md": "74b6a926022595444b1f4b5e65761a48f48d44995d7c7374783cccd159c5dc11",
+    "research_universe_coverage.md": "66d871d4e4447ad03d4cc1a3146410a22875890ba46945bd42075fe1ecb8402a",
+    "session_correct_liquidity_audit.md": "b79a4ec60304a00fdf16e8ecf8f4028edde28f2ade78bbe6399fe9c1fd8d0337"
+  },
+  "release_id": "india_equity_data_v2.0.0",
+  "required_research_securities": 2557,
+  "research_quality": {
+    "end": "2026-08-10",
+    "monthly_snapshot_start": "2013-01-31",
+    "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+    "profile_version": "LIQUID_V1",
+    "start": "2013-01-01",
+    "status": "RESEARCH_HIGH_CONFIDENCE",
+    "universe_profile": "NSE_BROAD_LIQUID_PIT_V1"
+  },
+  "source_coverage": {
+    "observed_end": "2026-08-10",
+    "observed_start": "2006-01-02",
+    "research_end": "2026-08-10",
+    "research_start": "2013-01-01"
+  },
+  "status_interval_overlaps": 0
+}
