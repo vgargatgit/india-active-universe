@@ -91,10 +91,15 @@ def event_type(text: str) -> str:
 
 def candidate_names(text: str) -> list[str]:
     names = []
-    for line in re.split(r"[\n.;]", text):
-        clean = re.sub(r"^[\s•·*-]+", "", line).strip()
-        if 3 <= len(clean) <= 140 and ("limited" in clean.lower() or "ltd" in clean.lower()):
-            names.append(clean)
+    for match in re.finditer(r"suspension|suspended|revocation|recommencement", text, re.I):
+        window = text[max(0, match.start() - 120):match.start() + 1000]
+        for candidate in re.findall(r"\b[A-Z][A-Za-z0-9&.'’()/-]*(?:\s+[A-Z][A-Za-z0-9&.'’()/-]*){0,8}\s+(?:Limited|Ltd\.?)\b", window):
+            clean = re.sub(r"\s+", " ", candidate).strip(" .,-")
+            upper = clean.upper()
+            if any(term in upper for term in ("NATIONAL STOCK EXCHANGE", "PRESS RELEASE", "CAPITAL MARKET", "LISTING AGREEMENT", "TRADING IN", "SECURITIES OF")):
+                continue
+            if 3 <= len(clean) <= 140:
+                names.append(clean)
     return list(dict.fromkeys(names))[:100]
 
 
@@ -129,9 +134,16 @@ def main() -> None:
 
     rows = []
     source_rows = [{"source_url": args.archive_url, "source_file_id": "suspension_archive.html", "sha256": sha256(archive), "download_status": "DOWNLOADED", "parser_version": "nse-suspension-v1"}]
+    cached_sources = {}
+    source_manifest_path = raw_dir / "source_manifest.json"
+    if source_manifest_path.exists():
+        for cached in json.loads(source_manifest_path.read_text(encoding="utf-8")):
+            if cached.get("source_url") and cached.get("source_file_id"):
+                cached_sources[cached["source_url"]] = raw_dir / cached["source_file_id"]
     for index, item in enumerate(selected):
         try:
-            content = fetch(item["source_url"])
+            cached_path = cached_sources.get(item["source_url"])
+            content = cached_path.read_bytes() if cached_path and cached_path.exists() else fetch(item["source_url"])
             digest = sha256(content)
             target = raw_dir / f"{digest}.html"
             if target.exists() and sha256(target.read_bytes()) != digest:

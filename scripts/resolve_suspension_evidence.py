@@ -20,35 +20,14 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
 
-    master = pq.read_table(args.master).to_pylist()
-    by_name: dict[str, list[dict]] = defaultdict(list)
-    for row in master:
-        name = clean(row.get("company_name"))
-        if name:
-            by_name[name].append(row)
-
     output = []
     counts = defaultdict(int)
     for row in pq.read_table(args.evidence).to_pylist():
-        point = row.get("effective_date") or row.get("published_date")
-        candidates = {}
-        for name in row.get("historical_company_names") or []:
-            for candidate in by_name.get(clean(name), []):
-                if point and candidate["first_seen"] <= point <= candidate["last_seen"]:
-                    candidates[candidate["security_id"]] = candidate
-        if len(candidates) == 1:
-            candidate = next(iter(candidates.values()))
-            quality = "EXACT_COMPANY_DATE_MATCH"
-            counts[quality] += 1
-            linked = {"security_id": candidate["security_id"], "issuer_id": candidate.get("issuer_id"), "listing_episode_id": candidate.get("listing_episode_id")}
-        elif candidates:
-            quality = "AMBIGUOUS_COMPANY_DATE_MATCH"
-            counts[quality] += 1
-            linked = {"security_id": None, "issuer_id": None, "listing_episode_id": None}
-        else:
-            quality = "IDENTITY_REVIEW_REQUIRED"
-            counts[quality] += 1
-            linked = {"security_id": None, "issuer_id": None, "listing_episode_id": None}
+        # A source page can contain several press releases. Candidate names are
+        # evidence only; page-level matching must not become canonical identity.
+        quality = "PAGE_LEVEL_IDENTITY_REVIEW_REQUIRED"
+        counts[quality] += 1
+        linked = {"security_id": None, "issuer_id": None, "listing_episode_id": None}
         output.append({**row, **linked, "identity_match_quality": quality})
 
     fields = list(pq.read_schema(args.evidence))
