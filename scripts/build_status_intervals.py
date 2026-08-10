@@ -33,14 +33,21 @@ def main() -> None:
             events[row["security_id"]].append(row)
     output = []
     for sid, row in sorted(master.items()):
-        output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": row["first_seen"], "status_end": row["last_seen"], "trading_status": "ACTIVE_TRADING", "status_quality": "OBSERVED_TRADING_RECORD", "source": "NSE_HISTORICAL_OBSERVATIONS", "source_reference": row.get("source_reference")})
         official = sorted(events.get(sid, []), key=lambda item: item["terminal_event_date"])
         if official:
             event = official[0]
-            output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": event["terminal_event_date"], "status_end": None, "trading_status": "DELISTED", "status_quality": "OFFICIAL_NSE_NOTICE", "source": event["source"], "source_reference": event["event_id"]})
+            observed_end = date.fromisoformat(row["last_seen"])
+            event_start = max(date.fromisoformat(event["terminal_event_date"]), observed_end + timedelta(days=1))
+            active_end = (event_start - timedelta(days=1)).isoformat()
+            output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": row["first_seen"], "status_end": active_end, "trading_status": "ACTIVE_TRADING", "status_quality": "OBSERVED_TRADING_RECORD", "source": "NSE_HISTORICAL_OBSERVATIONS", "source_reference": row.get("source_reference")})
+            if event_start.isoformat() <= args.coverage_end:
+                output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": event_start.isoformat(), "status_end": None, "trading_status": "DELISTED", "status_quality": "OFFICIAL_NSE_NOTICE", "source": event["source"], "source_reference": event["event_id"]})
         elif row["last_seen"] < args.coverage_end:
+            output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": row["first_seen"], "status_end": row["last_seen"], "trading_status": "ACTIVE_TRADING", "status_quality": "OBSERVED_TRADING_RECORD", "source": "NSE_HISTORICAL_OBSERVATIONS", "source_reference": row.get("source_reference")})
             next_date = (date.fromisoformat(row["last_seen"]) + timedelta(days=1)).isoformat()
             output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": next_date, "status_end": args.coverage_end, "trading_status": "UNKNOWN_STATUS", "status_quality": "OBSERVATION_GAP_ONLY", "source": "OBSERVATION_COVERAGE_GAP", "source_reference": None})
+        else:
+            output.append({"security_id": sid, "listing_episode_id": row["listing_episode_id"], "symbol": row.get("symbol"), "status_start": row["first_seen"], "status_end": row["last_seen"], "trading_status": "ACTIVE_TRADING", "status_quality": "OBSERVED_TRADING_RECORD", "source": "NSE_HISTORICAL_OBSERVATIONS", "source_reference": row.get("source_reference")})
     schema = pa.schema([pa.field("security_id", pa.string()), pa.field("listing_episode_id", pa.string()), pa.field("symbol", pa.string()), pa.field("status_start", pa.string()), pa.field("status_end", pa.string()), pa.field("trading_status", pa.string()), pa.field("status_quality", pa.string()), pa.field("source", pa.string()), pa.field("source_reference", pa.string())])
     pq.write_table(pa.Table.from_pylist(output, schema=schema), args.out, compression="zstd", use_dictionary=True)
     print(json.dumps({"intervals": len(output), "active": sum(row["trading_status"] == "ACTIVE_TRADING" for row in output), "delisted": sum(row["trading_status"] == "DELISTED" for row in output), "unknown": sum(row["trading_status"] == "UNKNOWN_STATUS" for row in output)}, sort_keys=True))
