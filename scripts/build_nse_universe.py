@@ -35,10 +35,20 @@ def main() -> None:
     findings.extend({"check": item.check, "severity": item.severity, "source_file_id": item.source_file_id, "security_id": item.security_id, "observed_date": item.observed_date, "message": item.message} for item in validate_observations(observations))
     discovered = discover_securities(observations)
     identities = build_identity_rows(discovered)
-    by_key = {(row["exchange"], row["symbol"], row["series"]): row for row in identities}
+    by_key = {}
+    by_symbol = {}
+    for row in identities:
+        key = (row["exchange"], row["symbol"], row["series"], row.get("candidate_isin") or "")
+        by_key.setdefault(key, []).append(row)
+        by_symbol.setdefault((row["exchange"], row["symbol"], row["series"]), []).append(row)
     raw_rows = []
     for item in observations:
-        identity = by_key[(item.exchange, item.symbol, item.series)]
+        exact = by_key.get((item.exchange, item.symbol, item.series, item.isin or ""), [])
+        candidates = exact or (by_symbol.get((item.exchange, item.symbol, item.series), []) if not item.isin else [])
+        if len(candidates) != 1:
+            findings.append({"source_file_id": item.source_file_id, "severity": "ERROR", "check": "IDENTITY_AMBIGUOUS", "security_id": None, "observed_date": item.date.isoformat(), "message": f"No unique identity for {item.exchange}:{item.symbol}:{item.series} with ISIN {item.isin!r}"})
+            continue
+        identity = candidates[0]
         raw_rows.append({"date": item.date, "security_id": identity["security_id"], "issuer_id": identity["issuer_id"], "listing_episode_id": identity["listing_episode_id"], "symbol_at_date": item.symbol, "isin": item.isin, "company_name": item.company_name, "series": item.series, "instrument_type": identity["instrument_type"], "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source": item.source_quality, "quality": "OFFICIAL_SOURCE_UNREVIEWED", "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "parser_version": "nse-bhavcopy-v2", "canonicalization_version": "identity-v1"})
     universe = build_active_universe(raw_rows)
     features = liquidity_features(raw_rows)

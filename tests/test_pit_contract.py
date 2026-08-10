@@ -3,6 +3,8 @@ from datetime import date
 import pytest
 
 from india_active_universe.api import CoverageError, DataPlatform, SecurityMaster, StatusStore, UniverseStore
+from india_active_universe.models import DailyObservation
+from india_active_universe.pipeline import discover_securities
 
 
 def test_symbol_rename_is_date_sensitive():
@@ -48,3 +50,12 @@ def test_strict_platform_rejects_out_of_range_dates():
     platform.universe = UniverseStore([])
     with pytest.raises(CoverageError):
         platform.active_on("2006-01-01")
+
+
+def test_symbol_reuse_with_isin_creates_separate_discovery_records():
+    observations = [
+        DailyObservation(date(2010, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, "a.zip", "a", "NSE", "INEOLD"),
+        DailyObservation(date(2015, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, "b.zip", "b", "NSE", "INENEW"),
+    ]
+    discovered = discover_securities(observations)
+    assert {row["candidate_isin"] for row in discovered} == {"INEOLD", "INENEW"}

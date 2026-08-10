@@ -13,7 +13,9 @@ def discover_securities(observations: Iterable[DailyObservation]) -> list[dict[s
     """Discover historical exchange keys; never seed from a current master."""
     seen: dict[tuple[str, str, str], dict[str, Any]] = {}
     for observation in observations:
-        key = (observation.exchange, observation.symbol, observation.series)
+        # ISIN changes can represent a replacement security under a reused ticker.
+        # Keep those discovery records separate; never collapse them by ticker.
+        key = (observation.exchange, observation.symbol, observation.series, observation.isin or "")
         row = seen.setdefault(key, {"exchange": observation.exchange, "symbol": observation.symbol, "series": observation.series, "instrument_type": InstrumentType.ORDINARY_EQUITY.value, "first_seen": observation.date, "last_seen": observation.date, "isins": set(), "company_names": set()})
         row["first_seen"] = min(row["first_seen"], observation.date)
         row["last_seen"] = max(row["last_seen"], observation.date)
