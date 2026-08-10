@@ -1,8 +1,10 @@
-# Convenience consumer profiles. These are not canonical universe semantics.
+# Versioned downstream profiles. The active universe remains the canonical data truth.
 LIQUID_V1:
   active_definition: ACTIVE_V1
+  instrument_type: ORDINARY_EQUITY
+  require_trading_status: ACTIVE_TRADING
   min_price: 20
-  min_history_sessions: 272
-  min_positive_volume_observations_60: 40
+  min_listing_age_sessions: 272
+  min_positive_volume_days_60: 40
   min_median_traded_value_60: 5000000
-  ranking_metric: median_traded_value_60
+  ranking_metric: median_traded_value_126

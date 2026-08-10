@@ -143,6 +143,12 @@ class UniverseStore:
         rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
+    def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
+        point = _as_date(as_of_date)
+        if profile != "LIQUID_V1":
+            raise ValueError(f"Unknown universe profile: {profile}")
+        return [row for row in self.rows if row.get("date") == point and row.get("NSE_BROAD_LIQUID_PIT_V1_eligible") is True]
+
 
 class FileUniverseStore(UniverseStore):
     def __init__(self, path: str | Path) -> None:
@@ -172,7 +178,7 @@ class ParquetUniverseStore(UniverseStore):
             by_security = {row["security_id"]: row for row in feature_rows}
             for row in output:
                 feature = by_security.get(row["security_id"], {})
-                for key in ("history_sessions", "listing_age_sessions", "listing_age_calendar_days", "price", "series", "listing_status", "valid_trade_days_20", "valid_trade_days_60", "valid_trade_days_126", "valid_trade_days_252", "zero_volume_days_20", "zero_volume_days_60", "zero_volume_days_126", "zero_volume_days_252", "median_traded_value_20", "median_traded_value_60", "median_traded_value_126", "median_traded_value_252", "average_traded_value_20", "average_traded_value_60", "average_traded_value_126", "average_traded_value_252", "stale_price_days_60", "liquidity_percentile_60", "liquidity_bucket_60", "feature_as_of_date"):
+                for key in ("history_sessions", "observed_history_sessions", "listing_age_sessions", "listing_age_calendar_days", "price", "series", "listing_status", "valid_trade_days_20", "valid_trade_days_60", "valid_trade_days_126", "valid_trade_days_252", "positive_volume_days_20", "positive_volume_days_60", "positive_volume_days_126", "positive_volume_days_252", "zero_volume_days_20", "zero_volume_days_60", "zero_volume_days_126", "zero_volume_days_252", "absent_observation_days_20", "absent_observation_days_60", "absent_observation_days_126", "absent_observation_days_252", "median_traded_value_20", "median_traded_value_60", "median_traded_value_126", "median_traded_value_252", "average_traded_value_20", "average_traded_value_60", "average_traded_value_126", "average_traded_value_252", "stale_price_days_60", "liquidity_percentile_126", "liquidity_bucket_126", "liquidity_rank_126", "liquidity_window_definition", "feature_as_of_date"):
                     if key in feature:
                         row[key] = feature[key]
         return output
@@ -180,6 +186,13 @@ class ParquetUniverseStore(UniverseStore):
     def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
         rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
+
+    def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
+        if profile != "LIQUID_V1":
+            raise ValueError(f"Unknown universe profile: {profile}")
+        point = _as_date(as_of_date).isoformat()
+        import pyarrow.parquet as parquet
+        return parquet.read_table(self.path, filters=[("date", "=", point), ("NSE_BROAD_LIQUID_PIT_V1_eligible", "=", True)]).to_pylist()
 
 
 class StatusStore:
@@ -267,6 +280,7 @@ class DataPlatform:
         self.prices = PriceStore()
         self.adjusted_prices = PriceStore()
         self.universe = UniverseStore()
+        self.research_universe = UniverseStore()
         self.status = StatusStore()
         self.terminal_events = TerminalEventStore()
         self.calendar = CalendarStore()
@@ -287,6 +301,9 @@ class DataPlatform:
 
     def ranked_liquid_on(self, as_of_date: str | date, n: int, **kwargs: Any) -> list[dict[str, Any]]:
         return self.universe.ranked_liquid_on(self._check_date(as_of_date), n, **kwargs)
+
+    def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
+        return self.research_universe.profile_on(self._check_date(as_of_date), profile)
 
     def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.status.status_on(self._check_date(as_of_date))
@@ -363,6 +380,7 @@ class DataPlatform:
         platform.prices = FilePriceStore(prices_path) if prices_path.exists() else PriceStore()
         platform.adjusted_prices = FilePriceStore(adjusted_path) if adjusted_path.exists() else PriceStore()
         platform.universe = FileUniverseStore(universe_path) if universe_path.exists() else UniverseStore()
+        platform.research_universe = platform.universe
         status_path = base / "data/derived/trading_status_intervals_v4.parquet"
         platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
         return platform
@@ -391,6 +409,8 @@ class DataPlatform:
         if isin_history.exists():
             platform.isins = ParquetIsinHistoryStore(isin_history)
         platform.universe = ParquetUniverseStore(base / "active_universe_daily.parquet", base / "liquidity_features.parquet")
+        research_path = base / "research_universe_monthly.parquet"
+        platform.research_universe = ParquetUniverseStore(research_path) if research_path.exists() else platform.universe
         platform.prices = ParquetPriceStore(base / "daily_prices_raw.parquet")
         adjusted_path = base / "daily_prices_adjusted.parquet"
         platform.adjusted_prices = ParquetPriceStore(adjusted_path) if adjusted_path.exists() else PriceStore()

@@ -46,15 +46,17 @@ def main() -> None:
     commands.append(core)
     commands.extend([
         [sys.executable, str(root / "scripts/publish_parquet.py"), "--data", str(work), "--release", str(release)],
-        [sys.executable, str(root / "scripts/rebuild_liquidity_features_duckdb.py"), "--prices", str(release / "daily_prices_raw.parquet"), "--out", str(release / "liquidity_features.parquet")],
+        [sys.executable, str(root / "scripts/build_trading_calendar.py"), "--prices", str(release / "daily_prices_raw.parquet"), "--out", str(release / "trading_calendar.parquet")],
+        [sys.executable, str(root / "scripts/rebuild_liquidity_features_duckdb.py"), "--prices", str(release / "daily_prices_raw.parquet"), "--calendar", str(release / "trading_calendar.parquet"), "--out", str(release / "liquidity_features.parquet")],
         [sys.executable, str(root / "scripts/publish_identity_artifacts.py"), "--master", str(work / "canonical/security_master.jsonl"), "--release", str(release)],
         [sys.executable, str(root / "scripts/normalize_corporate_actions.py"), "--raw", str(corporate_actions), "--master", str(work / "canonical/security_master.jsonl"), "--out", str(work / "canonical/corporate_actions.jsonl")],
         [sys.executable, str(root / "scripts/publish_corporate_actions.py"), "--input", str(work / "canonical/corporate_actions.jsonl"), "--out", str(work / "derived/corporate_actions.parquet")],
         [sys.executable, str(root / "scripts/publish_extensions.py"), "--data", str(work), "--release", str(release), "--corporate-actions", str(work / "derived/corporate_actions.parquet"), "--terminal-events", str(terminal)],
         [sys.executable, str(root / "scripts/apply_corporate_action_adjustments.py"), "--prices", str(work / "canonical/daily_prices_raw.jsonl"), "--events", str(work / "canonical/corporate_actions.jsonl"), "--out", str(release / "daily_prices_adjusted.parquet")],
-        [sys.executable, str(root / "scripts/build_trading_calendar.py"), "--prices", str(release / "daily_prices_raw.parquet"), "--out", str(release / "trading_calendar.parquet")],
         [sys.executable, str(root / "scripts/build_status_intervals.py"), "--master", str(work / "canonical/security_master.jsonl"), "--terminal-events", str(release / "terminal_events.parquet"), "--out", str(release / "trading_status_intervals.parquet")],
         [sys.executable, str(root / "scripts/build_identity_history_artifacts.py"), "--master", str(release / "security_master.parquet"), "--out-dir", str(release)],
+        [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", "2013-01-01", "--end", args.end or "2026-08-10"],
+        [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
         [sys.executable, str(root / "scripts/report_universe.py"), "--root", str(work), "--release-id", args.release_id, "--release-dir", str(release), "--reports-dir", str(root / "reports"), "--config", str(root / "config/default.yaml")],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
     ])

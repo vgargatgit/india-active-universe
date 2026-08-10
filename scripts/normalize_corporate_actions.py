@@ -17,7 +17,7 @@ def parse_date(value: str | None) -> str | None:
 
 def classify(subject: str) -> str:
     text = subject.upper()
-    if "BONUS" in text:
+    if "BONUS" in text and "DEBENTURE" not in text:
         return "BONUS"
     if "SPLIT" in text or "SUB-DIVISION" in text:
         return "SPLIT"
@@ -43,6 +43,8 @@ def classify(subject: str) -> str:
 def ratio(subject: str) -> tuple[int | None, int | None, str | None]:
     match = re.search(r"(\d+)\s*:\s*(\d+)", subject)
     if not match:
+        match = re.search(r"BONUS\s+(\d+)\s+(?:DVR\s+)?[^:]*:\s*(\d+)", subject.upper())
+    if not match:
         return None, None, None
     return int(match.group(1)), int(match.group(2)), match.group(0)
 
@@ -51,7 +53,11 @@ def face_value_transition(subject: str, event_type: str) -> tuple[float | None, 
     """Return old face value, new face value, and price factor when unambiguous."""
     if event_type not in {"SPLIT", "REVERSE_SPLIT"}:
         return None, None, None
-    values = [float(value) for value in re.findall(r"(?:RS\.?|RE\s+)(\d+(?:\.\d+)?)", subject.upper())]
+    text = subject.upper()
+    transition = re.search(r"FROM.*?R[SE]\.?\s*(\d+(?:\.\d+)?)\D+TO\s+R[SE]\.?\s*(\d+(?:\.\d+)?)", text)
+    if not transition:
+        transition = re.search(r"CONSOLIDATION.*?R[SE]\.?\s*(\d+(?:\.\d+)?)\D+TO\s+R[SE]\.?\s*(\d+(?:\.\d+)?)", text)
+    values = [float(value) for value in transition.groups()] if transition else [float(value) for value in re.findall(r"R[SE]\.?\s*(\d+(?:\.\d+)?)", text)]
     if len(values) != 2 or values[0] <= 0 or values[1] <= 0:
         return None, None, None
     return values[0], values[1], values[1] / values[0]

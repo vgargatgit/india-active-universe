@@ -21,11 +21,13 @@ python -m pip install -e '.[dev]'
 india-equity-data --help
 ```
 
-The current materialized release is `india_equity_data_v1.14.1`: official NSE observations, effective-dated company-name and ISIN histories, an official-observation trading calendar, conservative instrument classification, corporate actions with split, bonus, and cash-dividend fields, separate price-return and partial total-return prices, full PIT liquidity features, delisting evidence inventory, resolved suspension evidence, non-overlapping effective-dated status intervals, corporate-action boundary findings, and raw-source manifests from 2006-01-02 through 2026-08-10, published as compressed Parquet. Nullable terminal-event value fields use a stable schema. Identity and event quality remain date- and field-specific; unresolved cases are explicit. This is an exploratory release. It is not a claim that all suspensions, terminal events, or adjusted returns are resolved.
+The current research release is `india_equity_data_v2.0.0`: official NSE observations from 2006-01-02 through 2026-08-10, fresh source-built Parquet artifacts, official-session liquidity windows, effective-dated identities, raw and price-return adjusted prices, explicit status and terminal-event records, and a monthly `NSE_BROAD_LIQUID_PIT_V1` snapshot for 2013 onward. `LIQUID_V1` is a versioned consumer profile. It is not NIFTY 500 membership and it is not strategy logic. The full archive remains exploratory; the bounded liquid research scope is separately quality-labeled in `research_release_manifest.json`.
 
 Published release artifacts are compressed Parquet. JSONL files under `data/` are build intermediates and audit/debug outputs, not the downstream storage contract.
 
-To create an immutable cached promotion, use `india-equity-data build --source-release releases/india_equity_data_v1.14.0 --release-id india_equity_data_v1.14.1`. The command verifies parent hashes and records the parent release. It does not claim to re-download or re-parse source files.
+To create a fresh release, use `PYTHONPATH=src .venv/bin/python scripts/build_source_release.py --release-id <new-release> --terminal-events releases/india_equity_data_v1.14.1/terminal_events.parquet --start 2006-01-02 --end <last-session>`. A cached promotion is not a substitute for this source rebuild.
+
+For monthly research consumption, use `platform.profile_on("2018-03-29", "LIQUID_V1")` and record the release ID and manifest hash. Use raw nominal OHLC for execution and the price-return adjusted close for signals.
 
 ## Independence
 

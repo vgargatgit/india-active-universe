@@ -18,6 +18,8 @@ REQUIRED = [
     "liquidity_features.parquet", "terminal_events.parquet", "data_release_manifest.json",
     "trading_calendar.parquet",
     "company_name_history.parquet", "isin_history.parquet",
+    "research_universe_monthly.parquet", "required_research_security.parquet",
+    "research_release_manifest.json",
 ]
 
 
@@ -36,13 +38,18 @@ def main() -> None:
     args = parser.parse_args()
     release = Path(args.release)
     manifest = json.loads((release / "data_release_manifest.json").read_text(encoding="utf-8"))
+    research_manifest_path = release / "research_release_manifest.json"
+    research_manifest = json.loads(research_manifest_path.read_text(encoding="utf-8")) if research_manifest_path.exists() else {}
     missing = [name for name in REQUIRED if not (release / name).exists()]
     manifest_mismatch = manifest.get("release_id") != release.name
-    if missing or manifest_mismatch:
+    research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
+    if missing or manifest_mismatch or not research_quality_ok:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Required artifact checks", ""]
         rows.extend(f"- {'PASS' if name not in missing else 'FAIL'}: `{name}`" for name in REQUIRED)
         if manifest_mismatch:
             rows.extend(["", f"- FAIL: manifest release_id does not match directory `{release.name}`"])
+        if not research_quality_ok:
+            rows.extend(["", "- FAIL: research quality is not RESEARCH_HIGH_CONFIDENCE"])
         Path(args.out).write_text("\n".join(rows) + "\n", encoding="utf-8")
         print(f"WROTE {args.out}")
         print("RELEASE_AUDIT_FAILED")
@@ -54,6 +61,10 @@ def main() -> None:
         path = release / key.removeprefix("release/")
         if path.is_file() and sha256(path) != expected:
             hash_mismatches.append(key)
+    for name, expected in research_manifest.get("artifacts", {}).items():
+        path = release / name
+        if not path.is_file() or sha256(path) != expected:
+            hash_mismatches.append(f"research/{name}")
     if hash_mismatches:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Artifact hash checks", ""]
         rows.extend(f"- FAIL: `{key}`" if key in hash_mismatches else f"- PASS: `{key}`" for key in sorted(manifest.get("artifacts", {})))
@@ -116,6 +127,8 @@ def main() -> None:
     failures = []
     if manifest.get("release_id") != release.name:
         failures.append(f"manifest release_id {manifest.get('release_id')!r} does not match directory {release.name!r}")
+    if not research_quality_ok:
+        failures.append("research release is not RESEARCH_HIGH_CONFIDENCE")
     for name in REQUIRED:
         present = (release / name).exists()
         rows.append(f"- {'PASS' if present else 'FAIL'}: `{name}`")

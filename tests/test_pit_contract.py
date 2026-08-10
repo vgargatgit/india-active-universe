@@ -106,8 +106,8 @@ def test_raw_and_adjusted_history_are_separate():
 
 def test_symbol_reuse_with_isin_creates_separate_discovery_records():
     observations = [
-        DailyObservation(date(2010, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, "a.zip", "a", "NSE", "INEOLD"),
-        DailyObservation(date(2015, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, "b.zip", "b", "NSE", "INENEW"),
+        DailyObservation(date(2010, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, None, "a.zip", "a", "NSE", "INEOLD"),
+        DailyObservation(date(2015, 1, 1), "NSE", "REUSED", "EQ", None, None, None, None, None, None, None, "b.zip", "b", "NSE", "INENEW"),
     ]
     discovered = discover_securities(observations)
     assert {row["candidate_isin"] for row in discovered} == {"INEOLD", "INENEW"}
