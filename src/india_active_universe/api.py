@@ -262,6 +262,7 @@ class DataPlatform:
         self.company_names = CompanyNameHistoryStore()
         self.isins = IsinHistoryStore()
         self.prices = PriceStore()
+        self.adjusted_prices = PriceStore()
         self.universe = UniverseStore()
         self.status = StatusStore()
         self.terminal_events = TerminalEventStore()
@@ -295,6 +296,10 @@ class DataPlatform:
         begin, finish = self._check_date(start), self._check_date(end)
         return self.prices.history(security_id, begin, finish)
 
+    def adjusted_history(self, security_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
+        begin, finish = self._check_date(start), self._check_date(end)
+        return self.adjusted_prices.history(security_id, begin, finish)
+
     def terminal_recovery_scenarios(self, security_id: str) -> list[dict[str, Any]]:
         last_price = None
         if self.coverage_start and self.coverage_end:
@@ -324,8 +329,10 @@ class DataPlatform:
         platform.company_names = CompanyNameHistoryStore(load("data/canonical/company_name_history.jsonl"))
         platform.isins = IsinHistoryStore(load("data/canonical/isin_history.jsonl"))
         prices_path = base / "data/canonical/daily_prices_raw.jsonl"
+        adjusted_path = base / "data/derived/daily_prices_adjusted.jsonl"
         universe_path = base / "data/derived/active_universe_daily.jsonl"
         platform.prices = FilePriceStore(prices_path) if prices_path.exists() else PriceStore()
+        platform.adjusted_prices = FilePriceStore(adjusted_path) if adjusted_path.exists() else PriceStore()
         platform.universe = FileUniverseStore(universe_path) if universe_path.exists() else UniverseStore()
         status_path = base / "data/derived/trading_status_intervals_v4.parquet"
         platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
@@ -352,6 +359,8 @@ class DataPlatform:
             platform.isins = ParquetIsinHistoryStore(isin_history)
         platform.universe = ParquetUniverseStore(base / "active_universe_daily.parquet", base / "liquidity_features.parquet")
         platform.prices = ParquetPriceStore(base / "daily_prices_raw.parquet")
+        adjusted_path = base / "daily_prices_adjusted.parquet"
+        platform.adjusted_prices = ParquetPriceStore(adjusted_path) if adjusted_path.exists() else PriceStore()
         status_path = base / "trading_status_intervals.parquet"
         platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
         terminal_path = base / "terminal_events.parquet"

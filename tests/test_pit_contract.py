@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
+from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import classify_instrument_type, discover_securities
 
@@ -65,6 +65,14 @@ def test_strict_platform_rejects_out_of_range_dates():
     platform.universe = UniverseStore([])
     with pytest.raises(CoverageError):
         platform.active_on("2006-01-01")
+
+
+def test_raw_and_adjusted_history_are_separate():
+    platform = DataPlatform()
+    platform.prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-01", "raw_close": 100.0}])
+    platform.adjusted_prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-01", "research_adjusted_close": 50.0}])
+    assert platform.history("SEC1", "2020-01-01", "2020-01-01")[0]["raw_close"] == 100.0
+    assert platform.adjusted_history("SEC1", "2020-01-01", "2020-01-01")[0]["research_adjusted_close"] == 50.0
 
 
 def test_symbol_reuse_with_isin_creates_separate_discovery_records():
