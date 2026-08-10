@@ -45,7 +45,7 @@ def main() -> None:
       base AS (
         SELECT CAST(a.date AS DATE) AS date,
           a.security_id, a.listing_episode_id, a.symbol_at_date,
-          a.instrument_type, m.identity_quality, a.company_name, a.isin,
+          a.instrument_type, m.instrument_type_quality, m.instrument_type_source, m.identity_quality, a.company_name, a.isin,
           a.trading_status, a.observation_status, a.active,
           f.price, f.history_sessions, f.observed_history_sessions,
           f.listing_age_sessions, f.listing_age_calendar_days,
@@ -80,7 +80,9 @@ def main() -> None:
         LEFT JOIN read_parquet('{out}/daily_prices_adjusted.parquet') adj
           ON adj.security_id = a.security_id AND CAST(adj.date AS DATE) = CAST(a.date AS DATE)
         LEFT JOIN (
-          SELECT security_id, MIN(identity_quality) AS identity_quality
+          SELECT security_id, MIN(identity_quality) AS identity_quality,
+                 MIN(instrument_type_quality) AS instrument_type_quality,
+                 MIN(instrument_type_source) AS instrument_type_source
           FROM read_parquet('{out}/security_master.parquet')
           GROUP BY security_id
         ) m ON m.security_id = a.security_id

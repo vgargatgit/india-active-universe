@@ -27,7 +27,8 @@ def build_identity_rows(discovered: Iterable[dict[str, Any]], *, canonicalizatio
         security = stable_id("SEC", exchange, identity_basis or symbol, series)
         issuer = stable_id("ISSUER", exchange, identity_basis or row.get("company_name") or symbol)
         quality = IdentityQuality.SINGLE_OFFICIAL_SOURCE.value if identity_basis else IdentityQuality.PARTIAL.value
-        output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "identity_quality": quality, "identity_source": "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None, "review_status": "REVIEW_REQUIRED" if not identity_basis else "UNREVIEWED", "canonicalization_version": canonicalization_version})
+        instrument_quality = "HEURISTIC_HIGH_CONFIDENCE" if row.get("instrument_type") == "ORDINARY_EQUITY" else "EXPLICIT_EXCHANGE_MARKER"
+        output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "identity_quality": quality, "identity_source": "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None, "instrument_type_quality": instrument_quality, "instrument_type_source": "NSE_EQ_SERIES_AND_HISTORICAL_SYMBOL_COMPANY_MARKER", "review_status": "REVIEW_REQUIRED" if not identity_basis else "UNREVIEWED", "canonicalization_version": canonicalization_version})
     return output
 
 
