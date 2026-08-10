@@ -23,6 +23,7 @@ def main() -> None:
     parser.add_argument("--start")
     parser.add_argument("--end")
     parser.add_argument("--root", default=".")
+    parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
     parser.add_argument("--release-id")
     parser.add_argument("--source-release")
     parser.add_argument("--dry-run", action="store_true")
@@ -43,7 +44,17 @@ def main() -> None:
             return
         subprocess.run(command, check=True)
 
-    if args.command == "audit-data":
+    if args.command == "normalize-market-data":
+        command = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(root / args.raw), "--out", str(root / "data")]
+        if args.start:
+            command.extend(["--start", args.start])
+        if args.end:
+            command.extend(["--end", args.end])
+        if args.dry_run:
+            print(" ".join(command))
+            return
+        subprocess.run(command, check=True)
+    elif args.command == "audit-data":
         if not args.release_id:
             raise SystemExit("audit-data requires --release-id")
         audit_release(args.release_id)

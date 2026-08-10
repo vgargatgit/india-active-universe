@@ -23,12 +23,29 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
     parser.add_argument("--out", default="data")
+    parser.add_argument("--start")
+    parser.add_argument("--end")
     args = parser.parse_args()
+    start = date.fromisoformat(args.start) if args.start else None
+    end = date.fromisoformat(args.end) if args.end else None
+    if start and end and start > end:
+        raise SystemExit("--start must be on or before --end")
     observations = []
     findings = []
+    paths = []
     for path in sorted(Path(args.raw).glob("*.zip")):
         try:
             point = date.fromisoformat(path.stem)
+        except ValueError:
+            findings.append({"source_file_id": path.name, "severity": "ERROR", "check": "INVALID_SOURCE_DATE", "security_id": None, "observed_date": None, "message": "Raw filename is not an ISO date"})
+            continue
+        if (start and point < start) or (end and point > end):
+            continue
+        paths.append((path, point))
+    if not paths:
+        raise SystemExit("No valid raw bhavcopy files fall inside the requested date range")
+    for path, point in paths:
+        try:
             observations.extend(parse_bhavcopy(path.read_bytes(), point, path.name, sha256(path)))
         except Exception as exc:
             findings.append({"source_file_id": path.name, "severity": "ERROR", "check": "SOURCE_PARSE_FAILURE", "message": str(exc)})
@@ -60,7 +77,7 @@ def main() -> None:
     write_jsonl(root / "derived/active_universe_daily.jsonl", universe, overwrite=True)
     write_jsonl(root / "derived/liquidity_features.jsonl", features, overwrite=True)
     write_jsonl(root / "derived/data_quality_findings.jsonl", findings, overwrite=True)
-    print(f"observations={len(raw_rows)} securities={len(identities)} active_rows={len(universe)} findings={len(findings)}")
+    print(f"dates={len(paths)} observations={len(raw_rows)} securities={len(identities)} active_rows={len(universe)} findings={len(findings)}")
 
 
 if __name__ == "__main__":
