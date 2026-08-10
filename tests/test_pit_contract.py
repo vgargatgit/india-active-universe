@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import SecurityMaster, UniverseStore
+from india_active_universe.api import SecurityMaster, StatusStore, UniverseStore
 
 
 def test_symbol_rename_is_date_sensitive():
@@ -29,3 +29,13 @@ def test_future_listing_cannot_enter_past_universe():
         {"date": date(2020, 1, 1), "security_id": "NEW", "active": False},
     ])
     assert [row["security_id"] for row in store.active_on("2020-01-01")] == ["OLD"]
+
+
+def test_status_lookup_is_effective_dated():
+    store = StatusStore([
+        {"security_id": "SEC1", "status_start": "2010-01-01", "status_end": "2014-12-31", "trading_status": "ACTIVE_TRADING"},
+        {"security_id": "SEC1", "status_start": "2015-01-01", "status_end": "2017-06-30", "trading_status": "SUSPENDED"},
+        {"security_id": "SEC1", "status_start": "2017-07-01", "status_end": None, "trading_status": "DELISTED"},
+    ])
+    assert store.status_on("2016-01-01")[0]["trading_status"] == "SUSPENDED"
+    assert store.status_on("2018-01-01")[0]["trading_status"] == "DELISTED"

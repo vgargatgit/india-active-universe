@@ -95,11 +95,7 @@ class ParquetUniverseStore(UniverseStore):
     def active_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
         point = _as_date(as_of_date).isoformat()
         import pyarrow.parquet as parquet
-        output = []
-        for batch in parquet.ParquetFile(self.path).iter_batches(batch_size=25_000):
-            for row in batch.to_pylist():
-                if str(row.get("date"))[:10] == point and row.get("active") is True:
-                    output.append(row)
+        output = parquet.read_table(self.path, filters=[("date", "=", point), ("active", "=", True)]).to_pylist()
         if self.features_path and self.features_path.exists() and output:
             feature_rows = parquet.read_table(self.features_path, filters=[("date", "=", point)]).to_pylist()
             by_security = {row["security_id"]: row for row in feature_rows}
@@ -115,12 +111,50 @@ class ParquetUniverseStore(UniverseStore):
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
 
+class StatusStore:
+    """Effective-dated listing, trading, suspension, and terminal status."""
+
+    def __init__(self, rows: Iterable[dict[str, Any]] = ()) -> None:
+        self.rows = [_normalize_dates(row) for row in rows]
+
+    def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
+        point = _as_date(as_of_date)
+        return [
+            row for row in self.rows
+            if row.get("status_start") <= point
+            and (row.get("status_end") is None or point <= row["status_end"])
+        ]
+
+
+class ParquetStatusStore(StatusStore):
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
+        super().__init__()
+
+    def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
+        import pyarrow.parquet as parquet
+        point = _as_date(as_of_date).isoformat()
+        rows = parquet.read_table(self.path).to_pylist()
+        return [
+            row for row in rows
+            if row.get("status_start") <= point
+            and (row.get("status_end") is None or point <= row["status_end"])
+        ]
+
+
 class DataPlatform:
     def __init__(self, root: str | Path = ".") -> None:
         self.root = Path(root)
         self.security_master = SecurityMaster()
         self.prices = PriceStore()
         self.universe = UniverseStore()
+        self.status = StatusStore()
+
+    def get_active_universe(self, as_of_date: str | date) -> list[dict[str, Any]]:
+        return self.universe.active_on(as_of_date)
+
+    def get_investable_universe(self, as_of_date: str | date, **kwargs: Any) -> list[dict[str, Any]]:
+        return self.universe.eligible_on(as_of_date, **kwargs)
 
     @classmethod
     def from_jsonl(cls, root: str | Path = ".") -> "DataPlatform":
@@ -134,6 +168,8 @@ class DataPlatform:
         universe_path = base / "data/derived/active_universe_daily.jsonl"
         platform.prices = FilePriceStore(prices_path) if prices_path.exists() else PriceStore()
         platform.universe = FileUniverseStore(universe_path) if universe_path.exists() else UniverseStore()
+        status_path = base / "data/derived/trading_status_intervals_v4.parquet"
+        platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
         return platform
 
     @classmethod
@@ -145,12 +181,14 @@ class DataPlatform:
         platform.security_master = SecurityMaster(master)
         platform.universe = ParquetUniverseStore(base / "active_universe_daily.parquet", base / "liquidity_features.parquet")
         platform.prices = ParquetPriceStore(base / "daily_prices_raw.parquet")
+        status_path = base / "trading_status_intervals.parquet"
+        platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
         return platform
 
 
 def _normalize_dates(row: dict[str, Any]) -> dict[str, Any]:
     result = dict(row)
-    for key in ("date", "effective_from", "effective_to", "first_trade_date", "last_trade_date"):
+    for key in ("date", "effective_from", "effective_to", "first_trade_date", "last_trade_date", "status_start", "status_end"):
         if isinstance(result.get(key), str):
             result[key] = date.fromisoformat(result[key])
     return result
