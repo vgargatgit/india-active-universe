@@ -1,6 +1,6 @@
 # Suspension status audit
 
-- Release: `india_equity_data_v1.8.0`
+- Release: `india_equity_data_v1.9.0`
 - Parsed official event blocks: 97
 - Exact-identity resolved event blocks: 18
 - Canonical suspended intervals: 2
