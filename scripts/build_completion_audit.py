@@ -27,6 +27,17 @@ def main() -> None:
     args = parser.parse_args()
     release = Path(args.release)
     manifest = json.loads((release / "data_release_manifest.json").read_text(encoding="utf-8"))
+    missing = [name for name in REQUIRED if not (release / name).exists()]
+    manifest_mismatch = manifest.get("release_id") != release.name
+    if missing or manifest_mismatch:
+        rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Required artifact checks", ""]
+        rows.extend(f"- {'PASS' if name not in missing else 'FAIL'}: `{name}`" for name in REQUIRED)
+        if manifest_mismatch:
+            rows.extend(["", f"- FAIL: manifest release_id does not match directory `{release.name}`"])
+        Path(args.out).write_text("\n".join(rows) + "\n", encoding="utf-8")
+        print(f"WROTE {args.out}")
+        print("RELEASE_AUDIT_FAILED")
+        raise SystemExit(1)
     con = duckdb.connect()
 
     def count(name: str, where: str = "") -> int:
@@ -71,8 +82,8 @@ def main() -> None:
         f"- Status intervals: {count('trading_status_intervals.parquet') if status_path.exists() else 'not published':,}." if status_path.exists() else "- Status intervals: not published.",
         f"- Suspended intervals: {suspended_count:,}." if suspended_count is not None else "- Suspended intervals: not measured.",
         f"- Status interval overlaps: {overlap_count:,}." if overlap_count is not None else "- Status interval overlaps: not measured.",
-        f"- Adjusted-price quality counts: `{quality}`.",
-        f"- Corporate-action boundary validation: `{boundary_quality}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
+        f"- Adjusted-price quality counts: `{json.dumps(quality, sort_keys=True)}`.",
+        f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
         "",
         "## Required artifact checks",
         "",
