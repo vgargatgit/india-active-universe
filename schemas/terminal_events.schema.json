@@ -1,0 +1,21 @@
+{
+  "title": "terminal_events",
+  "type": "object",
+  "required": ["event_id", "terminal_event_type", "terminal_value_quality"],
+  "properties": {
+    "company_name": {"type": ["string", "null"]},
+    "event_id": {"type": "string"},
+    "event_quality": {"type": ["string", "null"]},
+    "historical_symbol": {"type": ["string", "null"]},
+    "identity_match_quality": {"type": ["string", "null"]},
+    "issuer_id": {"type": ["string", "null"]},
+    "notes": {"type": ["string", "null"]},
+    "security_id": {"type": ["string", "null"]},
+    "source": {"type": ["string", "null"]},
+    "terminal_event_date": {"type": ["string", "null"], "format": "date"},
+    "terminal_event_type": {"type": "string"},
+    "terminal_value": {"type": ["number", "null"]},
+    "terminal_value_basis": {"type": ["string", "null"]},
+    "terminal_value_quality": {"type": "string"}
+  }
+}
