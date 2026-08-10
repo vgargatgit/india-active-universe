@@ -1,3 +1,31 @@
 # Survivorship audit
 
-This first release is observation-based. Securities are retained for every dated official observation, independent of whether they appear in the current NSE reference universe. Terminal-event classification remains a subsequent evidence-enrichment stage.
+Historically observed security IDs that do not have an observation on the latest source date: `3317`.
+
+| Security | Symbol | Last liquid date | Last observed date | Terminal evidence |
+|---|---|---|---|---|
+| `SEC_3c5e61ddead99438` | `TEMBO` | 2026-07-31 | 2026-08-04 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_fdb7d021ae263892` | `DIACABS` | 2026-07-31 | 2026-08-03 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_045c3f89ba5f7ddf` | `UNIVASTU` | 2026-06-30 | 2026-07-01 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_056f11b5c25245a9` | `PPL` | 2026-06-30 | 2026-07-01 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_0cc1a81baf154b9a` | `INOXGREEN` | 2026-06-30 | 2026-07-30 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_191c53c22060eb76` | `JBCHEPHARM` | 2026-06-30 | 2026-07-16 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_823143d283513ca6` | `FOCUS` | 2026-06-30 | 2026-07-01 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_860ed53c4e355ade` | `BLISSGVS` | 2026-06-30 | 2026-07-02 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_8bbf3dcd4b501b7a` | `AVG` | 2026-06-30 | 2026-07-03 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_9dc6b2a192fcbe58` | `MBAPL` | 2026-06-30 | 2026-07-02 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_9fcd8fbed537c7b7` | `EVERESTIND` | 2026-06-30 | 2026-07-01 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_b2351a03dbdc5aab` | `KRISHANA` | 2026-06-30 | 2026-07-02 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_d47209689b4f3743` | `MICEL` | 2026-06-30 | 2026-07-02 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_d91ae9b142680ce3` | `KILITCH` | 2026-06-30 | 2026-07-02 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_ddaaeb4e02cfcf9e` | `POCL` | 2026-06-30 | 2026-07-20 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_e30b8de303da13fb` | `JLHL` | 2026-06-30 | 2026-07-23 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_e3d8a29f25ed0787` | `NARMADA` | 2026-06-30 | 2026-07-30 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_f05c4dd8fdfc4fea` | `GANESHBE` | 2026-06-30 | 2026-07-30 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_f7f481f63165bf26` | `ONMOBILE` | 2026-06-30 | 2026-07-06 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_10fbb8ced2f11307` | `VALIANTORG` | 2026-05-29 | 2026-06-19 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_224fffd37110271c` | `CORDSCABLE` | 2026-05-29 | 2026-05-29 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_26907dd040119eff` | `KOPRAN` | 2026-05-29 | 2026-05-29 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_3472e752adac9df0` | `SHIVALIK` | 2026-05-29 | 2026-06-02 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_34e9c5760bfea273` | `STERTOOLS` | 2026-05-29 | 2026-06-25 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_3cd5053ef8f5b1f3` | `CYBERTECH` | 2026-05-29 | 2026-06-29 | `UNKNOWN_TERMINAL_EVENT` |

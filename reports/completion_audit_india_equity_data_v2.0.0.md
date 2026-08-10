@@ -12,7 +12,7 @@
 - Status intervals: 9,062.
 - Suspended intervals: 0.
 - Status interval overlaps: 0.
-- Adjusted-price quality counts: `{"PARTIALLY_ADJUSTED": 2770915, "PRICE_ACTION_ADJUSTED": 167119, "RAW_ONLY": 4606987}`.
+- Adjusted-price quality counts: `{"TOTAL_RETURN_PARTIAL": 7545021}`.
 - Corporate-action boundary validation: `{"MISSING_BOUNDARY_PRICE": 691, "PASS": 512, "WARNING_LARGE_BOUNDARY_MOVE": 75}`.
 
 ## Required artifact checks

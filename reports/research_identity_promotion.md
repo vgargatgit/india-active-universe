@@ -1,6 +1,6 @@
 # Research identity promotion
 
-Required research securities: `2557`.
+Required research securities: `2646`.
 Identity failures in LIQUID_V1: `0`.
 
 | Research identity quality | Securities |

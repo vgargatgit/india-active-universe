@@ -4,8 +4,8 @@ The recommended signal series is the price-return adjusted close. Raw nominal pr
 
 | Adjustment quality | Rows |
 |---|---:|
-| `PRICE_ACTION_ADJUSTED` | 752781 |
-| `RAW_ONLY` | 4174542 |
+| `NO_ADJUSTMENT_REQUIRED` | 4276681 |
+| `PRICE_ACTION_ADJUSTED_VERIFIED` | 769452 |
 
 Material-event factor gate: `PASS`.
 Total-return adjustment is separate and remains partial unless its own quality says otherwise.
