@@ -65,7 +65,8 @@ def build_active_snapshot(observations: Iterable[dict[str, Any]], as_of_date: da
     for row in observations:
         close = row.get("close", row.get("raw_close"))
         if row.get("date") == as_of_date and row.get("instrument_type", InstrumentType.ORDINARY_EQUITY.value) == InstrumentType.ORDINARY_EQUITY.value and row.get("series") == "EQ" and close is not None:
-            result.append({**row, "close": close, "trading_status": TradingStatus.ACTIVE_TRADING.value, "active": True, "active_definition_version": "ACTIVE_V1"})
+            observation_status = "NO_TRADE" if (row.get("volume") is None or row.get("volume") <= 0) else "TRADED"
+            result.append({**row, "close": close, "trading_status": TradingStatus.ACTIVE_TRADING.value, "observation_status": observation_status, "active": True, "active_definition_version": "ACTIVE_V1"})
     return result
 
 

@@ -1,6 +1,6 @@
 # Active universe definition
 
-`ACTIVE_V1` is the set of classified ordinary NSE `EQ` securities with a valid qualifying official exchange trading record on date T. Explicit ETFs and other non-ordinary instrument types remain in raw and feature data but are excluded from this ordinary-equity snapshot. It is not an index and is not forced to a fixed count. Suspended, delisted, no-trade, missing-source, and unknown conditions remain distinguishable.
+`ACTIVE_V1` is the set of classified ordinary NSE `EQ` securities with a valid qualifying official exchange trading record on date T. Explicit ETFs and other non-ordinary instrument types remain in raw and feature data but are excluded from this ordinary-equity snapshot. It is not an index and is not forced to a fixed count. A row with zero or missing volume remains active when the official record has a valid price, but has `observation_status=NO_TRADE`. Traded rows have `observation_status=TRADED`. Suspended, delisted, no-trade, missing-source, and unknown conditions remain distinguishable.
 
 Investability is a downstream profile. A sample `LIQUID_V1` profile may require price >= 20, at least 272 prior valid sessions, at least 40 positive-volume observations in the trailing 60 sessions, and 60-session median traded value >= 5,000,000. Thresholds are not canonical.
 

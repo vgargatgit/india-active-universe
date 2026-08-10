@@ -5,7 +5,7 @@ import pytest
 from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
 from india_active_universe.identity import apply_manual_overrides
 from india_active_universe.models import DailyObservation
-from india_active_universe.pipeline import classify_instrument_type, discover_securities
+from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
 
 
 def test_symbol_rename_is_date_sensitive():
@@ -55,6 +55,12 @@ def test_future_listing_cannot_enter_past_universe():
         {"date": date(2020, 1, 1), "security_id": "NEW", "active": False},
     ])
     assert [row["security_id"] for row in store.active_on("2020-01-01")] == ["OLD"]
+
+
+def test_active_snapshot_labels_no_trade_without_removing_the_row():
+    rows = build_active_snapshot([{"date": date(2020, 1, 1), "security_id": "SEC1", "series": "EQ", "instrument_type": "ORDINARY_EQUITY", "raw_close": 10.0, "volume": 0}], date(2020, 1, 1))
+    assert rows[0]["active"] is True
+    assert rows[0]["observation_status"] == "NO_TRADE"
 
 
 def test_status_lookup_is_effective_dated():
