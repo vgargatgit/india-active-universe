@@ -19,6 +19,26 @@ def main() -> None:
     assert liquidity_as_of(historical, t)[0]["history_sessions"] == 1, "future liquidity leakage"
     assert [item["security_id"] for item in active_as_of(historical, future)] == ["NEW"], "active date semantics"
 
+    liquidity_history = [
+        row(date(2020, 1, 1), "A", "A", value=10.0),
+        row(t, "A", "A", value=20.0),
+        row(date(2020, 1, 1), "B", "B", value=30.0),
+        row(t, "B", "B", value=40.0),
+        row(future, "A", "A", value=1_000_000.0),
+        row(future, "B", "B", value=1.0),
+    ]
+    perturbed = [
+        {**item, "raw_close": 999_999_999.0, "traded_value": 999_999_999.0, "volume": 999_999_999}
+        if item["date"] > t else item
+        for item in liquidity_history
+    ]
+    base_features = {item["security_id"]: item["median_traded_value_60"] for item in liquidity_as_of(liquidity_history, t)}
+    perturbed_features = {item["security_id"]: item["median_traded_value_60"] for item in liquidity_as_of(perturbed, t)}
+    assert base_features == perturbed_features, "future liquidity perturbation changed PIT features"
+    base_rank = sorted(base_features, key=base_features.get, reverse=True)
+    perturbed_rank = sorted(perturbed_features, key=perturbed_features.get, reverse=True)
+    assert base_rank == perturbed_rank, "future liquidity perturbation changed PIT ranking"
+
     rename = [
         {"exchange": "NSE", "series": "EQ", "symbol": "ABC", "effective_from": date(2010, 1, 1), "effective_to": date(2014, 12, 31), "security_id": "SEC1"},
         {"exchange": "NSE", "series": "EQ", "symbol": "XYZ", "effective_from": date(2015, 1, 1), "effective_to": None, "security_id": "SEC1"},
