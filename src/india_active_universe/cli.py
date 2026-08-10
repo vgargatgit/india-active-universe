@@ -104,6 +104,19 @@ def main() -> None:
             audit_release(args.release_id)
         elif args.release_id and (root / "releases" / args.release_id).exists():
             audit_release(args.release_id)
+        elif args.start or args.end:
+            if args.release_id:
+                raise SystemExit("source-driven build creates intermediates only; use --source-release to publish a release")
+            command = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(root / args.raw), "--out", str(root / "data"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")]
+            if args.start:
+                command.extend(["--start", args.start])
+            if args.end:
+                command.extend(["--end", args.end])
+            if args.dry_run:
+                print(" ".join(command))
+                return
+            subprocess.run(command, check=True, cwd=root)
+            print("Source-driven intermediate build complete; no release was published")
         else:
             raise SystemExit("build requires --source-release and --release-id, or an existing --release-id")
     else:

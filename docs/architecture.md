@@ -10,4 +10,6 @@ The source-driven normalization stage is bounded by `--start` and `--end`. For e
 
 The current NSE source adapter builds identity rows, raw prices, active snapshots, and liquidity features as one coupled pass. The CLI exposes these as separate names for pipeline compatibility, but each name runs the same deterministic core pass and does not imply an independent source transformation.
 
+`india-equity-data build --start ... --end ...` runs this source-driven pass from the immutable cache and creates intermediates only. It does not publish a release. Release publication requires a verified parent release or a future complete source-release adapter.
+
 Observations without one dated identity are not discarded. They are written to `data/canonical/unresolved_observed_trading.jsonl` with raw OHLCV, source hashes, candidate IDs, and an `UNRESOLVED` status. They cannot enter the canonical active universe until identity review resolves them.
