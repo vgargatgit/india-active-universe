@@ -87,6 +87,13 @@ def main() -> None:
           WHERE ca.event_type IN {MATERIAL_ACTIONS}
           GROUP BY 1 ORDER BY 1
         """).fetchall()
+        boundary_rows = connection.execute(f"""
+          SELECT v.validation_status, COUNT(DISTINCT v.event_id)
+          FROM read_parquet('{r}/corporate_action_boundary_validation.parquet') v
+          JOIN read_parquet('{r}/required_research_security.parquet') q USING (security_id)
+          WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
+          GROUP BY 1 ORDER BY 1
+        """).fetchall()
         status_overlap = scalar(connection, f"""
           SELECT COUNT(*) FROM (
             SELECT security_id, status_start,
@@ -104,6 +111,7 @@ def main() -> None:
     missing_factor_count = sum(int(row[2]) for row in event_rows)
     gate_pass = identity_failure_count == 0 and missing_factor_count == 0 and int(status_overlap) == 0
     quality = "RESEARCH_HIGH_CONFIDENCE" if gate_pass else "RESEARCH_EXPLORATORY"
+    research_start = "2013-01-01"
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
 
     year_text = ["| Year | Active ordinary | LIQUID_V1 | Top-750 | Identity failures | Sparse names |", "|---:|---:|---:|---:|---:|---:|"]
@@ -126,7 +134,9 @@ The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
     write(reports / "research_identity_promotion.md", "\n".join(identity_text))
     event_text = ["# Research universe corporate-action audit", "", "Material price actions are `SPLIT`, `REVERSE_SPLIT`, and `BONUS`.", "", "| Event type | Events | Missing factors |", "|---|---:|---:|"]
     event_text.extend(f"| `{kind}` | {events} | {missing} |" for kind, events, missing in event_rows)
-    event_text.extend(["", f"Material events with missing price/share factors: `{missing_factor_count}`.", f"Promotion gate: `{'PASS' if missing_factor_count == 0 else 'FAIL'}`.", "", "Rows remain traceable to `corporate_actions.parquet`; this report does not alter raw nominal prices."])
+    event_text.extend(["", f"Material events with missing price/share factors: `{missing_factor_count}`.", f"Promotion gate: `{'PASS' if missing_factor_count == 0 else 'FAIL'}`.", "", "## Boundary validation in the required scope", "", "| Boundary status | Distinct events |", "|---|---:|"])
+    event_text.extend(f"| `{status}` | {number} |" for status, number in boundary_rows)
+    event_text.extend(["", "A missing boundary price means that the adjacent official price is unavailable for continuity validation. It does not change the official factor or raw price. These cases remain explicit limitations.", "", "Rows remain traceable to `corporate_actions.parquet`; this report does not alter raw nominal prices."])
     write(reports / "research_universe_corporate_action_audit.md", "\n".join(event_text))
     adjustment_text = ["# Research price-adjustment promotion", "", "The recommended signal series is the price-return adjusted close. Raw nominal prices remain the execution series.", "", "| Adjustment quality | Rows |", "|---|---:|"]
     adjustment_text.extend(f"| `{kind}` | {number} |" for kind, number in adjustment_rows)
@@ -156,17 +166,18 @@ Low-liquidity securities outside this scope remain in the exploratory archive an
     manifest = {
         "release_id": release.name,
         "git_sha": git_sha,
-        "research_quality": {"status": quality, "start": str(coverage[0]), "end": str(coverage[1]), "universe_profile": "NSE_BROAD_LIQUID_PIT_V1", "profile_version": "LIQUID_V1", "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750"},
-        "source_coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10", "research_start": str(coverage[0]), "research_end": str(coverage[1])},
+        "research_quality": {"status": quality, "start": research_start, "end": str(coverage[1]), "monthly_snapshot_start": str(coverage[0]), "universe_profile": "NSE_BROAD_LIQUID_PIT_V1", "profile_version": "LIQUID_V1", "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750"},
+        "source_coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10", "research_start": research_start, "research_end": str(coverage[1])},
         "required_research_securities": int(required_count),
         "liquid_v1_securities": int(counts[3]),
         "identity_failures": identity_failure_count,
         "material_price_action_missing_factors": missing_factor_count,
+        "boundary_validation": dict(boundary_rows),
         "status_interval_overlaps": int(status_overlap),
-        "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "trading_status_intervals.parquet")},
+        "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet")},
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
-        "quality_reports": {name: sha256(reports / name) for name in ("research_universe_coverage.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "session_correct_liquidity_audit.md")},
+        "quality_reports": {name: sha256(reports / name) for name in ("research_universe_coverage.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md")},
         "known_policy": {"signals": "price-return adjusted close", "execution": "raw nominal OHLC", "terminal_values": "explicit recovery scenarios; no invented canonical value"},
     }
     (release / "research_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
