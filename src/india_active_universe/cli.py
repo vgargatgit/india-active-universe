@@ -10,7 +10,7 @@ COMMANDS = [
     "download-nse-history", "download-nse-reference-data", "normalize-market-data",
     "build-security-master", "resolve-identities", "build-listing-episodes",
     "build-corporate-actions", "build-raw-prices", "build-adjusted-prices",
-    "build-active-universe", "build-liquidity-features", "audit-data", "publish-release", "build",
+    "build-active-universe", "build-liquidity-features", "build-source-release", "audit-data", "publish-release", "build",
 ]
 CORE_SOURCE_STAGES = {
     "build-security-master", "resolve-identities", "build-listing-episodes",
@@ -29,6 +29,7 @@ def main() -> None:
     parser.add_argument("--adjusted-out", default="data/derived/daily_prices_adjusted.parquet")
     parser.add_argument("--release-id")
     parser.add_argument("--source-release")
+    parser.add_argument("--terminal-events")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     root = Path(args.root)
@@ -65,6 +66,18 @@ def main() -> None:
         if not prices.exists() or not events.exists():
             raise SystemExit("build-adjusted-prices requires canonical raw prices and corporate actions")
         command = [sys.executable, str(root / "scripts/apply_corporate_action_adjustments.py"), "--prices", str(prices), "--events", str(events), "--out", str(root / args.adjusted_out)]
+        if args.dry_run:
+            print(" ".join(command))
+            return
+        subprocess.run(command, check=True, cwd=root)
+    elif args.command == "build-source-release":
+        if not args.release_id or not args.terminal_events:
+            raise SystemExit("build-source-release requires --release-id and --terminal-events")
+        command = [sys.executable, str(root / "scripts/build_source_release.py"), "--root", str(root), "--release-id", args.release_id, "--terminal-events", args.terminal_events, "--raw", args.raw, "--corporate-actions", args.corporate_actions]
+        if args.start:
+            command.extend(["--start", args.start])
+        if args.end:
+            command.extend(["--end", args.end])
         if args.dry_run:
             print(" ".join(command))
             return

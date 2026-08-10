@@ -12,4 +12,6 @@ The current NSE source adapter builds identity rows, raw prices, active snapshot
 
 `india-equity-data build --start ... --end ...` runs this source-driven pass from the immutable cache and creates intermediates only. It does not publish a release. Release publication requires a verified parent release or a future complete source-release adapter.
 
+`india-equity-data build-source-release --release-id ... --terminal-events ...` is the fresh source-release adapter. It requires explicit terminal-event evidence, creates a separate build workspace, publishes Parquet artifacts, writes the release manifest, and runs the completion audit. It does not invent terminal values.
+
 Observations without one dated identity are not discarded. They are written to `data/canonical/unresolved_observed_trading.jsonl` with raw OHLCV, source hashes, candidate IDs, and an `UNRESOLVED` status. They cannot enter the canonical active universe until identity review resolves them.
