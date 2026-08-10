@@ -32,7 +32,8 @@
     "security_count": 3784
   },
   "definition": "ACTIVE_V1",
-  "git_commit": "NOT_CAPTURED_BY_BUILD",
+  "git_commit": "8bf7dbf",
+  "manifest_note": "Data artifacts built from the committed v1.9 pipeline state before API-only documentation updates.",
   "notes": "Adds one exact historical-symbol terminal-event resolution for CORAL-HUB and preserves the preceding observation gap as UNKNOWN_STATUS.",
   "parent_release_id": "india_equity_data_v1.8.0",
   "parser_versions": {
