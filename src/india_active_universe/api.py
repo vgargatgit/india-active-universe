@@ -11,6 +11,10 @@ def _as_date(value: str | date) -> date:
     return date.fromisoformat(value) if isinstance(value, str) else value
 
 
+class CoverageError(ValueError):
+    """The requested date is outside the trusted release coverage."""
+
+
 class SecurityMaster:
     """Date-sensitive identity lookup over a published security master."""
 
@@ -143,22 +147,47 @@ class ParquetStatusStore(StatusStore):
 
 
 class DataPlatform:
-    def __init__(self, root: str | Path = ".") -> None:
+    def __init__(self, root: str | Path = ".", *, strict: bool = False) -> None:
         self.root = Path(root)
+        self.strict = strict
+        self.coverage_start: date | None = None
+        self.coverage_end: date | None = None
         self.security_master = SecurityMaster()
         self.prices = PriceStore()
         self.universe = UniverseStore()
         self.status = StatusStore()
 
+    def _check_date(self, value: str | date) -> date:
+        point = _as_date(value)
+        if self.strict and ((self.coverage_start and point < self.coverage_start) or (self.coverage_end and point > self.coverage_end)):
+            raise CoverageError(f"Date {point} is outside release coverage {self.coverage_start} through {self.coverage_end}")
+        return point
+
+    def active_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
+        return self.universe.active_on(self._check_date(as_of_date))
+
+    def eligible_on(self, as_of_date: str | date, **kwargs: Any) -> list[dict[str, Any]]:
+        return self.universe.eligible_on(self._check_date(as_of_date), **kwargs)
+
+    def ranked_liquid_on(self, as_of_date: str | date, n: int, **kwargs: Any) -> list[dict[str, Any]]:
+        return self.universe.ranked_liquid_on(self._check_date(as_of_date), n, **kwargs)
+
+    def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
+        return self.status.status_on(self._check_date(as_of_date))
+
+    def history(self, security_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
+        begin, finish = self._check_date(start), self._check_date(end)
+        return self.prices.history(security_id, begin, finish)
+
     def get_active_universe(self, as_of_date: str | date) -> list[dict[str, Any]]:
-        return self.universe.active_on(as_of_date)
+        return self.active_on(as_of_date)
 
     def get_investable_universe(self, as_of_date: str | date, **kwargs: Any) -> list[dict[str, Any]]:
-        return self.universe.eligible_on(as_of_date, **kwargs)
+        return self.eligible_on(as_of_date, **kwargs)
 
     @classmethod
-    def from_jsonl(cls, root: str | Path = ".") -> "DataPlatform":
-        platform = cls(root)
+    def from_jsonl(cls, root: str | Path = ".", *, strict: bool = False) -> "DataPlatform":
+        platform = cls(root, strict=strict)
         base = platform.root
         def load(name: str) -> list[dict[str, Any]]:
             path = base / name
@@ -173,9 +202,15 @@ class DataPlatform:
         return platform
 
     @classmethod
-    def from_release(cls, release: str | Path) -> "DataPlatform":
+    def from_release(cls, release: str | Path, *, strict: bool = False) -> "DataPlatform":
         base = Path(release)
-        platform = cls(base)
+        platform = cls(base, strict=strict)
+        manifest_path = base / "data_release_manifest.json"
+        if manifest_path.exists():
+            import json
+            coverage = json.loads(manifest_path.read_text(encoding="utf-8")).get("coverage", {})
+            platform.coverage_start = _as_date(coverage["observed_start"]) if coverage.get("observed_start") else None
+            platform.coverage_end = _as_date(coverage["observed_end"]) if coverage.get("observed_end") else None
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)

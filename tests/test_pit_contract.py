@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import SecurityMaster, StatusStore, UniverseStore
+from india_active_universe.api import CoverageError, DataPlatform, SecurityMaster, StatusStore, UniverseStore
 
 
 def test_symbol_rename_is_date_sensitive():
@@ -39,3 +39,12 @@ def test_status_lookup_is_effective_dated():
     ])
     assert store.status_on("2016-01-01")[0]["trading_status"] == "SUSPENDED"
     assert store.status_on("2018-01-01")[0]["trading_status"] == "DELISTED"
+
+
+def test_strict_platform_rejects_out_of_range_dates():
+    platform = DataPlatform(strict=True)
+    platform.coverage_start = date(2006, 1, 2)
+    platform.coverage_end = date(2026, 8, 10)
+    platform.universe = UniverseStore([])
+    with pytest.raises(CoverageError):
+        platform.active_on("2006-01-01")
