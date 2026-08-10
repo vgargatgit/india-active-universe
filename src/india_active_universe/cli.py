@@ -25,6 +25,8 @@ def main() -> None:
     parser.add_argument("--end")
     parser.add_argument("--root", default=".")
     parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
+    parser.add_argument("--corporate-actions", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
+    parser.add_argument("--adjusted-out", default="data/derived/daily_prices_adjusted.parquet")
     parser.add_argument("--release-id")
     parser.add_argument("--source-release")
     parser.add_argument("--dry-run", action="store_true")
@@ -47,6 +49,22 @@ def main() -> None:
 
     if args.command == "download-nse-history":
         command = [str(root / "scripts/download_nse_history.sh"), args.start or "2006-01-01", args.end or date.today().isoformat(), str(root / args.raw)]
+        if args.dry_run:
+            print(" ".join(command))
+            return
+        subprocess.run(command, check=True, cwd=root)
+    elif args.command == "build-corporate-actions":
+        command = [sys.executable, str(root / "scripts/normalize_corporate_actions.py"), "--raw", str(root / args.corporate_actions), "--master", str(root / "data/canonical/security_master.jsonl"), "--out", str(root / "data/canonical/corporate_actions.jsonl")]
+        if args.dry_run:
+            print(" ".join(command))
+            return
+        subprocess.run(command, check=True, cwd=root)
+    elif args.command == "build-adjusted-prices":
+        prices = root / "data/canonical/daily_prices_raw.jsonl"
+        events = root / "data/canonical/corporate_actions.jsonl"
+        if not prices.exists() or not events.exists():
+            raise SystemExit("build-adjusted-prices requires canonical raw prices and corporate actions")
+        command = [sys.executable, str(root / "scripts/apply_corporate_action_adjustments.py"), "--prices", str(prices), "--events", str(events), "--out", str(root / args.adjusted_out)]
         if args.dry_run:
             print(" ".join(command))
             return
