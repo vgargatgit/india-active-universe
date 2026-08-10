@@ -1,6 +1,6 @@
 {
   "artifacts": {
-    "corporate_action_boundary_validation.parquet": "da56d744917894e1563107d93bb9069a20396841ae1f3c2c4c07ddc8bd07fac7",
+    "corporate_action_boundary_validation.parquet": "070b2fd1ea330de8836c076201d6c275bd56260e919af55fbf58efb082b84306",
     "corporate_actions.parquet": "95b44d9e4ad4c1d95bef624f7ff015bd79d69c071cf9f18788fc1b13c15ae361",
     "daily_prices_adjusted.parquet": "9bb9123d015553654b78737823d3b9cc66580b290399cedd3d1ab86c5dcb747b",
     "daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
@@ -10,12 +10,13 @@
     "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
   },
   "boundary_validation": {
-    "MISSING_BOUNDARY_PRICE": 267,
+    "NO_POST_EVENT_OBSERVATION": 241,
+    "NO_PRE_EVENT_OBSERVATION": 26,
     "PASS": 424,
     "WARNING_LARGE_BOUNDARY_MOVE": 60
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "ed39bcb97c2133594dc4b2c2eb8b94a01e3c9e6f",
+  "git_sha": "7c9e499012d6d4de9ce4307ce092bbc1bf623ab2",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -32,7 +33,7 @@
     "research_identity_promotion.md": "1075816b73feb2a0e46844f6a65995f7fa81d767962aa01e93783f54fa65ae95",
     "research_price_adjustment_promotion.md": "e357ea69b991bc6f1ce8d404a143e84d05e0b566907432a3bd2171bd0409cb55",
     "research_scale.md": "bea072ee0ce46bcd32d1b667897cf3f4d98e1ebcbb512b10c1c8fede533392e7",
-    "research_universe_corporate_action_audit.md": "1003670108b721e4601e2bf94687e021d5b0cdfc3a2c2bcc6b97422da8715847",
+    "research_universe_corporate_action_audit.md": "b251752bc292bd68da91488004d58a18e3cbb5e8a4ac0f06f5774371581f37e9",
     "research_universe_coverage.md": "ae1d6b978d99f2dda4c45ce1cd0ccc5b819f21bf05563bebd746b75816a3e539",
     "research_universe_stability.md": "b7d0be2d0b470d1f480b8e5571e21ec1f3289186877bafb8bc06fda3bdcf5756",
     "session_correct_liquidity_audit.md": "b79a4ec60304a00fdf16e8ecf8f4028edde28f2ade78bbe6399fe9c1fd8d0337",
@@ -57,5 +58,5 @@
     "research_start": "2013-01-01"
   },
   "status_interval_overlaps": 0,
-  "test_result_sha256": "f6b9db3f9f609361b9364482c6dfa1ec111c186d8099f37dba194f25fb047321"
+  "test_result_sha256": "931ab1e348a2b8ef94ab2b1d11ed56f896c8e08a72f155194e895c300cd34a3b"
 }

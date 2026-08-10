@@ -27,6 +27,21 @@ SCHEMA = pa.schema([
 ])
 
 
+def classify_boundary(pre_close: float | None, post_close: float | None, share_factor: float, warning_threshold: float) -> tuple[float | None, str]:
+    """Return holder-value ratio and an explicit boundary status."""
+    if pre_close is None and post_close is None:
+        return None, "NO_BOUNDARY_OBSERVATIONS"
+    if pre_close is None:
+        return None, "NO_PRE_EVENT_OBSERVATION"
+    if post_close is None:
+        return None, "NO_POST_EVENT_OBSERVATION"
+    if pre_close <= 0:
+        return None, "INVALID_PRE_EVENT_PRICE"
+    ratio = float(post_close * share_factor / pre_close)
+    status = "PASS" if abs(ratio - 1.0) <= warning_threshold else "WARNING_LARGE_BOUNDARY_MOVE"
+    return ratio, status
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--events", required=True)
@@ -60,11 +75,7 @@ def main() -> None:
     raw = con.execute(query, [args.events, args.prices]).fetchall()
     rows = []
     for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close in raw:
-        ratio = None
-        status = "MISSING_BOUNDARY_PRICE"
-        if pre_close is not None and post_close is not None and pre_close > 0:
-            ratio = float(post_close * share_factor / pre_close)
-            status = "PASS" if abs(ratio - 1.0) <= args.warning_threshold else "WARNING_LARGE_BOUNDARY_MOVE"
+        ratio, status = classify_boundary(pre_close, post_close, share_factor, args.warning_threshold)
         rows.append({
             "event_id": event_id, "security_id": security_id, "event_type": event_type, "ex_date": ex_date,
             "price_factor": price_factor, "share_factor": share_factor,
