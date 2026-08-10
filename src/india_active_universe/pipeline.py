@@ -2,11 +2,24 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date
+import re
 from statistics import mean, median
 from typing import Any, Iterable
 
 from .models import DailyObservation, InstrumentType, TradingStatus
 from .quality import QualityFinding, validate_ohlc
+
+
+def classify_instrument_type(symbol: str | None, company_name: str | None) -> str:
+    """Classify only unambiguous non-company markers; default conservatively."""
+    text = f"{symbol or ''} {company_name or ''}".upper()
+    if re.search(r"ETF|BEES|LIQUID", text) or re.search(r"AMC\s*[-–]", text):
+        return InstrumentType.ETF.value
+    if re.search(r"\bREIT\b", text):
+        return InstrumentType.REIT.value
+    if re.search(r"\bINVIT\b", text):
+        return InstrumentType.INVIT.value
+    return InstrumentType.ORDINARY_EQUITY.value
 
 
 def discover_securities(observations: Iterable[DailyObservation]) -> list[dict[str, Any]]:
@@ -16,7 +29,9 @@ def discover_securities(observations: Iterable[DailyObservation]) -> list[dict[s
         # ISIN changes can represent a replacement security under a reused ticker.
         # Keep those discovery records separate; never collapse them by ticker.
         key = (observation.exchange, observation.symbol, observation.series, observation.isin or "")
-        row = seen.setdefault(key, {"exchange": observation.exchange, "symbol": observation.symbol, "series": observation.series, "instrument_type": InstrumentType.ORDINARY_EQUITY.value, "first_seen": observation.date, "last_seen": observation.date, "isins": set(), "company_names": set()})
+        row = seen.setdefault(key, {"exchange": observation.exchange, "symbol": observation.symbol, "series": observation.series, "instrument_type": classify_instrument_type(observation.symbol, observation.company_name), "first_seen": observation.date, "last_seen": observation.date, "isins": set(), "company_names": set()})
+        if classify_instrument_type(observation.symbol, observation.company_name) != InstrumentType.ORDINARY_EQUITY.value:
+            row["instrument_type"] = classify_instrument_type(observation.symbol, observation.company_name)
         row["first_seen"] = min(row["first_seen"], observation.date)
         row["last_seen"] = max(row["last_seen"], observation.date)
         if observation.isin:

@@ -4,7 +4,7 @@ import pytest
 
 from india_active_universe.api import CoverageError, DataPlatform, SecurityMaster, StatusStore, UniverseStore
 from india_active_universe.models import DailyObservation
-from india_active_universe.pipeline import discover_securities
+from india_active_universe.pipeline import classify_instrument_type, discover_securities
 
 
 def test_symbol_rename_is_date_sensitive():
@@ -59,3 +59,8 @@ def test_symbol_reuse_with_isin_creates_separate_discovery_records():
     ]
     discovered = discover_securities(observations)
     assert {row["candidate_isin"] for row in discovered} == {"INEOLD", "INENEW"}
+
+
+def test_explicit_etf_markers_are_not_ordinary_equity():
+    assert classify_instrument_type("BANKBEES", "NIP IND ETF BANK BEES") == "ETF"
+    assert classify_instrument_type("ABC", "ABC INDUSTRIES LIMITED") == "ORDINARY_EQUITY"
