@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
+from india_active_universe.identity import apply_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import classify_instrument_type, discover_securities
 
@@ -29,6 +30,14 @@ def test_effective_company_and_isin_histories_are_date_sensitive():
     assert names.name_at("ISS1", "2017-01-01") == "NEW NAME"
     assert isins.isin_at("SEC1", "2014-01-01") == "OLDISIN"
     assert isins.isin_at("SEC1", "2017-01-01") == "NEWISIN"
+
+
+def test_approved_manual_override_is_explicitly_applied():
+    identities = [{"security_id": "SEC1", "exchange": "NSE", "series": "EQ", "effective_from": date(2010, 1, 1), "effective_to": date(2020, 12, 31), "identity_quality": "PARTIAL"}]
+    overrides = [{"exchange": "NSE", "symbol": "ABC", "series": "EQ", "effective_from": date(2015, 1, 1), "effective_to": date(2015, 12, 31), "security_id": "SEC1", "evidence_references": ["NSE_NOTICE_1"], "rationale": "Official symbol notice", "review_status": "APPROVED"}]
+    matches = apply_manual_overrides(identities, overrides)
+    assert identities[0]["identity_source"] == "MANUAL_APPROVED_OVERRIDE"
+    assert matches[0]["security_id"] == "SEC1"
 
 
 def test_date_free_ambiguity_is_rejected():

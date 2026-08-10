@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from datetime import date
+from pathlib import Path
 from typing import Any, Iterable
 
 from .models import IdentityQuality
@@ -28,6 +29,69 @@ def build_identity_rows(discovered: Iterable[dict[str, Any]], *, canonicalizatio
         quality = IdentityQuality.SINGLE_OFFICIAL_SOURCE.value if identity_basis else IdentityQuality.PARTIAL.value
         output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "identity_quality": quality, "identity_source": "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None, "review_status": "REVIEW_REQUIRED" if not identity_basis else "UNREVIEWED", "canonicalization_version": canonicalization_version})
     return output
+
+
+def load_manual_overrides(path: str | Path) -> list[dict[str, Any]]:
+    """Load only approved, non-overlapping, evidence-backed overrides."""
+    source = Path(path)
+    if not source.exists():
+        return []
+    try:
+        import yaml
+    except ImportError as exc:
+        text = source.read_text(encoding="utf-8")
+        active_lines = [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+        if active_lines == [] or active_lines == ["overrides: []"]:
+            return []
+        raise RuntimeError("PyYAML is required for non-empty manual identity overrides") from exc
+    payload = yaml.safe_load(source.read_text(encoding="utf-8")) or {}
+    overrides = payload.get("overrides")
+    if not isinstance(overrides, list):
+        raise ValueError("manual identity overrides must contain an overrides list")
+    output = []
+    ranges: list[tuple[str, str, str, date, date]] = []
+    required = {"exchange", "symbol", "series", "effective_from", "effective_to", "security_id", "evidence_references", "rationale", "review_status"}
+    for index, override in enumerate(overrides):
+        if not isinstance(override, dict) or required - set(override):
+            raise ValueError(f"manual override {index} is missing required fields")
+        if override["exchange"] != "NSE" or override["series"] != "EQ" or not str(override["symbol"]).strip():
+            raise ValueError(f"manual override {index} must target a non-empty NSE EQ symbol")
+        start = date.fromisoformat(str(override["effective_from"]))
+        end = date.fromisoformat(str(override["effective_to"]))
+        if end < start or override["review_status"] != "APPROVED":
+            raise ValueError(f"manual override {index} has an invalid range or review status")
+        if not isinstance(override["evidence_references"], list) or not override["evidence_references"] or not str(override["rationale"]).strip():
+            raise ValueError(f"manual override {index} needs evidence references and rationale")
+        key = (override["exchange"], str(override["symbol"]).upper(), override["series"])
+        for old_exchange, old_symbol, old_series, old_start, old_end in ranges:
+            if key == (old_exchange, old_symbol, old_series) and start <= old_end and old_start <= end:
+                raise ValueError(f"overlapping manual override range for {key}")
+        ranges.append((*key, start, end))
+        output.append({**override, "symbol": key[1], "effective_from": start, "effective_to": end})
+    return output
+
+
+def apply_manual_overrides(identities: list[dict[str, Any]], overrides: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return compact dated overrides and annotate the affected canonical rows."""
+    by_security = {row["security_id"]: row for row in identities}
+    applied = []
+    for override in overrides:
+        identity = by_security.get(override["security_id"])
+        if identity is None:
+            raise ValueError(f"manual override references unknown security_id {override['security_id']}")
+        if identity["exchange"] != override["exchange"] or identity["series"] != override["series"]:
+            raise ValueError(f"manual override security does not match exchange or series: {override['security_id']}")
+        if identity["effective_to"] < override["effective_from"] or override["effective_to"] < identity["effective_from"]:
+            raise ValueError(f"manual override does not overlap security history: {override['security_id']}")
+        identity.update({
+            "identity_quality": IdentityQuality.MULTI_SOURCE_VERIFIED.value,
+            "identity_source": "MANUAL_APPROVED_OVERRIDE",
+            "review_status": "APPROVED",
+            "source_reference": ";".join(str(item) for item in override["evidence_references"]),
+            "notes": str(override["rationale"]),
+        })
+        applied.append(override)
+    return applied
 
 
 def resolve_symbol(rows: Iterable[dict[str, Any]], symbol: str, as_of: date, *, exchange: str = "NSE", series: str = "EQ") -> dict[str, Any]:

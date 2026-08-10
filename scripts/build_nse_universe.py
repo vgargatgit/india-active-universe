@@ -5,7 +5,7 @@ import hashlib
 from datetime import date
 from pathlib import Path
 
-from india_active_universe.identity import build_identity_rows
+from india_active_universe.identity import apply_manual_overrides, build_identity_rows, load_manual_overrides
 from india_active_universe.nse import parse_bhavcopy
 from india_active_universe.pipeline import build_active_universe, discover_securities, liquidity_features, validate_observations
 from india_active_universe.storage import write_jsonl
@@ -25,6 +25,7 @@ def main() -> None:
     parser.add_argument("--out", default="data")
     parser.add_argument("--start")
     parser.add_argument("--end")
+    parser.add_argument("--manual-overrides", default="data/reference/manual_identity_overrides.yaml")
     args = parser.parse_args()
     start = date.fromisoformat(args.start) if args.start else None
     end = date.fromisoformat(args.end) if args.end else None
@@ -52,6 +53,8 @@ def main() -> None:
     findings.extend({"check": item.check, "severity": item.severity, "source_file_id": item.source_file_id, "security_id": item.security_id, "observed_date": item.observed_date, "message": item.message} for item in validate_observations(observations))
     discovered = discover_securities(observations)
     identities = build_identity_rows(discovered)
+    overrides = load_manual_overrides(args.manual_overrides)
+    apply_manual_overrides(identities, overrides)
     by_key = {}
     by_symbol = {}
     for row in identities:
@@ -60,8 +63,14 @@ def main() -> None:
         by_symbol.setdefault((row["exchange"], row["symbol"], row["series"]), []).append(row)
     raw_rows = []
     for item in observations:
-        exact = by_key.get((item.exchange, item.symbol, item.series, item.isin or ""), [])
-        candidates = exact or (by_symbol.get((item.exchange, item.symbol, item.series), []) if not item.isin else [])
+        applicable = [override for override in overrides if override["exchange"] == item.exchange and override["series"] == item.series and override["symbol"] == item.symbol and override["effective_from"] <= item.date <= override["effective_to"]]
+        if len(applicable) > 1:
+            candidates = []
+        elif applicable:
+            candidates = [row for row in identities if row["security_id"] == applicable[0]["security_id"] and row["effective_from"] <= item.date <= row["effective_to"]]
+        else:
+            exact = by_key.get((item.exchange, item.symbol, item.series, item.isin or ""), [])
+            candidates = exact or (by_symbol.get((item.exchange, item.symbol, item.series), []) if not item.isin else [])
         if len(candidates) != 1:
             findings.append({"source_file_id": item.source_file_id, "severity": "ERROR", "check": "IDENTITY_AMBIGUOUS", "security_id": None, "observed_date": item.date.isoformat(), "message": f"No unique identity for {item.exchange}:{item.symbol}:{item.series} with ISIN {item.isin!r}"})
             continue
