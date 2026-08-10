@@ -57,6 +57,22 @@ def face_value_transition(subject: str, event_type: str) -> tuple[float | None, 
     return values[0], values[1], values[1] / values[0]
 
 
+def dividend_amount(subject: str, face_value: object, event_type: str) -> tuple[float | None, str | None]:
+    if event_type != "DIVIDEND":
+        return None, None
+    amounts = [float(value) for value in re.findall(r"RS\.?\s*(\d+(?:\.\d+)?)", subject.upper())]
+    if amounts:
+        return sum(amounts), "OFFICIAL_SUBJECT_RUPEE_AMOUNT"
+    percentages = [float(value) for value in re.findall(r"(\d+(?:\.\d+)?)\s*%", subject.upper())]
+    try:
+        face = float(face_value)
+    except (TypeError, ValueError):
+        face = None
+    if percentages and face is not None and face > 0:
+        return face * sum(percentages) / 100.0, "OFFICIAL_FACE_VALUE_PERCENT"
+    return None, None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--raw", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
@@ -74,6 +90,7 @@ def main() -> None:
         event_type = classify(subject)
         numerator, denominator, ratio_raw = ratio(subject)
         old_face_value, new_face_value, face_price_factor = face_value_transition(subject, event_type)
+        cash_dividend_per_share, dividend_amount_quality = dividend_amount(subject, item.get("faceVal"), event_type)
         event_date = parse_date(item.get("exDate")) or parse_date(item.get("recDate"))
         if not event_date:
             continue
@@ -85,7 +102,7 @@ def main() -> None:
         if event_type in {"SPLIT", "REVERSE_SPLIT"} and face_price_factor is not None:
             price_factor = face_price_factor
             share_factor = 1.0 / face_price_factor
-        output.append({"event_id": f"NSE_CA_{index:06d}", "security_id": isin_to_security.get(item.get("isin")), "issuer_id": None, "exchange": "NSE", "symbol_at_event": item.get("symbol"), "isin": item.get("isin"), "series": item.get("series"), "event_type": event_type, "event_date": event_date, "ex_date": parse_date(item.get("exDate")), "record_date": parse_date(item.get("recDate")), "subject": subject, "face_value": item.get("faceVal"), "old_face_value": old_face_value, "new_face_value": new_face_value, "ratio_raw": ratio_raw, "ratio_numerator": numerator, "ratio_denominator": denominator, "price_factor": price_factor, "share_factor": share_factor, "source": "NSE_OFFICIAL_CORPORATE_ACTION_FEED", "source_file_id": Path(args.raw).name, "source_quality": "OFFICIAL_EXCHANGE_ACTION_FEED", "review_status": "RESOLVED_BY_ISIN" if item.get("isin") in isin_to_security else "IDENTITY_REVIEW_REQUIRED", "notes": None})
+        output.append({"event_id": f"NSE_CA_{index:06d}", "security_id": isin_to_security.get(item.get("isin")), "issuer_id": None, "exchange": "NSE", "symbol_at_event": item.get("symbol"), "isin": item.get("isin"), "series": item.get("series"), "event_type": event_type, "event_date": event_date, "ex_date": parse_date(item.get("exDate")), "record_date": parse_date(item.get("recDate")), "subject": subject, "face_value": item.get("faceVal"), "old_face_value": old_face_value, "new_face_value": new_face_value, "cash_dividend_per_share": cash_dividend_per_share, "dividend_currency": "INR" if cash_dividend_per_share is not None else None, "dividend_amount_quality": dividend_amount_quality, "ratio_raw": ratio_raw, "ratio_numerator": numerator, "ratio_denominator": denominator, "price_factor": price_factor, "share_factor": share_factor, "source": "NSE_OFFICIAL_CORPORATE_ACTION_FEED", "source_file_id": Path(args.raw).name, "source_quality": "OFFICIAL_EXCHANGE_ACTION_FEED", "review_status": "RESOLVED_BY_ISIN" if item.get("isin") in isin_to_security else "IDENTITY_REVIEW_REQUIRED", "notes": None})
     write_jsonl(args.out, output, overwrite=True)
     print(json.dumps({"events": len(output), "linked_security_ids": sum(row["security_id"] is not None for row in output), "unresolved_identity": sum(row["security_id"] is None for row in output)}, sort_keys=True))
 
