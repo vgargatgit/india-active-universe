@@ -40,7 +40,7 @@
     "security_count": 5745
   },
   "definition": "ACTIVE_V1",
-  "git_commit": "d9854a5723809c36d36ef6d39453533e346f2c9a",
+  "git_commit": "f4cff419d0f993cc4ad15315c5af9234f3182f38",
   "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
   "parser_versions": {
     "canonicalization": "identity-v1",

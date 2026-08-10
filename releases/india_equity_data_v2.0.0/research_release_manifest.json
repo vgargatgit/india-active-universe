@@ -15,7 +15,7 @@
     "WARNING_LARGE_BOUNDARY_MOVE": 59
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "d9854a5723809c36d36ef6d39453533e346f2c9a",
+  "git_sha": "f4cff419d0f993cc4ad15315c5af9234f3182f38",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -31,7 +31,7 @@
     "research_identity_promotion.md": "ae3d9480c24560027ddd4ab24cfacc95a961946ebad9cdb0aa6c173364e69142",
     "research_price_adjustment_promotion.md": "58e2261b4228ab92642a2d4acf54d47925516e9c475ff507fabab74393a51836",
     "research_scale.md": "faea7f41b0425d616ee532dea8fce412686fbce27572fb0370cc2f10e88c4cce",
-    "research_universe_corporate_action_audit.md": "dfb101e18791ab6c622bd400ab8e9f6ebc35fdedfdbcee7c609795cf144a5b50",
+    "research_universe_corporate_action_audit.md": "f066f9a6e05f11b3e596f524f00ec56b39ee60e05a898adee48ac6acfc781f05",
     "research_universe_coverage.md": "e489e6b36d6a8c6020d72111731803e39e75ddb8d43b5d336111ef48b51176a4",
     "research_universe_stability.md": "b18deb6cebe6b648cba132398e3b5d96e3db4c8357bdf174791317cee88a1cc1",
     "session_correct_liquidity_audit.md": "b79a4ec60304a00fdf16e8ecf8f4028edde28f2ade78bbe6399fe9c1fd8d0337",
