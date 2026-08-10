@@ -45,7 +45,7 @@ def main() -> None:
         subprocess.run(command, check=True)
 
     if args.command == "normalize-market-data":
-        command = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(root / args.raw), "--out", str(root / "data")]
+        command = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(root / args.raw), "--out", str(root / "data"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")]
         if args.start:
             command.extend(["--start", args.start])
         if args.end:
