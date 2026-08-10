@@ -1,12 +1,12 @@
 {
   "artifacts": {
-    "corporate_action_boundary_validation.parquet": "85a5d744bf839732b7c3900e2c674b12aba3791c55f55fb5b746574c1bf1092a",
+    "corporate_action_boundary_validation.parquet": "da56d744917894e1563107d93bb9069a20396841ae1f3c2c4c07ddc8bd07fac7",
     "corporate_actions.parquet": "95b44d9e4ad4c1d95bef624f7ff015bd79d69c071cf9f18788fc1b13c15ae361",
     "daily_prices_adjusted.parquet": "9bb9123d015553654b78737823d3b9cc66580b290399cedd3d1ab86c5dcb747b",
-    "daily_prices_raw.parquet": "714d6631efd95ce00fad7b7f295ab29060f62e2263759902699dab275667b661",
-    "liquidity_features.parquet": "9fc5f1adff82aaf41fb9f536500288b8716f05a6b94b269fd3682c02156e8d28",
-    "required_research_security.parquet": "1457349d6d1720180dd59f10e337762005eddc3e1a99371e4689f8f822b60779",
-    "research_universe_monthly.parquet": "53e3df6973ae2fcab79925d889782fcb63adc5a136aaeae0157f9e11afbbbe32",
+    "daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
+    "liquidity_features.parquet": "a3bc114a41b46a6abdedc22b4956a72a6c13927ab2b8e7ef4547ee14c9a679a4",
+    "required_research_security.parquet": "ecf59c0170912e0a089b1eb54349b4bf05a131eb353ff08faf4d5070727a0066",
+    "research_universe_monthly.parquet": "362c8aebe52b092bdfc0c487e7a100eb24d06895d201c5e8266495e93940f99c",
     "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
   },
   "boundary_validation": {
@@ -15,7 +15,7 @@
     "WARNING_LARGE_BOUNDARY_MOVE": 59
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "f4cff419d0f993cc4ad15315c5af9234f3182f38",
+  "git_sha": "bf669a74bbebda6fe97e4d489349de90c7985340",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -27,7 +27,7 @@
   "material_price_action_missing_factors": 0,
   "quality_reports": {
     "current_survivor_comparison.md": "9b5ee9d9428ed71e23bb3c07f163a08f884a9da541963ac461222f8533ed2b3c",
-    "research_identity_priority.md": "b57206d764a61548b2b5d155bc97efde350d38cf8ceaa4dc3e16e283fa770e09",
+    "research_identity_priority.md": "ff567b60ac9b3d501179931b6641ddacd10cdfa32dc3f87d5c6357d0827de1dc",
     "research_identity_promotion.md": "ae3d9480c24560027ddd4ab24cfacc95a961946ebad9cdb0aa6c173364e69142",
     "research_price_adjustment_promotion.md": "58e2261b4228ab92642a2d4acf54d47925516e9c475ff507fabab74393a51836",
     "research_scale.md": "faea7f41b0425d616ee532dea8fce412686fbce27572fb0370cc2f10e88c4cce",
