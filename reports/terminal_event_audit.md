@@ -1,6 +1,6 @@
 # Terminal event audit
 
-Release `india_equity_data_v1.7.0` contains 1,903 terminal-event rows: 95 dated compulsory-delisting notices, 452 official-workbook rows requiring identity review, and 1,356 observation-gap unknowns. Its status intervals link 86 dated compulsory delistings and retain 1,270 post-observation intervals as `UNKNOWN_STATUS`. Active and delisted status intervals do not overlap. The official delisted workbook has no exit-price field. No terminal value is assigned; downstream consumers must treat terminal value as unknown rather than zero until the event and identity are fully linked.
+Release `india_equity_data_v1.9.0` contains 1,903 terminal-event rows: 95 dated compulsory-delisting notices, 452 official-workbook rows requiring identity review, and 1,356 observation-gap unknowns. One additional exact-symbol event is resolved for `CORAL-HUB`; its status remains `UNKNOWN_STATUS` from the observation gap until the documented 2017 delisting date, then becomes `DELISTED`. Its status intervals contain no overlaps. The official delisted workbook has no exit-price field. No terminal value is assigned; downstream consumers must treat terminal value as unknown rather than zero until the event and identity are fully linked.
 
 The release also contains 60 NSE notice documents. Twelve have relevant readable delisting text, three need relevance review, nine are unrelated readable documents, and 36 are scanned documents that need OCR. Notice evidence does not change canonical status until identity and event dates are reviewed.
 
