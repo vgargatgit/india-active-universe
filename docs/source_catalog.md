@@ -17,4 +17,4 @@ Yahoo Finance and other public providers may compare overlapping observations bu
 
 Each retrieval is cached without overwrite and recorded in a manifest with URL, retrieval time, source date, SHA256, HTTP metadata, parser version, and status. HTML/error payloads fail integrity validation.
 
-The initial bulk loader uses the official legacy NSE equity archive pattern for historical dates (`cmDDMONYYYYbhav.csv.zip`) and the official CM UDiFF pattern for newer dates. Missing exchange holidays remain missing rather than becoming synthetic sessions.
+The initial bulk loader uses the official legacy NSE equity archive pattern for historical dates (`cmDDMONYYYYbhav.csv.zip`) and the official CM UDiFF pattern for newer dates. Each response is downloaded to a temporary file, checked as a ZIP with required market columns, and moved into RAW only after validation. Existing invalid files are never overwritten. Missing exchange holidays remain missing rather than becoming synthetic sessions.
