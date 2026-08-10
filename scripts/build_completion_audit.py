@@ -49,6 +49,10 @@ def main() -> None:
     adjusted = release / "daily_prices_adjusted.parquet"
     if adjusted.exists():
         quality = dict(con.execute("SELECT total_return_quality, count(*) FROM read_parquet(?) GROUP BY 1", [str(adjusted)]).fetchall())
+    boundary_path = release / "corporate_action_boundary_validation.parquet"
+    boundary_quality = {}
+    if boundary_path.exists():
+        boundary_quality = dict(con.execute("SELECT validation_status, count(*) FROM read_parquet(?) GROUP BY 1", [str(boundary_path)]).fetchall())
 
     rows = [
         f"# Release completion audit: `{manifest['release_id']}`",
@@ -66,6 +70,7 @@ def main() -> None:
         f"- Suspended intervals: {suspended_count:,}." if suspended_count is not None else "- Suspended intervals: not measured.",
         f"- Status interval overlaps: {overlap_count:,}." if overlap_count is not None else "- Status interval overlaps: not measured.",
         f"- Adjusted-price quality counts: `{quality}`.",
+        f"- Corporate-action boundary validation: `{boundary_quality}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
         "",
         "## Required artifact checks",
         "",
