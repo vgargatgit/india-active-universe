@@ -71,3 +71,11 @@ def test_terminal_recovery_scenarios_do_not_create_canonical_value():
     scenarios = store.recovery_scenarios("DEAD", last_observed_price=12.5)
     assert {row["scenario"] for row in scenarios} == {"ZERO_RECOVERY", "LAST_OBSERVED_PRICE"}
     assert all(row["canonical"] is False for row in scenarios)
+
+
+def test_optional_positive_volume_filter_is_downstream_only():
+    store = UniverseStore([
+        {"date": date(2020, 1, 1), "security_id": "A", "active": True, "close": 20.0, "history_sessions": 60, "zero_volume_days_60": 10, "median_traded_value_60": 6_000_000},
+        {"date": date(2020, 1, 1), "security_id": "B", "active": True, "close": 20.0, "history_sessions": 60, "zero_volume_days_60": 5, "median_traded_value_60": 6_000_000},
+    ])
+    assert [row["security_id"] for row in store.eligible_on("2020-01-01", min_positive_volume_days_60=55)] == ["B"]

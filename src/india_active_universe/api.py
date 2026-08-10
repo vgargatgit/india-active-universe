@@ -68,9 +68,12 @@ class UniverseStore:
         point = _as_date(as_of_date)
         return [row for row in self.rows if row.get("date") == point and row.get("active") is True]
 
-    def eligible_on(self, as_of_date: str | date, *, min_price: float | None = None, min_history_sessions: int = 0, min_median_traded_value_60: float | None = None) -> list[dict[str, Any]]:
+    def eligible_on(self, as_of_date: str | date, *, min_price: float | None = None, min_history_sessions: int = 0, min_positive_volume_days_60: int | None = None, min_median_traded_value_60: float | None = None) -> list[dict[str, Any]]:
         rows = self.active_on(as_of_date)
-        return [row for row in rows if (min_price is None or (row.get("close") is not None and row["close"] >= min_price)) and row.get("history_sessions", 0) >= min_history_sessions and (min_median_traded_value_60 is None or row.get("median_traded_value_60", 0) >= min_median_traded_value_60)]
+        def positive_volume_days(row: dict[str, Any]) -> int:
+            sessions = min(row.get("history_sessions", 0), 60)
+            return max(0, sessions - (row.get("zero_volume_days_60") or 0))
+        return [row for row in rows if (min_price is None or (row.get("close") is not None and row["close"] >= min_price)) and row.get("history_sessions", 0) >= min_history_sessions and (min_positive_volume_days_60 is None or positive_volume_days(row) >= min_positive_volume_days_60) and (min_median_traded_value_60 is None or row.get("median_traded_value_60", 0) >= min_median_traded_value_60)]
 
     def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
         rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
