@@ -146,6 +146,23 @@ class ParquetStatusStore(StatusStore):
         ]
 
 
+class TerminalEventStore:
+    """Terminal events and explicit downstream recovery scenarios."""
+
+    def __init__(self, rows: Iterable[dict[str, Any]] = ()) -> None:
+        self.rows = list(rows)
+
+    def recovery_scenarios(self, security_id: str, *, last_observed_price: float | None = None) -> list[dict[str, Any]]:
+        output = []
+        for event in (row for row in self.rows if row.get("security_id") == security_id):
+            common = {"security_id": security_id, "event_id": event.get("event_id"), "terminal_event_type": event.get("terminal_event_type")}
+            output.append({**common, "scenario": "ZERO_RECOVERY", "value": 0.0, "value_basis": "DOWNSTREAM_ASSUMPTION", "canonical": False})
+            output.append({**common, "scenario": "LAST_OBSERVED_PRICE", "value": last_observed_price, "value_basis": "LAST_OBSERVED_RAW_CLOSE", "canonical": False})
+            if event.get("terminal_value") is not None:
+                output.append({**common, "scenario": "DOCUMENTED_VALUE", "value": event["terminal_value"], "value_basis": event.get("terminal_value_basis"), "canonical": True})
+        return output
+
+
 class DataPlatform:
     def __init__(self, root: str | Path = ".", *, strict: bool = False) -> None:
         self.root = Path(root)
@@ -156,6 +173,7 @@ class DataPlatform:
         self.prices = PriceStore()
         self.universe = UniverseStore()
         self.status = StatusStore()
+        self.terminal_events = TerminalEventStore()
 
     def _check_date(self, value: str | date) -> date:
         point = _as_date(value)
@@ -178,6 +196,14 @@ class DataPlatform:
     def history(self, security_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
         begin, finish = self._check_date(start), self._check_date(end)
         return self.prices.history(security_id, begin, finish)
+
+    def terminal_recovery_scenarios(self, security_id: str) -> list[dict[str, Any]]:
+        last_price = None
+        if self.coverage_start and self.coverage_end:
+            history = self.prices.history(security_id, self.coverage_start, self.coverage_end)
+            if history:
+                last_price = history[-1].get("raw_close", history[-1].get("close"))
+        return self.terminal_events.recovery_scenarios(security_id, last_observed_price=last_price)
 
     def get_active_universe(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.active_on(as_of_date)
@@ -218,6 +244,8 @@ class DataPlatform:
         platform.prices = ParquetPriceStore(base / "daily_prices_raw.parquet")
         status_path = base / "trading_status_intervals.parquet"
         platform.status = ParquetStatusStore(status_path) if status_path.exists() else StatusStore()
+        terminal_path = base / "terminal_events.parquet"
+        platform.terminal_events = TerminalEventStore(parquet.read_table(terminal_path).to_pylist() if terminal_path.exists() else [])
         return platform
 
 

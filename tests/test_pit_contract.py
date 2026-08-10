@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import CoverageError, DataPlatform, SecurityMaster, StatusStore, UniverseStore
+from india_active_universe.api import CoverageError, DataPlatform, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import classify_instrument_type, discover_securities
 
@@ -64,3 +64,10 @@ def test_symbol_reuse_with_isin_creates_separate_discovery_records():
 def test_explicit_etf_markers_are_not_ordinary_equity():
     assert classify_instrument_type("BANKBEES", "NIP IND ETF BANK BEES") == "ETF"
     assert classify_instrument_type("ABC", "ABC INDUSTRIES LIMITED") == "ORDINARY_EQUITY"
+
+
+def test_terminal_recovery_scenarios_do_not_create_canonical_value():
+    store = TerminalEventStore([{"security_id": "DEAD", "event_id": "E1", "terminal_event_type": "COMPULSORY_DELISTING", "terminal_value": None}])
+    scenarios = store.recovery_scenarios("DEAD", last_observed_price=12.5)
+    assert {row["scenario"] for row in scenarios} == {"ZERO_RECOVERY", "LAST_OBSERVED_PRICE"}
+    assert all(row["canonical"] is False for row in scenarios)
