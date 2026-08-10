@@ -12,6 +12,10 @@ COMMANDS = [
     "build-corporate-actions", "build-raw-prices", "build-adjusted-prices",
     "build-active-universe", "build-liquidity-features", "audit-data", "publish-release", "build",
 ]
+CORE_SOURCE_STAGES = {
+    "build-security-master", "resolve-identities", "build-listing-episodes",
+    "build-raw-prices", "build-active-universe", "build-liquidity-features",
+}
 
 
 def main() -> None:
@@ -47,7 +51,7 @@ def main() -> None:
             print(" ".join(command))
             return
         subprocess.run(command, check=True, cwd=root)
-    elif args.command == "normalize-market-data":
+    elif args.command in CORE_SOURCE_STAGES or args.command == "normalize-market-data":
         command = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(root / args.raw), "--out", str(root / "data"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")]
         if args.start:
             command.extend(["--start", args.start])
@@ -56,6 +60,8 @@ def main() -> None:
         if args.dry_run:
             print(" ".join(command))
             return
+        if args.command in CORE_SOURCE_STAGES:
+            print(f"Stage '{args.command}' uses the coupled NSE source builder")
         subprocess.run(command, check=True, cwd=root)
     elif args.command == "audit-data":
         if not args.release_id:
