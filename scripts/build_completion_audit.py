@@ -77,8 +77,14 @@ def main() -> None:
         "## Required artifact checks",
         "",
     ]
+    failures = []
+    if manifest.get("release_id") != release.name:
+        failures.append(f"manifest release_id {manifest.get('release_id')!r} does not match directory {release.name!r}")
     for name in REQUIRED:
-        rows.append(f"- {'PASS' if (release / name).exists() else 'FAIL'}: `{name}`")
+        present = (release / name).exists()
+        rows.append(f"- {'PASS' if present else 'FAIL'}: `{name}`")
+        if not present:
+            failures.append(f"missing required artifact: {name}")
     rows += [
         "",
         "## Explicit limitations",
@@ -92,6 +98,11 @@ def main() -> None:
     ]
     Path(args.out).write_text("\n".join(rows), encoding="utf-8")
     print(f"WROTE {args.out}")
+    if failures:
+        print("RELEASE_AUDIT_FAILED")
+        for failure in failures:
+            print(f"- {failure}")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
