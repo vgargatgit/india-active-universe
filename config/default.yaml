@@ -1,0 +1,20 @@
+project_id: india-active-universe
+market:
+  exchange: NSE
+  series: [EQ]
+  instrument_type: ORDINARY_EQUITY
+coverage:
+  target_start: 2013-01-01
+  preferred_start: 2010-01-01
+active_definition:
+  version: ACTIVE_V1
+  rule: "ordinary NSE EQ security with a valid qualifying official trading record on date"
+quality:
+  strict: false
+  minimum_identity_for_research: RECONSTRUCTED_HIGH_CONFIDENCE
+storage:
+  raw: data/raw
+  normalized: data/normalized
+  canonical: data/canonical
+  derived: data/derived
+  releases: releases

@@ -1,0 +1,8 @@
+# Convenience consumer profiles. These are not canonical universe semantics.
+LIQUID_V1:
+  active_definition: ACTIVE_V1
+  min_price: 20
+  min_history_sessions: 272
+  min_positive_volume_observations_60: 40
+  min_median_traded_value_60: 5000000
+  ranking_metric: median_traded_value_60

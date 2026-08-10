@@ -1,0 +1,3 @@
+# Release readiness
+
+`india_equity_data_v1.1.0` has official NSE daily observation coverage from 2006-01-02 through 2026-08-10, compressed Parquet artifacts, a raw source manifest for 5,084 files, effective-dated identity rows, issuer/listing-episode artifacts, corporate actions, terminal-event classifications, status intervals, delisting notice evidence, historical suspension evidence with explicit identity match quality, and PIT validation output. Remaining limitations are explicit: event completeness is not claimed, most adjusted rows remain `RAW_ONLY`, suspension evidence needs more identity review, scanned notices need OCR, and terminal values are unknown unless documented. The release is `DATASET_EXPLORATORY`, not `RESEARCH_HIGH_CONFIDENCE`.

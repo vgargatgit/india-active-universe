@@ -1,0 +1,29 @@
+{
+  "artifacts": {
+    "canonical/daily_prices_raw.jsonl": "8912166df0ac7505b76ae29bfe07173cc7c99d558e7ff83005079830054fcf93",
+    "canonical/security_master.jsonl": "8abbde22a8f3fe5b3333724c220d83ad4b123a11aeb973b7cc06b9ee893451ba",
+    "derived/active_universe_daily.jsonl": "dd5983b06ac77fe4d5acd9dc9db850042810fa7fdda86a2036c32e7beabd909f",
+    "derived/data_quality_findings.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "derived/liquidity_features.jsonl": "bcb6fe2a0aca7f769fd7762ab3a7eee2b189fa5654978991b8cdb67635b6ff66",
+    "release/active_universe_daily.parquet": "9c2ae92fc29d1335449ff2a150e2bebda471539924c4aacf87ddd5dfd825009b",
+    "release/daily_prices_raw.parquet": "828dde5e36f3174ce541029b2c24b1e72a07fc0579f2ceb330f97bdde7be3546",
+    "release/liquidity_features.parquet": "dec01c1dcbb0e22646b84eec33f461c5612778cef95efa539e34143c614d0006",
+    "release/security_master.parquet": "b9e1fdeaa66d9d9a8bf142f633cc67e7200faaaff5c53a8504caa7f063843833"
+  },
+  "coverage": {
+    "observation_count": 7545021,
+    "observed_end": "2026-08-10",
+    "observed_start": "2006-01-02",
+    "security_count": 4164
+  },
+  "definition": "ACTIVE_V1",
+  "project_id": "india-active-universe",
+  "quality": {
+    "identity_quality": {
+      "PARTIAL": 4164
+    },
+    "quality_findings": 0
+  },
+  "release_id": "india_equity_data_v0.1.1",
+  "source": "NSE_OFFICIAL_BHAVCOPY"
+}

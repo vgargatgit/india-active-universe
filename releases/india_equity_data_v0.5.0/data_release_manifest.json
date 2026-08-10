@@ -1,0 +1,35 @@
+{
+  "artifacts": {
+    "canonical/daily_prices_raw.jsonl": "41ddecc150a2ed35beb330cb4237bd9715926cf16bff113a8283bc44febdc376",
+    "canonical/security_master.jsonl": "85176e52bf6eda22591825f0afeca37d84fb129284c7e29f358e92a2f26deaca",
+    "derived/active_universe_daily.jsonl": "c39fdef6b11e4ba9ae2a44f5dce83e12d0a71d9857b57b0e47c16775d3617c15",
+    "derived/data_quality_findings.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "derived/liquidity_features.jsonl": "4d633663bc5cee3285915d8004b3018160aafcd68515038caf1baa531f90f5e5",
+    "release/active_universe_daily.parquet": "18d452d77262b4fa8cae8f280a02a3643768ff327429fa32da674c9e0095fc3f",
+    "release/corporate_actions.parquet": "987fd860f7c86c6a12dad66c61d1414894f8136ca75227d1fc4848995382d78e",
+    "release/daily_prices_adjusted.parquet": "ba02bd267b458af0da1e762f0fd3b3960fd66eca31d6974685b077a368333aa4",
+    "release/daily_prices_raw.parquet": "a3a0abab0945631230fa96b0e186dd36aecd35313a88350dbb540277590a8069",
+    "release/liquidity_features.parquet": "6972dd151a17308090ab5e9794eca8015a40ee5bcdbe6c94bea68c954f368db9",
+    "release/security_master.parquet": "587aa1a4f3f6978b023e3f6fab04554378ee2bcbde572ff165b720300dd07add",
+    "release/symbol_history.parquet": "97b6eb08ea415b11c11d408c49d8a2c9db4d8e8474a7bca8bee7d7882c086db3",
+    "release/terminal_events.parquet": "082a9fd1ec8b45d5cd7587498bce179d144839ab8abce6c3a6c16a8d95453136",
+    "release/trading_status.parquet": "ebc0d2ec4e446aec34811f8e8a8db850492b54d338d98ff796e63a2eb8353f01"
+  },
+  "coverage": {
+    "observation_count": 7545021,
+    "observed_end": "2026-08-10",
+    "observed_start": "2006-01-02",
+    "security_count": 3784
+  },
+  "definition": "ACTIVE_V1",
+  "project_id": "india-active-universe",
+  "quality": {
+    "identity_quality": {
+      "PARTIAL": 861,
+      "SINGLE_OFFICIAL_SOURCE": 3303
+    },
+    "quality_findings": 0
+  },
+  "release_id": "india_equity_data_v0.5.0",
+  "source": "NSE_OFFICIAL_BHAVCOPY"
+}

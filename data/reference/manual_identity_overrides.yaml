@@ -1,0 +1,4 @@
+# Every override must cite contemporaneous official evidence.
+# schema: exchange, symbol, series, effective_from, effective_to,
+#         security_id, evidence_references, rationale, review_status
+overrides: []
