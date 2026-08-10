@@ -1,0 +1,16 @@
+{
+  "title": "trading_calendar",
+  "type": "object",
+  "required": ["date", "session_evidence", "source_file_count", "observed_security_count", "observation_count"],
+  "properties": {
+    "date": {"type": "string", "format": "date"},
+    "session_evidence": {"type": "string", "const": "OFFICIAL_NSE_MARKET_DATA"},
+    "source_file_count": {"type": "integer"},
+    "source_file_ids": {"type": "array", "items": {"type": "string"}},
+    "source_sha256s": {"type": "array", "items": {"type": "string"}},
+    "observed_security_count": {"type": "integer"},
+    "ordinary_equity_observation_count": {"type": "integer"},
+    "non_ordinary_observation_count": {"type": "integer"},
+    "observation_count": {"type": "integer"}
+  }
+}
