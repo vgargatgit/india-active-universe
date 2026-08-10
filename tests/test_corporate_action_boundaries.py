@@ -1,3 +1,4 @@
+from scripts.normalize_corporate_actions import classify
 from scripts.validate_corporate_action_boundaries import classify_boundary
 
 
@@ -15,3 +16,7 @@ def test_boundary_classification_checks_holder_value_continuity():
     ratio, status = classify_boundary(100.0, 70.0, 2.0, 0.15)
     assert ratio == 1.4
     assert status == "WARNING_LARGE_BOUNDARY_MOVE"
+
+
+def test_preference_share_bonus_is_not_common_equity_bonus():
+    assert classify("Bonus Preference Shares 21:1") == "BONUS_PREFERENCE_SECURITY"

@@ -24,6 +24,10 @@ SCHEMA = pa.schema([
     pa.field("post_event_close", pa.float64()),
     pa.field("holder_value_ratio", pa.float64()),
     pa.field("validation_status", pa.string()),
+    pa.field("boundary_price_factor", pa.float64()),
+    pa.field("boundary_share_factor", pa.float64()),
+    pa.field("boundary_event_count", pa.int64()),
+    pa.field("boundary_event_ids", pa.string()),
 ])
 
 
@@ -62,26 +66,40 @@ def main() -> None:
               AND share_factor IS NOT NULL
               AND coalesce(ex_date, event_date) IS NOT NULL
         )
+        , event_groups AS (
+            SELECT security_id, ex_date,
+                   exp(sum(ln(price_factor))) AS boundary_price_factor,
+                   exp(sum(ln(share_factor))) AS boundary_share_factor,
+                   count(*) AS boundary_event_count,
+                   string_agg(event_id, ', ' ORDER BY event_id) AS boundary_event_ids
+            FROM events
+            GROUP BY security_id, ex_date
+        )
         SELECT e.event_id, e.security_id, e.event_type, e.ex_date,
                e.price_factor, e.share_factor,
                max_by(p.date, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_date,
                max_by(p.raw_close, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_close,
                min_by(p.date, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_date,
-               min_by(p.raw_close, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_close
+               min_by(p.raw_close, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_close,
+               g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids
         FROM events e
+        JOIN event_groups g USING (security_id, ex_date)
         LEFT JOIN read_parquet(?) p ON p.security_id = e.security_id
-        GROUP BY e.event_id, e.security_id, e.event_type, e.ex_date, e.price_factor, e.share_factor
+        GROUP BY e.event_id, e.security_id, e.event_type, e.ex_date, e.price_factor, e.share_factor,
+                 g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids
     """
     raw = con.execute(query, [args.events, args.prices]).fetchall()
     rows = []
-    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close in raw:
-        ratio, status = classify_boundary(pre_close, post_close, share_factor, args.warning_threshold)
+    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids in raw:
+        ratio, status = classify_boundary(pre_close, post_close, boundary_share_factor, args.warning_threshold)
         rows.append({
             "event_id": event_id, "security_id": security_id, "event_type": event_type, "ex_date": ex_date,
             "price_factor": price_factor, "share_factor": share_factor,
             "pre_event_date": pre_date, "pre_event_close": pre_close,
             "post_event_date": post_date, "post_event_close": post_close,
             "holder_value_ratio": ratio, "validation_status": status,
+            "boundary_price_factor": boundary_price_factor, "boundary_share_factor": boundary_share_factor,
+            "boundary_event_count": boundary_event_count, "boundary_event_ids": boundary_event_ids,
         })
     path = Path(args.out)
     path.parent.mkdir(parents=True, exist_ok=True)

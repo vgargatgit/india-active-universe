@@ -17,6 +17,8 @@ def parse_date(value: str | None) -> str | None:
 
 def classify(subject: str) -> str:
     text = subject.upper()
+    if "BONUS" in text and "PREFERENCE" in text:
+        return "BONUS_PREFERENCE_SECURITY"
     if "BONUS" in text and "DEBENTURE" not in text:
         return "BONUS"
     if "SPLIT" in text or "SUB-DIVISION" in text:
