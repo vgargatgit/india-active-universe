@@ -153,6 +153,13 @@ def main() -> None:
                  OR status_quality IS NULL
                  OR status_quality IN ('UNKNOWN_STATUS', 'UNRESOLVED')
             """).fetchone()[0],
+            "required_artifact_instrument_classification_failures": connection.execute(f"""
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet')
+              WHERE instrument_type IS DISTINCT FROM 'ORDINARY_EQUITY'
+                 OR instrument_type_quality IS NULL
+                 OR instrument_type_quality = 'UNRESOLVED'
+            """).fetchone()[0],
             "future_listing_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') u
               JOIN (SELECT security_id, MIN(CAST(date AS DATE)) AS first_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) p USING (security_id)

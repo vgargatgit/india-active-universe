@@ -160,6 +160,8 @@ def main() -> None:
                    WHEN (liquid_v1_eligible OR top750_liquidity) THEN 0
                    ELSE NULL
                  END)::BOOLEAN AS price_adjustment_ok,
+                 MIN(instrument_type) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS instrument_type,
+                 MIN(instrument_type_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS instrument_type_quality,
                  MIN(status_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS status_quality,
                  MIN(CASE
                    WHEN (liquid_v1_eligible OR top750_liquidity) AND trading_status = 'ACTIVE_TRADING' THEN 1
