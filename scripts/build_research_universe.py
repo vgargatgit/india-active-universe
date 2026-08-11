@@ -9,7 +9,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
 
 
 def q(path: Path) -> str:
@@ -34,6 +34,7 @@ def main() -> None:
     median_value_min = LIQUID_V1_DEFINITION["median_traded_value_60_min"]
     instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
     trading_status = LIQUID_V1_DEFINITION["trading_status"]
+    ranking_metric = TOP_LIQUIDITY_RANKING_METRIC
     query = f"""
     COPY (
       WITH month_end AS (
@@ -107,7 +108,7 @@ def main() -> None:
       ),
       ranked AS (
         SELECT b.*, me.month,
-          ROW_NUMBER() OVER (PARTITION BY b.date ORDER BY b.median_traded_value_126 DESC NULLS LAST, b.security_id) AS rank_126,
+          ROW_NUMBER() OVER (PARTITION BY b.date ORDER BY b.{ranking_metric} DESC NULLS LAST, b.security_id) AS rank_126,
           CASE WHEN b.instrument_type = '{instrument_type}'
              AND b.trading_status = '{trading_status}'
              AND b.research_identity_ok
@@ -123,9 +124,9 @@ def main() -> None:
           AND b.trading_status = '{trading_status}'
       )
       SELECT r.*,
-        r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 500 AS top500_liquidity,
-        r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 750 AS top750_liquidity,
-        r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 1000 AS top1000_liquidity,
+        r.{ranking_metric} IS NOT NULL AND r.rank_126 <= 500 AS top500_liquidity,
+        r.{ranking_metric} IS NOT NULL AND r.rank_126 <= 750 AS top750_liquidity,
+        r.{ranking_metric} IS NOT NULL AND r.rank_126 <= 1000 AS top1000_liquidity,
         r.liquid_v1_eligible AS LIQUID_V1_eligible,
         r.liquid_v1_eligible AS NSE_BROAD_LIQUID_PIT_V1_eligible,
         'NSE_BROAD_LIQUID_PIT_V1' AS profile_id,
