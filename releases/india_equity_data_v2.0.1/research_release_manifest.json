@@ -5,8 +5,8 @@
     "daily_prices_adjusted.parquet": "002c5f8e6ed5d4b80844c4f71272ce6bec69024e1ce025c79f8dac6524120c71",
     "daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
     "liquidity_features.parquet": "95278f6d606fb651b402f4a6f11012b496b20fa86c7cb69ec50de7b6369e3370",
-    "required_research_security.parquet": "ef3970501f53c3459a01c52bb018deec7e1cf129ee910d1e991564a4018e302c",
-    "research_universe_monthly.parquet": "4569c4ac6d407a26b306eb294ecde1ec57f2e79476861947b44342f7dc3bd15c",
+    "required_research_security.parquet": "281b2a9a60797f5a640a1ae559bdd699d78ce0339c762dc2ab93042e7ef0436d",
+    "research_universe_monthly.parquet": "e0a7f583c9ce5eb25c26fc1d282b16109231c7877092df8921bacf5c36bf9687",
     "suspension_events_resolved.parquet": "e8551f3dfe89be4c189c92be4ed79a3edfd9137ac078be033a2b9f1cbd2b3321",
     "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
   },
@@ -18,7 +18,7 @@
     "WARNING_LARGE_BOUNDARY_MOVE": 26
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "40e48c685b13f7cb0b375eb9065b8bd0f361ae50",
+  "git_sha": "86aac579e05450fd962da15f255111870faa10ed",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -60,5 +60,5 @@
     "research_start": "2013-01-01"
   },
   "status_interval_overlaps": 0,
-  "test_result_sha256": "e5dfa1911cf022b30396d10baea06a207a674f0b73608b3aa57dc146a8088df9"
+  "test_result_sha256": "a87c8bb3d897651bd4c9d81e07769b1f033ba26d18965e37897d96af9b2b30ae"
 }
