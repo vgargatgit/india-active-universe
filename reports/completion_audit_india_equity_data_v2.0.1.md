@@ -14,6 +14,7 @@
 - Status interval overlaps: 0.
 - Adjusted-price quality counts: `{"TOTAL_RETURN_PARTIAL": 7545021}`.
 - Corporate-action boundary validation: `{"NO_LOCAL_BOUNDARY_OBSERVATION": 25, "NO_POST_EVENT_OBSERVATION": 349, "NO_PRE_EVENT_OBSERVATION": 341, "PASS": 529, "WARNING_LARGE_BOUNDARY_MOVE": 31}`.
+- Test results: `{"errors": 0, "failures": 0, "model_arena_handoff_passed": true, "skipped": 0, "tests": 25}`.
 
 ## Required artifact checks
 

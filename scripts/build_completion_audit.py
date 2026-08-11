@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import duckdb
@@ -36,6 +37,28 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def junit_summary(path: Path) -> dict:
+    root = ET.parse(path).getroot()
+    suites = list(root.iter("testsuite"))
+    tests = sum(int(suite.get("tests", "0")) for suite in suites)
+    failures = sum(int(suite.get("failures", "0")) for suite in suites)
+    errors = sum(int(suite.get("errors", "0")) for suite in suites)
+    skipped = sum(int(suite.get("skipped", "0")) for suite in suites)
+    handoff_cases = [
+        case for case in root.iter("testcase")
+        if case.get("classname") == "tests.test_model_arena_handoff"
+        and case.get("name") == "test_model_arena_handoff_reads_profile_history_liquidity_and_execution_prices"
+    ]
+    handoff_passed = bool(handoff_cases) and all(case.find("skipped") is None for case in handoff_cases)
+    return {
+        "tests": tests,
+        "failures": failures,
+        "errors": errors,
+        "skipped": skipped,
+        "model_arena_handoff_passed": handoff_passed,
+    }
 
 
 def main() -> None:
@@ -101,6 +124,7 @@ def main() -> None:
         for key in hash_mismatches:
             print(f"- artifact hash mismatch: {key}")
         raise SystemExit(1)
+    test_summary = junit_summary(test_result_report)
     con = duckdb.connect()
 
     def count(name: str, where: str = "") -> int:
@@ -147,6 +171,7 @@ def main() -> None:
         f"- Status interval overlaps: {overlap_count:,}." if overlap_count is not None else "- Status interval overlaps: not measured.",
         f"- Adjusted-price quality counts: `{json.dumps(quality, sort_keys=True)}`.",
         f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
+        f"- Test results: `{json.dumps(test_summary, sort_keys=True)}`.",
         "",
         "## Required artifact checks",
         "",
@@ -157,6 +182,10 @@ def main() -> None:
     if not research_quality_ok:
         failures.append("research release is not RESEARCH_HIGH_CONFIDENCE")
     failures.extend(f"missing required research report: {name}" for name in missing_reports)
+    if test_summary["tests"] <= 0 or test_summary["failures"] or test_summary["errors"]:
+        failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
+    if not test_summary["model_arena_handoff_passed"]:
+        failures.append("Model Arena handoff smoke test did not pass in release evidence")
     for name in REQUIRED:
         present = (release / name).exists()
         rows.append(f"- {'PASS' if present else 'FAIL'}: `{name}`")
