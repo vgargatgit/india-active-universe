@@ -164,8 +164,8 @@ class UniverseStore:
         rows = [
             row for row in self.active_on(as_of_date)
             if row.get(metric) is not None
-            and row.get("instrument_type") == "ORDINARY_EQUITY"
-            and row.get("trading_status") == "ACTIVE_TRADING"
+            and row.get("instrument_type") == LIQUID_V1_DEFINITION["instrument_type"]
+            and row.get("trading_status") == LIQUID_V1_DEFINITION["trading_status"]
         ]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 

@@ -658,11 +658,11 @@ def test_profile_on_fails_closed_when_identity_or_status_fields_are_missing():
 
 def test_ranked_liquid_on_excludes_non_ordinary_or_non_active_status():
     store = UniverseStore([
-        {"date": date(2020, 1, 1), "security_id": "ETF", "active": True, "instrument_type": "ETF", "trading_status": "ACTIVE_TRADING", "median_traded_value_126": 100.0},
-        {"date": date(2020, 1, 1), "security_id": "SUSPENDED", "active": True, "instrument_type": "ORDINARY_EQUITY", "trading_status": "SUSPENDED", "median_traded_value_126": 90.0},
-        {"date": date(2020, 1, 1), "security_id": "MISSING_TYPE", "active": True, "trading_status": "ACTIVE_TRADING", "median_traded_value_126": 85.0},
-        {"date": date(2020, 1, 1), "security_id": "MISSING_STATUS", "active": True, "instrument_type": "ORDINARY_EQUITY", "median_traded_value_126": 82.0},
-        {"date": date(2020, 1, 1), "security_id": "EQUITY", "active": True, "instrument_type": "ORDINARY_EQUITY", "trading_status": "ACTIVE_TRADING", "median_traded_value_126": 80.0},
+        {"date": date(2020, 1, 1), "security_id": "ETF", "active": True, "instrument_type": "ETF", "trading_status": LIQUID_V1_DEFINITION["trading_status"], TOP_LIQUIDITY_RANKING_METRIC: 100.0},
+        {"date": date(2020, 1, 1), "security_id": "SUSPENDED", "active": True, "instrument_type": LIQUID_V1_DEFINITION["instrument_type"], "trading_status": "SUSPENDED", TOP_LIQUIDITY_RANKING_METRIC: 90.0},
+        {"date": date(2020, 1, 1), "security_id": "MISSING_TYPE", "active": True, "trading_status": LIQUID_V1_DEFINITION["trading_status"], TOP_LIQUIDITY_RANKING_METRIC: 85.0},
+        {"date": date(2020, 1, 1), "security_id": "MISSING_STATUS", "active": True, "instrument_type": LIQUID_V1_DEFINITION["instrument_type"], TOP_LIQUIDITY_RANKING_METRIC: 82.0},
+        {"date": date(2020, 1, 1), "security_id": "EQUITY", "active": True, "instrument_type": LIQUID_V1_DEFINITION["instrument_type"], "trading_status": LIQUID_V1_DEFINITION["trading_status"], TOP_LIQUIDITY_RANKING_METRIC: 80.0},
     ])
     assert [row["security_id"] for row in store.ranked_liquid_on("2020-01-01", 10)] == ["EQUITY"]
 
