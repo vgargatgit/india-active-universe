@@ -340,8 +340,9 @@ def main() -> None:
               WITH yearly AS (
                 SELECT EXTRACT(year FROM CAST(date AS DATE)) AS year,
                        COUNT(DISTINCT security_id) AS active_count
-                FROM read_parquet('{r}/daily_prices_raw.parquet')
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
                 WHERE instrument_type = '{instrument_type}'
+                  AND COALESCE(active, FALSE)
                 GROUP BY 1
               ), flagged AS (
                 SELECT year, active_count,
