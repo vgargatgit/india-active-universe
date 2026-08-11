@@ -135,6 +135,12 @@ def junit_summary(path: Path) -> dict:
         and case.get("name") == "test_model_arena_handoff_reads_profile_history_liquidity_and_execution_prices"
     ]
     handoff_passed = bool(handoff_cases) and all(case.find("skipped") is None for case in handoff_cases)
+    early_handoff_cases = [
+        case for case in root.iter("testcase")
+        if (case.get("classname") or "").endswith("test_model_arena_handoff")
+        and case.get("name") == "test_model_arena_handoff_reads_earliest_promoted_pre2013_interval"
+    ]
+    early_handoff_passed = bool(early_handoff_cases) and all(case.find("skipped") is None for case in early_handoff_cases)
     multi_era_cases = [
         case for case in root.iter("testcase")
         if (case.get("classname") or "").endswith("test_multi_era_source_fixture")
@@ -147,6 +153,7 @@ def junit_summary(path: Path) -> dict:
         "errors": errors,
         "skipped": skipped,
         "model_arena_handoff_passed": handoff_passed,
+        "early_model_arena_handoff_passed": early_handoff_passed,
         "multi_era_source_fixture_passed": multi_era_passed,
     }
 
@@ -1107,6 +1114,14 @@ def main() -> None:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:
         failures.append("Model Arena handoff smoke test did not pass in release evidence")
+    pre2013_rhc_intervals = [
+        interval for interval in research_manifest.get("research_quality_intervals") or []
+        if interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+        and interval.get("start")
+        and str(interval.get("start")) < RESEARCH_START_DATE
+    ]
+    if pre2013_rhc_intervals and not test_summary["early_model_arena_handoff_passed"]:
+        failures.append("early Model Arena handoff smoke test did not pass for promoted pre-2013 interval")
     if not test_summary["multi_era_source_fixture_passed"]:
         failures.append("multi-era source fixture smoke test did not pass in release evidence")
     if research_manifest.get("ci_status_sha256") and (ci["status"] != "completed" or ci["conclusion"] != "success" or not ci["descends_from_release_git_commit"] or ci["failed_jobs"]):
