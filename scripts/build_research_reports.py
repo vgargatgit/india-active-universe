@@ -1737,6 +1737,14 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         if item.get("refined_earliest_passing_snapshot")
     )
     refined_earliest_candidate_gate_pass_boundary = refined_candidate_boundaries[0] if refined_candidate_boundaries else None
+    candidate_recommended_research_interval = {
+        "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if refined_earliest_candidate_gate_pass_boundary else "NO_REFINED_BOUNDARY",
+        "start": refined_earliest_candidate_gate_pass_boundary,
+        "end": str(coverage[1]),
+        "profile": PROFILE_ID,
+        "profile_version": PROFILE_VERSION,
+        "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+    }
     executive_text = [
         "# Extended history research readiness",
         "",
@@ -1769,7 +1777,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         f"21. RESEARCH_EXPLORATORY intervals: any interval marked `{RESEARCH_EXPLORATORY_STATUS}` in `research_quality_intervals`, plus candidate intervals whose gates are not all pass.",
         f"22. SOURCE_ONLY interval: source observations before the first promoted research interval remain `{SOURCE_ONLY_STATUS}` or warmup-only evidence.",
         "23. Downstream Model Arena safe pre-2013 start: not declared by this report unless all hard gates plus CI/test evidence pass.",
-        f"24. Earliest candidate gate-pass start: `{earliest_candidate_gate_pass_start}`. Refined earliest monthly/session boundary: `{refined_earliest_candidate_gate_pass_boundary}`. This is not a final safe start unless full release evidence also passes.",
+        f"24. Earliest candidate gate-pass start: `{earliest_candidate_gate_pass_start}`. Refined earliest monthly/session boundary: `{refined_earliest_candidate_gate_pass_boundary}`. Candidate recommended interval: `{candidate_recommended_research_interval}`. This is not a final safe start unless full release evidence also passes.",
         "25. Remaining limitations: terminal values and total-return dividends remain partial; market cap and historical sector data are not fabricated.",
         "",
         "## Candidate gate matrix",
@@ -1804,6 +1812,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "candidate_promotion_decisions": candidate_promotion_decisions,
         "earliest_candidate_gate_pass_start": earliest_candidate_gate_pass_start,
         "refined_earliest_candidate_gate_pass_boundary": refined_earliest_candidate_gate_pass_boundary,
+        "candidate_recommended_research_interval": candidate_recommended_research_interval,
         "required_research_securities": int(promoted_required_count),
         "candidate_required_research_securities": int(required_count),
         "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,

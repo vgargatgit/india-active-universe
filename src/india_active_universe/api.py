@@ -671,6 +671,14 @@ class DataPlatform:
             else None
         )
         derived_refined = refined_boundaries[0] if refined_boundaries else None
+        candidate_recommended_research_interval = {
+            "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if derived_refined else "NO_REFINED_BOUNDARY",
+            "start": derived_refined,
+            "end": self.coverage_end.isoformat() if self.coverage_end else None,
+            "profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+        }
         return {
             "recorded_earliest_candidate_gate_pass_start": recorded_earliest,
             "earliest_candidate_gate_pass_start": derived_earliest,
@@ -683,6 +691,7 @@ class DataPlatform:
             "recorded_refined_earliest_candidate_gate_pass_boundary": recorded_refined,
             "refined_earliest_candidate_gate_pass_boundary": derived_refined,
             "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary": recorded_refined == derived_refined,
+            "candidate_recommended_research_interval": candidate_recommended_research_interval,
             "candidate_promotion_decisions": self.candidate_promotion_status(),
         }
 

@@ -122,9 +122,10 @@ CANDIDATE_PROMOTION_SUMMARY_FIELDS = (
     "recorded_matches_derived_earliest_candidate_gate_pass_start",
     "candidate_gate_pass_start_dates",
     "candidate_research_ready_start_dates",
-    "refined_earliest_candidate_gate_pass_boundary",
     "recorded_refined_earliest_candidate_gate_pass_boundary",
+    "refined_earliest_candidate_gate_pass_boundary",
     "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary",
+    "candidate_recommended_research_interval",
     "candidate_promotion_decisions",
 )
 CANDIDATE_PROMOTION_API_METHODS = (

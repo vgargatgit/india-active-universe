@@ -499,6 +499,14 @@ def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
                 "recorded_refined_earliest_candidate_gate_pass_boundary": None,
                 "refined_earliest_candidate_gate_pass_boundary": None,
                 "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary": True,
+                "candidate_recommended_research_interval": {
+                    "status": "NO_REFINED_BOUNDARY",
+                    "start": None,
+                    "end": None,
+                    "profile": "NSE_BROAD_LIQUID_PIT_V1",
+                    "profile_version": "LIQUID_V1",
+                    "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+                },
                 "candidate_promotion_decisions": [],
             }
 
