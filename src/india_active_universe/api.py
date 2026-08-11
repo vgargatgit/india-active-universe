@@ -698,6 +698,18 @@ class DataPlatform:
             "source": "OFFICIAL_NSE_TRADING_CALENDAR",
         }
 
+    def earliest_feature_ready_date(self, feature_name: str) -> date | None:
+        """Return the manifest-recorded earliest date for one feature-readiness window."""
+        if feature_name not in FEATURE_READINESS_WINDOWS:
+            raise ValueError(f"Unknown feature readiness window: {feature_name}")
+        value = (self.warmup_coverage.get("feature_ready_dates") or {}).get(feature_name)
+        return _as_date(value) if value else None
+
+    def earliest_fully_warmed_date(self) -> date | None:
+        """Return the manifest-recorded earliest date with all published readiness windows."""
+        value = self.warmup_coverage.get("earliest_fully_warmed_date")
+        return _as_date(value) if value else None
+
     def candidate_promotion_status(self) -> list[dict[str, Any]]:
         """Return configured early-history candidate-start promotion decisions."""
         return [dict(row) for row in self.candidate_promotion_decisions]

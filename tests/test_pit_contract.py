@@ -255,6 +255,23 @@ def test_platform_feature_readiness_uses_prior_official_sessions():
     assert readiness["all_ready"] is False
 
 
+def test_platform_exposes_manifest_warmup_boundaries():
+    platform = DataPlatform()
+    platform.warmup_coverage = {
+        "feature_ready_dates": {
+            "liquidity_60": "2006-03-29",
+            "model_arena_handoff_history": "2007-03-15",
+        },
+        "earliest_fully_warmed_date": "2007-03-15",
+    }
+
+    assert platform.earliest_feature_ready_date("liquidity_60") == date(2006, 3, 29)
+    assert platform.earliest_feature_ready_date("standard_research_252") is None
+    assert platform.earliest_fully_warmed_date() == date(2007, 3, 15)
+    with pytest.raises(ValueError, match="Unknown feature readiness window"):
+        platform.earliest_feature_ready_date("not_a_feature")
+
+
 def test_platform_exposes_candidate_promotion_decisions():
     platform = DataPlatform()
     platform.candidate_promotion_decisions = [
