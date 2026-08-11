@@ -42,6 +42,7 @@ from india_active_universe.profiles import (
     SECURITY_MASTER_ARTIFACT,
     SIGNAL_POLICY,
     SOURCE_BUILD_MODE,
+    SOURCE_MANIFEST_ARTIFACT,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
     TERMINAL_EVENTS_ARTIFACT,
@@ -206,6 +207,9 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         if parser_versions.get(key) != expected:
             failures.append(f"data manifest parser_versions.{key} is not {expected}")
     artifacts = manifest.get("artifacts") or {}
+    source_manifest_key = f"release/{SOURCE_MANIFEST_ARTIFACT}"
+    if artifacts.get(source_manifest_key) != manifest.get("source_manifest_sha256"):
+        failures.append(f"data manifest {source_manifest_key} hash does not match source_manifest_sha256")
     for name in REQUIRED:
         if name in {DATA_RELEASE_MANIFEST_ARTIFACT, RESEARCH_RELEASE_MANIFEST_ARTIFACT}:
             continue
