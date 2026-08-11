@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import re
 import unicodedata
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import duckdb
@@ -24,6 +24,20 @@ def normalize_name(value: str | None) -> str:
 
 def parse_date(value: str | None) -> date | None:
     return date.fromisoformat(value) if value else None
+
+
+def event_effective_date(event: dict) -> str | None:
+    """Return the stored date or recover it from official notice text."""
+    if event.get("effective_date"):
+        return event["effective_date"]
+    text = event.get("text_excerpt") or ""
+    date_pattern = r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}"
+    marker_pattern = r"(?:w\s*\.\s*e\s*\.\s*f\s*\.?|effective(?:ly)?\s+from|with\s+effect\s+from)"
+    match = re.search(rf"{marker_pattern}\s+(?:the\s+)?{date_pattern}", text, re.I)
+    if not match:
+        return None
+    value = re.search(date_pattern, match.group(0), re.I)
+    return datetime.strptime(value.group(0).title(), "%B %d, %Y").date().isoformat() if value else None
 
 
 def write_table(rows: list[dict], path: Path) -> None:
@@ -90,6 +104,7 @@ def resolve_events(con: duckdb.DuckDBPyConnection, events_path: str, master_path
             )
         event["candidate_security_count"] = len(resolved)
         event["resolution_method"] = "EXACT_NORMALIZED_COMPANY_NAME" if resolved else None
+        event["effective_date"] = event_effective_date(event)
         result.append(event)
     return result
 
@@ -106,11 +121,14 @@ def overlay_intervals(
         e for e in resolved_events
         if e.get("event_type") == "SUSPENSION_START"
         and e.get("security_id")
-        and e.get("effective_date")
+        and event_effective_date(e)
     ]
     for event in starts:
         security_id = event["security_id"]
-        start = parse_date(event["effective_date"])
+        start_value = event_effective_date(event)
+        start = parse_date(start_value)
+        if start is None:
+            continue
         next_trade_row = con.execute(
             "SELECT min(date) FROM read_parquet(?) WHERE security_id = ? AND date >= ?",
             [prices_path, security_id, start.isoformat()],
@@ -127,7 +145,7 @@ def overlay_intervals(
                 continue
             row_start = parse_date(row["status_start"])
             row_end = parse_date(row["status_end"])
-            if row_end < start or row_start > end:
+            if (row_end is not None and row_end < start) or row_start > end:
                 new_rows.append(row)
                 continue
             if row_start < start:
@@ -136,13 +154,13 @@ def overlay_intervals(
                 new_rows.append(before)
             suspended = dict(row)
             suspended["status_start"] = max(row_start, start).isoformat()
-            suspended["status_end"] = min(row_end, end).isoformat()
+            suspended["status_end"] = (min(row_end, end) if row_end is not None else end).isoformat()
             suspended["trading_status"] = "SUSPENDED"
             suspended["status_quality"] = "OFFICIAL_NSE_SUSPENSION_NOTICE_EXACT_IDENTITY"
             suspended["source"] = "NSE_OFFICIAL_PRESS_ARCHIVE"
             suspended["source_reference"] = event["evidence_id"]
             new_rows.append(suspended)
-            if row_end > end:
+            if row_end is None or row_end > end:
                 after = dict(row)
                 after["status_start"] = (end + timedelta(days=1)).isoformat()
                 new_rows.append(after)

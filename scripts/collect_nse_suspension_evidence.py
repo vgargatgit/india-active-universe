@@ -75,10 +75,12 @@ def article_date(text: str) -> str | None:
 
 
 def effective_date(text: str) -> str | None:
-    match = re.search(r"(?:w\.e\.f\.?|effective(?:ly)?\s+from)\s+(?:the\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}", text, re.I)
+    date_pattern = r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}"
+    marker_pattern = r"(?:w\s*\.\s*e\s*\.\s*f\s*\.?|effective(?:ly)?\s+from|with\s+effect\s+from)"
+    match = re.search(rf"{marker_pattern}\s+(?:the\s+)?{date_pattern}", text, re.I)
     if not match:
         return None
-    value = re.search(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}", match.group(0), re.I)
+    value = re.search(date_pattern, match.group(0), re.I)
     return datetime.strptime(value.group(0).title(), "%B %d, %Y").date().isoformat() if value else None
 
 

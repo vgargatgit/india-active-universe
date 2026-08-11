@@ -47,7 +47,8 @@ def main() -> None:
         SELECT CAST(a.date AS DATE) AS date,
           a.security_id, a.listing_episode_id, a.symbol_at_date,
           a.instrument_type, m.instrument_type_quality, m.instrument_type_source, m.identity_quality, a.company_name, a.isin,
-          a.trading_status, a.observation_status, a.active,
+          COALESCE(s.trading_status, a.trading_status) AS trading_status,
+          a.observation_status, a.active,
           f.price, f.history_sessions, f.observed_history_sessions,
           f.listing_age_sessions, f.listing_age_calendar_days,
           f.positive_volume_days_60, f.median_traded_value_60,
@@ -74,7 +75,9 @@ def main() -> None:
             WHEN a.instrument_type = 'ORDINARY_EQUITY' THEN 'OFFICIAL_REFERENCE'
             ELSE 'EXPLICIT_EXCHANGE_MARKER'
           END AS instrument_type_quality,
-          CASE WHEN a.trading_status = 'ACTIVE_TRADING' THEN 'OBSERVED_TRADING_RECORD' ELSE 'STATUS_EXCLUDED' END AS status_quality
+          CASE WHEN COALESCE(s.trading_status, a.trading_status) = 'ACTIVE_TRADING'
+            THEN COALESCE(s.status_quality, 'OBSERVED_TRADING_RECORD')
+            ELSE COALESCE(s.status_quality, 'STATUS_EXCLUDED') END AS status_quality
         FROM read_parquet('{out}/active_universe_daily.parquet') a
         JOIN read_parquet('{out}/liquidity_features.parquet') f
           ON f.security_id = a.security_id AND CAST(f.date AS DATE) = CAST(a.date AS DATE)
@@ -88,6 +91,10 @@ def main() -> None:
           GROUP BY security_id
         ) m ON m.security_id = a.security_id
         LEFT JOIN identity_checks i ON i.security_id = a.security_id
+        LEFT JOIN read_parquet('{out}/trading_status_intervals.parquet') s
+          ON s.security_id = a.security_id
+         AND CAST(a.date AS DATE) >= CAST(s.status_start AS DATE)
+         AND (s.status_end IS NULL OR CAST(a.date AS DATE) <= CAST(s.status_end AS DATE))
         WHERE CAST(a.date AS DATE) >= DATE '{start}' {end_clause}
           AND a.active
       ),

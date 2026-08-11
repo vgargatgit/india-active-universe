@@ -24,6 +24,7 @@ def main() -> None:
     parser.add_argument("--end")
     parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
     parser.add_argument("--corporate-actions", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
+    parser.add_argument("--suspension-events", default="data/derived/suspension_events_resolved_v1.parquet")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -64,6 +65,18 @@ def main() -> None:
         [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
     ])
+    suspension_events = root / args.suspension_events
+    if suspension_events.is_file():
+        status_index = next(index for index, command in enumerate(commands) if command[1].endswith("build_identity_history_artifacts.py"))
+        commands.insert(status_index, [
+            sys.executable, str(root / "scripts/build_verified_suspension_status.py"),
+            "--events", str(suspension_events),
+            "--master", str(release / "security_master.parquet"),
+            "--base-intervals", str(release / "trading_status_intervals.parquet"),
+            "--prices", str(release / "daily_prices_raw.parquet"),
+            "--events-out", str(release / "suspension_events_resolved.parquet"),
+            "--intervals-out", str(release / "trading_status_intervals.parquet"),
+        ])
     if args.dry_run:
         for command in commands:
             print(" ".join(command))

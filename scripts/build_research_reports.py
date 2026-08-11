@@ -325,7 +325,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "status_interval_overlaps": int(status_overlap),
         "research_invariant_validation_sha256": sha256(validation_path) if validation_path.exists() else None,
         "test_result_sha256": sha256(test_result_path) if test_result_path.exists() else None,
-        "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet")},
+        "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet", "suspension_events_resolved.parquet")},
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
         "quality_reports": {name: sha256(reports / name) for name in ("data_source_coverage.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},

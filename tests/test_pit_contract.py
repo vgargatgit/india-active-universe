@@ -6,6 +6,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
+from scripts.collect_nse_suspension_evidence import effective_date
 
 
 def test_symbol_rename_is_date_sensitive():
@@ -73,6 +74,10 @@ def test_status_lookup_is_effective_dated():
     ])
     assert store.status_on("2016-01-01")[0]["trading_status"] == "SUSPENDED"
     assert store.status_on("2018-01-01")[0]["trading_status"] == "DELISTED"
+
+
+def test_suspension_effective_date_accepts_legacy_spacing():
+    assert effective_date("The security will be suspended from trading w. e. f . May 22, 2015.") == "2015-05-22"
 
 
 def test_observation_status_distinguishes_session_and_security_states():
