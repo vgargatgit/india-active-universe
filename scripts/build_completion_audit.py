@@ -205,6 +205,7 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             continue
         hard_failures = item.get("hard_failures")
         feature_readiness = item.get("feature_readiness")
+        refined_earliest_passing_snapshot = item.get("refined_earliest_passing_snapshot")
         hard_failure_keys = set(hard_failures or {}) if isinstance(hard_failures, dict) else set()
         required_rows = item.get("required_rows")
         fully_warmed_required_rows = item.get("fully_warmed_required_rows")
@@ -227,6 +228,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or not isinstance(hard_failures, dict)
             or not isinstance(feature_readiness, dict)
             or type(feature_readiness.get("feature_warmup_not_ready")) is not bool
+            or "refined_earliest_passing_snapshot" not in item
+            or (refined_earliest_passing_snapshot is not None and not isinstance(refined_earliest_passing_snapshot, str))
             or hard_failure_keys != EXPECTED_CANDIDATE_HARD_FAILURE_KEYS
             or bool(candidate_hard_failure_type_failures(hard_failures))
             or not isinstance(required_rows, int)
@@ -234,6 +237,7 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or not isinstance(monthly_snapshots_after_decision, int)
             or fully_warmed_required_rows > required_rows
             or (item.get("status") == CANDIDATE_PASS_VALUE and bool(active_hard_failures))
+            or (item.get("status") == CANDIDATE_PASS_VALUE and refined_earliest_passing_snapshot is None)
             or (item.get("status") == CANDIDATE_FAIL_VALUE and not active_hard_failures)
             or (item.get("status") == CANDIDATE_PASS_VALUE and monthly_snapshots_after_decision <= 0)
             or (monthly_snapshots_after_decision <= 0 and hard_failures.get("decision_window_snapshots_missing") is False)

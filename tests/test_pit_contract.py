@@ -1904,6 +1904,7 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         "fully_warmed_required_rows": 10,
         "monthly_snapshots_after_decision": 1,
         "feature_readiness": {"feature_warmup_not_ready": False},
+        "refined_earliest_passing_snapshot": "2011-01-31",
         "hard_failures": {key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
     }
     valid_row["hard_failures"]["not_materialized"] = False
@@ -2021,6 +2022,37 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         ],
     })
     assert mistyped_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    missing_refined_snapshot_row = {
+        key: value for key, value in {**valid_row, "candidate_start": "2009-01-01"}.items()
+        if key != "refined_earliest_passing_snapshot"
+    }
+    missing_refined_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "candidate_audits": [
+            valid_row,
+            missing_refined_snapshot_row,
+            {**valid_row, "candidate_start": "2007-01-01"},
+            {**valid_row, "candidate_start": "2006-01-01"},
+        ],
+    })
+    assert missing_refined_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    mistyped_refined_snapshot_row = {
+        **valid_row,
+        "candidate_start": "2009-01-01",
+        "refined_earliest_passing_snapshot": 20110131,
+    }
+    mistyped_refined_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "candidate_audits": [
+            valid_row,
+            mistyped_refined_snapshot_row,
+            {**valid_row, "candidate_start": "2007-01-01"},
+            {**valid_row, "candidate_start": "2006-01-01"},
+        ],
+    })
+    assert mistyped_refined_summary["malformed_candidate_audits"] == ["2009-01-01"]
 
     stale_report_summary = candidate_promotion_audit_summary({**valid_report, "candidate_start_dates": ["2011-01-01"]})
     assert stale_report_summary["malformed_candidate_report"] == ["candidate_start_dates"]
