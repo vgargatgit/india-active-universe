@@ -46,6 +46,8 @@ def main() -> None:
     release = Path(args.release)
     reports = Path(args.reports)
     r = path_sql(release)
+    release_manifest = json.loads((release / "data_release_manifest.json").read_text(encoding="utf-8"))
+    observed_coverage = release_manifest.get("coverage", {})
     connection = duckdb.connect()
     try:
         counts = connection.execute(f"""
@@ -318,7 +320,12 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "release_id": release.name,
         "git_sha": git_sha,
         "research_quality": {"status": quality, "start": research_start, "end": str(coverage[1]), "monthly_snapshot_start": str(coverage[0]), "universe_profile": "NSE_BROAD_LIQUID_PIT_V1", "profile_version": "LIQUID_V1", "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750"},
-        "source_coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10", "research_start": research_start, "research_end": str(coverage[1])},
+        "source_coverage": {
+            "observed_start": observed_coverage.get("observed_start"),
+            "observed_end": observed_coverage.get("observed_end"),
+            "research_start": research_start,
+            "research_end": str(coverage[1]),
+        },
         "required_research_securities": int(required_count),
         "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
         "recommended_signal_price_series": "price_return_adjusted_close",
