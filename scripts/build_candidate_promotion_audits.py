@@ -269,16 +269,14 @@ def main() -> None:
             WHERE required_rows > 0
               AND required_securities > 0
               AND identity_failures = 0
-              AND price_adjustment_failures = 0
               AND instrument_failures = 0
               AND status_failures = 0
               AND session_liquidity_window_failures = 0
-              AND material_missing_factors = 0
-              AND signal_window_non_pass_boundaries = 0
             GROUP BY candidate_start
           )
           SELECT c.candidate_start,
             cs.first_decision_session,
+            cs.decision_session_index,
             ces.first_expected_snapshot,
             mc.first_materialized_snapshot,
             rb.refined_earliest_passing_snapshot,
@@ -317,6 +315,7 @@ def main() -> None:
         (
             candidate_start,
             first_decision_session,
+            decision_session_index,
             first_expected_snapshot,
             first_materialized_snapshot,
             refined_earliest_passing_snapshot,
@@ -343,18 +342,25 @@ def main() -> None:
             "candidate_start_snapshot_missing": first_expected_snapshot is None or first_materialized_snapshot != first_expected_snapshot,
             "decision_window_snapshots_missing": first_decision_session is None or monthly_snapshots_after_decision == 0,
             "identity_failures": int(identity_failures),
-            "price_adjustment_failures": int(price_adjustment_failures),
             "instrument_failures": int(instrument_failures),
             "status_failures": int(status_failures),
-            "material_missing_factors": int(material_missing_factors),
-            "signal_window_non_pass_boundaries": int(signal_window_non_pass_boundaries),
             "session_liquidity_window_failures": int(session_liquidity_window_failures),
         }
+        price_action_evidence = {
+            "price_adjustment_failures": int(price_adjustment_failures),
+            "material_missing_factors": int(material_missing_factors),
+            "material_events": int(material_events),
+            "signal_window_non_pass_boundaries": int(signal_window_non_pass_boundaries),
+            "price_action_gate_pass": int(price_adjustment_failures) == 0 and int(material_missing_factors) == 0,
+            "boundary_validation_review_required": int(signal_window_non_pass_boundaries) != 0,
+        }
         feature_readiness = {
-            "feature_warmup_not_ready": first_decision_session is None or required_rows == 0 or fully_warmed_required_rows < required_rows,
+            "feature_warmup_not_ready": first_decision_session is None or required_rows == 0 or decision_session_index is None or int(decision_session_index) < max_window,
             "required_prior_sessions_for_full_readiness": max_window,
+            "first_decision_session_index": int(decision_session_index) if decision_session_index is not None else None,
             "fully_warmed_required_rows": int(fully_warmed_required_rows),
             "required_rows": int(required_rows),
+            "row_level_not_fully_warmed_required_rows": int(required_rows) - int(fully_warmed_required_rows),
             "signal_ready_252_rows": int(signal_ready_252_rows),
             "signal_ready_273_rows": int(signal_ready_273_rows),
             "model_handoff_history_ready_300_rows": int(fully_warmed_required_rows),
@@ -364,12 +370,15 @@ def main() -> None:
             and not hard_failures["candidate_start_snapshot_missing"]
             and not hard_failures["decision_window_snapshots_missing"]
             and int(identity_failures) == 0
-            and int(price_adjustment_failures) == 0
             and int(instrument_failures) == 0
             and int(status_failures) == 0
-            and int(material_missing_factors) == 0
-            and int(signal_window_non_pass_boundaries) == 0
             and int(session_liquidity_window_failures) == 0
+        )
+        research_candidate_gate_pass = (
+            pit_universe_gate_pass
+            and price_action_evidence["price_action_gate_pass"]
+            and not price_action_evidence["boundary_validation_review_required"]
+            and not feature_readiness["feature_warmup_not_ready"]
         )
         feature_model_readiness_complete = not feature_readiness["feature_warmup_not_ready"]
         status = "PASS" if pit_universe_gate_pass else "FAIL"
@@ -397,8 +406,10 @@ def main() -> None:
             "material_events": int(material_events),
             "feature_readiness": feature_readiness,
             "feature_model_readiness_complete": feature_model_readiness_complete,
+            "price_action_evidence": price_action_evidence,
             "hard_failures": hard_failures,
             "pit_universe_gate_pass": pit_universe_gate_pass,
+            "research_candidate_gate_pass": research_candidate_gate_pass,
             "status": status,
         })
 

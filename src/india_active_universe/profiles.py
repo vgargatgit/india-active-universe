@@ -91,11 +91,8 @@ CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS = (
 )
 CANDIDATE_NUMERIC_HARD_FAILURE_KEYS = (
     "identity_failures",
-    "price_adjustment_failures",
     "instrument_failures",
     "status_failures",
-    "material_missing_factors",
-    "signal_window_non_pass_boundaries",
     "session_liquidity_window_failures",
 )
 CANDIDATE_HARD_FAILURE_KEYS = CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS + CANDIDATE_NUMERIC_HARD_FAILURE_KEYS
@@ -117,6 +114,9 @@ CANDIDATE_DECISION_REQUIRED_FIELDS = (
     *CANDIDATE_ADVISORY_READINESS_KEYS,
     "feature_readiness",
     "hard_failures",
+    "price_action_evidence",
+    "pit_universe_gate_pass",
+    "research_candidate_gate_pass",
     "promotion_interpretation",
 )
 CANDIDATE_PROMOTION_SUMMARY_FIELDS = (

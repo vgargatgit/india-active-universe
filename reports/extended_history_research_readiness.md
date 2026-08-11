@@ -30,7 +30,7 @@ It is generated from release artifacts and companion audit reports. It does not 
 21. RESEARCH_EXPLORATORY intervals: any interval marked `RESEARCH_EXPLORATORY` in `research_quality_intervals`, plus candidate intervals whose gates are not all pass.
 22. SOURCE_ONLY interval: source observations before the first promoted research interval remain `SOURCE_ONLY` or warmup-only evidence.
 23. Downstream Model Arena safe pre-2013 start: not declared by this report unless all hard gates plus CI/test evidence pass.
-24. Earliest candidate gate-pass start: `None`. Refined earliest monthly/session boundary: `None`. Candidate recommended PIT-universe interval: `{'status': 'NO_REFINED_BOUNDARY', 'start': None, 'end': '2026-08-10', 'profile': 'NSE_BROAD_LIQUID_PIT_V1', 'profile_version': 'LIQUID_V1', 'boundary_scan_method': 'MONTHLY_SNAPSHOT_BOUNDARIES_WITH_OFFICIAL_SESSION_LOOKBACK', 'promotion_status': 'NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS', 'interval_type': 'PIT_UNIVERSE', 'feature_readiness_policy': 'FEATURE_READINESS_REPORTED_SEPARATELY'}`. This is not a final safe start unless full release evidence also passes.
+24. Earliest PIT-universe gate-pass start: `2006-01-01`. Refined earliest PIT monthly/session boundary: `2006-01-31`. Earliest all-gates research candidate start: `None`. Candidate recommended PIT-universe interval: `{'status': 'CANDIDATE_REFINED_BOUNDARY_AVAILABLE', 'start': '2006-01-31', 'end': '2026-08-10', 'profile': 'NSE_BROAD_LIQUID_PIT_V1', 'profile_version': 'LIQUID_V1', 'boundary_scan_method': 'MONTHLY_SNAPSHOT_BOUNDARIES_WITH_OFFICIAL_SESSION_LOOKBACK', 'promotion_status': 'NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS', 'interval_type': 'PIT_UNIVERSE', 'feature_readiness_policy': 'FEATURE_READINESS_REPORTED_SEPARATELY'}`. This is not a final safe start unless full release evidence also passes.
 25. Remaining limitations: terminal values and total-return dividends remain partial; market cap and historical sector data are not fabricated.
 
 ## Candidate gate matrix
@@ -38,15 +38,15 @@ It is generated from release artifacts and companion audit reports. It does not 
 A missing candidate audit row is an explicit non-pass state.
 | Candidate start | Candidate audit | Decision-window gate | Warmup gate | Session-liquidity gate | Identity gate | Price-action gate | Instrument gate | Status gate | Hard failures | Promotion interpretation |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2011-01-01 | `FAIL` | `PASS` | `FAIL` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `signal_window_non_pass_boundaries=76` | `NOT_READY` |
-| 2009-01-01 | `FAIL` | `PASS` | `FAIL` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `signal_window_non_pass_boundaries=153` | `NOT_READY` |
-| 2007-01-01 | `FAIL` | `PASS` | `FAIL` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `signal_window_non_pass_boundaries=238` | `NOT_READY` |
-| 2006-01-01 | `FAIL` | `PASS` | `FAIL` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `signal_window_non_pass_boundaries=238` | `NOT_READY` |
+| 2011-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=76` | `NOT_READY` |
+| 2009-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=153` | `NOT_READY` |
+| 2007-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=238` | `NOT_READY` |
+| 2006-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=238` | `NOT_READY` |
 
 ## Final promotion rule
 
-PIT universe interval: `SOURCE_INTEGRITY = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `MATERIAL_PRICE_ACTION_MISSING_FACTORS = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `PIT_INVARIANTS = PASS`, and `CI = PASS`.
+PIT membership interval: `SOURCE_INTEGRITY = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `STATUS_GATE = PASS`, and `PIT_INVARIANTS = PASS`.
 
-Feature/model-ready research interval: the PIT universe interval gates must pass, and `WARMUP_READINESS = PASS` for the required published feature/model windows. Do not remove otherwise valid universe securities only because a downstream model feature is not ready.
+Feature/model-ready research interval: the PIT membership interval gates must pass, `MATERIAL_PRICE_ACTION_MISSING_FACTORS = 0`, price-action boundary risk must be cleared for the promoted signal window, `WARMUP_READINESS = PASS` for the required published feature/model windows, `CI = PASS`, and regression evidence must pass or be fully justified. Do not remove otherwise valid universe securities only because a downstream model feature is not ready.
 
 Terminal values and complete total-return history are not required for price-return alpha research, but their limitations must remain explicit.

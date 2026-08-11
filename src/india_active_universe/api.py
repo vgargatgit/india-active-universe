@@ -88,10 +88,11 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             )
         if "pit_universe_gate_pass" in row and type(row["pit_universe_gate_pass"]) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].pit_universe_gate_pass must be bool")
-        if "pit_universe_gate_pass" in row and row["pit_universe_gate_pass"] != (audit_status == CANDIDATE_PASS_VALUE):
-            raise ValueError(
-                f"candidate_promotion_decisions[{index}].pit_universe_gate_pass contradicts candidate_audit_status"
-            )
+        if "research_candidate_gate_pass" in row and type(row["research_candidate_gate_pass"]) is not bool:
+            raise ValueError(f"candidate_promotion_decisions[{index}].research_candidate_gate_pass must be bool")
+        price_action_evidence = row.get("price_action_evidence")
+        if not isinstance(price_action_evidence, dict):
+            raise ValueError(f"candidate_promotion_decisions[{index}].price_action_evidence must be an object")
         promotion_interpretation = row["promotion_interpretation"]
         if promotion_interpretation not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
             raise ValueError(
@@ -135,12 +136,17 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             if row[field] != CANDIDATE_PASS_VALUE
         ]
         if promotion_interpretation == CANDIDATE_GATE_PASS_INTERPRETATION:
-            if audit_status != CANDIDATE_PASS_VALUE or gate_failures:
+            if audit_status != CANDIDATE_PASS_VALUE or gate_failures or row.get("research_candidate_gate_pass") is not True:
                 raise ValueError(
                     f"candidate_promotion_decisions[{index}] has gate-pass interpretation without "
-                    f"PASS audit status and all PASS gates"
+                    f"PASS audit status, all PASS gates, and research_candidate_gate_pass"
                 )
-        if audit_status == CANDIDATE_PASS_VALUE and not gate_failures and promotion_interpretation != CANDIDATE_GATE_PASS_INTERPRETATION:
+        if (
+            audit_status == CANDIDATE_PASS_VALUE
+            and not gate_failures
+            and row.get("research_candidate_gate_pass") is True
+            and promotion_interpretation != CANDIDATE_GATE_PASS_INTERPRETATION
+        ):
             raise ValueError(
                 f"candidate_promotion_decisions[{index}] is gate-pass but has non-gate-pass interpretation: "
                 f"{promotion_interpretation}"
