@@ -665,6 +665,26 @@ def test_parquet_profile_on_executes_liquid_v1_when_materialized_flag_is_absent(
     assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
 
 
+def test_parquet_profile_on_reads_date_typed_monthly_snapshot(tmp_path):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    path = tmp_path / "research_universe_monthly.parquet"
+    pq.write_table(
+        pa.table(
+            {
+                "date": [date(2020, 1, 1)],
+                "security_id": ["PASS"],
+                "active": [True],
+                "NSE_BROAD_LIQUID_PIT_V1_eligible": [True],
+            }
+        ),
+        path,
+    )
+    store = ParquetUniverseStore(path)
+    assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
+
+
 def test_calendar_returns_only_official_sessions():
     store = CalendarStore([{"date": "2020-01-02", "session_evidence": "OFFICIAL_NSE_MARKET_DATA"}, {"date": "2020-01-03", "session_evidence": "OFFICIAL_NSE_MARKET_DATA"}])
     assert [row["date"].isoformat() for row in store.sessions_between("2020-01-01", "2020-01-05")] == ["2020-01-02", "2020-01-03"]
