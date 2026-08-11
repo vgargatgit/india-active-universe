@@ -28,10 +28,12 @@ SCHEMA = pa.schema([
     pa.field("boundary_share_factor", pa.float64()),
     pa.field("boundary_event_count", pa.int64()),
     pa.field("boundary_event_ids", pa.string()),
+    pa.field("pre_event_session_gap", pa.int64()),
+    pa.field("post_event_session_gap", pa.int64()),
 ])
 
 
-def classify_boundary(pre_close: float | None, post_close: float | None, share_factor: float, warning_threshold: float) -> tuple[float | None, str]:
+def classify_boundary(pre_close: float | None, post_close: float | None, share_factor: float, warning_threshold: float, pre_session_gap: int | None = None, post_session_gap: int | None = None, max_boundary_sessions: int = 5) -> tuple[float | None, str]:
     """Return holder-value ratio and an explicit boundary status."""
     if pre_close is None and post_close is None:
         return None, "NO_BOUNDARY_OBSERVATIONS"
@@ -42,6 +44,9 @@ def classify_boundary(pre_close: float | None, post_close: float | None, share_f
     if pre_close <= 0:
         return None, "INVALID_PRE_EVENT_PRICE"
     ratio = float(post_close * share_factor / pre_close)
+    if ((pre_session_gap is not None and pre_session_gap > max_boundary_sessions)
+            or (post_session_gap is not None and post_session_gap > max_boundary_sessions)):
+        return ratio, "NO_LOCAL_BOUNDARY_OBSERVATION"
     status = "PASS" if abs(ratio - 1.0) <= warning_threshold else "WARNING_LARGE_BOUNDARY_MOVE"
     return ratio, status
 
@@ -51,12 +56,18 @@ def main() -> None:
     parser.add_argument("--events", required=True)
     parser.add_argument("--prices", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--calendar", required=True)
     parser.add_argument("--warning-threshold", type=float, default=0.15)
+    parser.add_argument("--max-boundary-sessions", type=int, default=5)
     args = parser.parse_args()
 
     con = duckdb.connect()
     query = """
-        WITH events AS (
+        WITH calendar AS (
+            SELECT CAST(date AS DATE) AS session_date,
+                   ROW_NUMBER() OVER (ORDER BY CAST(date AS DATE)) AS session_no
+            FROM read_parquet(?)
+        ), events AS (
             SELECT event_id, security_id, event_type, coalesce(ex_date, event_date) AS ex_date,
                    price_factor, share_factor
             FROM read_parquet(?)
@@ -81,17 +92,24 @@ def main() -> None:
                max_by(p.raw_close, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_close,
                min_by(p.date, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_date,
                min_by(p.raw_close, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_close,
-               g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids
+               g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids,
+               max_by(ec.session_no, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_session_no,
+               min_by(ec.session_no, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_session_no,
+               ce.session_no AS event_session_no
         FROM events e
         JOIN event_groups g USING (security_id, ex_date)
         LEFT JOIN read_parquet(?) p ON p.security_id = e.security_id
+        LEFT JOIN calendar ec ON ec.session_date = CAST(p.date AS DATE)
+        LEFT JOIN calendar ce ON ce.session_date = CAST(e.ex_date AS DATE)
         GROUP BY e.event_id, e.security_id, e.event_type, e.ex_date, e.price_factor, e.share_factor,
-                 g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids
+                 g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids, ce.session_no
     """
-    raw = con.execute(query, [args.events, args.prices]).fetchall()
+    raw = con.execute(query, [args.calendar, args.events, args.prices]).fetchall()
     rows = []
-    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids in raw:
-        ratio, status = classify_boundary(pre_close, post_close, boundary_share_factor, args.warning_threshold)
+    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids, pre_session_no, post_session_no, event_session_no in raw:
+        pre_gap = event_session_no - pre_session_no if event_session_no is not None and pre_session_no is not None else None
+        post_gap = post_session_no - event_session_no if event_session_no is not None and post_session_no is not None else None
+        ratio, status = classify_boundary(pre_close, post_close, boundary_share_factor, args.warning_threshold, pre_gap, post_gap, args.max_boundary_sessions)
         rows.append({
             "event_id": event_id, "security_id": security_id, "event_type": event_type, "ex_date": ex_date,
             "price_factor": price_factor, "share_factor": share_factor,
@@ -100,6 +118,7 @@ def main() -> None:
             "holder_value_ratio": ratio, "validation_status": status,
             "boundary_price_factor": boundary_price_factor, "boundary_share_factor": boundary_share_factor,
             "boundary_event_count": boundary_event_count, "boundary_event_ids": boundary_event_ids,
+            "pre_event_session_gap": pre_gap, "post_event_session_gap": post_gap,
         })
     path = Path(args.out)
     path.parent.mkdir(parents=True, exist_ok=True)

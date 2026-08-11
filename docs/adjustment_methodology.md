@@ -4,4 +4,6 @@ Persist cumulative adjustment factors and their event IDs. Research price adjust
 
 Boundary validation distinguishes `NO_PRE_EVENT_OBSERVATION`, `NO_POST_EVENT_OBSERVATION`, and `NO_BOUNDARY_OBSERVATIONS` from a two-sided holder-value warning. These edge cases are preserved as evidence gaps. They are not converted into a guessed price or return.
 
+`NO_LOCAL_BOUNDARY_OBSERVATION` is used when the nearest available price is more than five official NSE sessions from the event. The release does not use a distant price as proof of holder-value continuity.
+
 Preference-share bonuses are retained as official events but are not applied to the ordinary-equity price series. Multiple same-day ordinary-equity actions are validated with their combined price and share factors.
