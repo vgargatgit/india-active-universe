@@ -120,8 +120,8 @@ def main() -> None:
         r.rank_126 <= 750 AS top750_liquidity,
         r.rank_126 <= 1000 AS top1000_liquidity,
         r.liquid_v1_eligible AS NSE_BROAD_LIQUID_PIT_V1_eligible,
-        'LIQUID_V1' AS profile_id,
-        '1' AS profile_version,
+        'NSE_BROAD_LIQUID_PIT_V1' AS profile_id,
+        'LIQUID_V1' AS profile_version,
         CASE WHEN r.liquid_v1_eligible THEN 'ELIGIBLE' ELSE 'EXCLUDED' END AS eligibility_result
       FROM ranked r
     ) TO '{monthly}' (FORMAT PARQUET, COMPRESSION ZSTD, ROW_GROUP_SIZE 25000)
