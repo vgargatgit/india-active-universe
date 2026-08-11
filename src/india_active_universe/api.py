@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
+from .profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
 from .storage import iter_jsonl, read_jsonl
 
 
@@ -144,22 +145,22 @@ class UniverseStore:
         price = row.get("price", row.get("close"))
         listing_age = row.get("listing_age_sessions", row.get("history_sessions", 0))
         return (
-            row.get("active") is True
-            and row.get("instrument_type") == "ORDINARY_EQUITY"
-            and row.get("trading_status") == "ACTIVE_TRADING"
+            row.get("active") is LIQUID_V1_DEFINITION["active"]
+            and row.get("instrument_type") == LIQUID_V1_DEFINITION["instrument_type"]
+            and row.get("trading_status") == LIQUID_V1_DEFINITION["trading_status"]
             and row.get("research_identity_ok") is True
             and row.get("price_adjustment_ok") is True
-            and price is not None and price >= 20
-            and listing_age >= 272
-            and self._positive_volume_days_60(row) >= 40
-            and row.get("median_traded_value_60", 0) >= 5_000_000
+            and price is not None and price >= LIQUID_V1_DEFINITION["price_min"]
+            and listing_age >= LIQUID_V1_DEFINITION["listing_age_sessions_min"]
+            and self._positive_volume_days_60(row) >= LIQUID_V1_DEFINITION["positive_volume_days_60_min"]
+            and row.get("median_traded_value_60", 0) >= LIQUID_V1_DEFINITION["median_traded_value_60_min"]
         )
 
     def eligible_on(self, as_of_date: str | date, *, min_price: float | None = None, min_history_sessions: int = 0, min_positive_volume_days_60: int | None = None, min_median_traded_value_60: float | None = None) -> list[dict[str, Any]]:
         rows = self.active_on(as_of_date)
         return [row for row in rows if (min_price is None or (row.get("close") is not None and row["close"] >= min_price)) and row.get("history_sessions", 0) >= min_history_sessions and (min_positive_volume_days_60 is None or self._positive_volume_days_60(row) >= min_positive_volume_days_60) and (min_median_traded_value_60 is None or row.get("median_traded_value_60", 0) >= min_median_traded_value_60)]
 
-    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
+    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = TOP_LIQUIDITY_RANKING_METRIC) -> list[dict[str, Any]]:
         rows = [
             row for row in self.active_on(as_of_date)
             if row.get(metric) is not None

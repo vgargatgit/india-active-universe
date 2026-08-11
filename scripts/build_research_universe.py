@@ -9,6 +9,8 @@ from pathlib import Path
 
 import duckdb
 
+from india_active_universe.profiles import LIQUID_V1_DEFINITION
+
 
 def q(path: Path) -> str:
     return str(path.resolve()).replace("'", "''")
@@ -26,6 +28,12 @@ def main() -> None:
     end_clause = f"AND CAST(a.date AS DATE) <= DATE '{args.end}'" if args.end else ""
     monthly = q(release / "research_universe_monthly.parquet")
     required = q(release / "required_research_security.parquet")
+    price_min = LIQUID_V1_DEFINITION["price_min"]
+    listing_age_min = LIQUID_V1_DEFINITION["listing_age_sessions_min"]
+    positive_volume_min = LIQUID_V1_DEFINITION["positive_volume_days_60_min"]
+    median_value_min = LIQUID_V1_DEFINITION["median_traded_value_60_min"]
+    instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
+    trading_status = LIQUID_V1_DEFINITION["trading_status"]
     query = f"""
     COPY (
       WITH month_end AS (
@@ -100,19 +108,19 @@ def main() -> None:
       ranked AS (
         SELECT b.*, me.month,
           ROW_NUMBER() OVER (PARTITION BY b.date ORDER BY b.median_traded_value_126 DESC NULLS LAST, b.security_id) AS rank_126,
-          CASE WHEN b.instrument_type = 'ORDINARY_EQUITY'
-             AND b.trading_status = 'ACTIVE_TRADING'
+          CASE WHEN b.instrument_type = '{instrument_type}'
+             AND b.trading_status = '{trading_status}'
              AND b.research_identity_ok
-             AND b.price >= 20
-             AND b.listing_age_sessions >= 272
-             AND b.positive_volume_days_60 >= 40
-             AND b.median_traded_value_60 >= 5000000
+             AND b.price >= {price_min}
+             AND b.listing_age_sessions >= {listing_age_min}
+             AND b.positive_volume_days_60 >= {positive_volume_min}
+             AND b.median_traded_value_60 >= {median_value_min}
              AND b.price_adjustment_ok
             THEN TRUE ELSE FALSE END AS liquid_v1_eligible
         FROM base b
         JOIN month_end me ON me.date = b.date
-        WHERE b.instrument_type = 'ORDINARY_EQUITY'
-          AND b.trading_status = 'ACTIVE_TRADING'
+        WHERE b.instrument_type = '{instrument_type}'
+          AND b.trading_status = '{trading_status}'
       )
       SELECT r.*,
         r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 500 AS top500_liquidity,
@@ -126,14 +134,14 @@ def main() -> None:
         CASE WHEN r.liquid_v1_eligible THEN 'ELIGIBLE' ELSE 'EXCLUDED' END AS eligibility_result,
         CASE
           WHEN r.liquid_v1_eligible THEN 'PASSED_LIQUID_V1'
-          WHEN r.instrument_type <> 'ORDINARY_EQUITY' THEN 'FAILED_INSTRUMENT_TYPE'
-          WHEN r.trading_status <> 'ACTIVE_TRADING' THEN 'FAILED_TRADING_STATUS'
+          WHEN r.instrument_type <> '{instrument_type}' THEN 'FAILED_INSTRUMENT_TYPE'
+          WHEN r.trading_status <> '{trading_status}' THEN 'FAILED_TRADING_STATUS'
           WHEN NOT r.research_identity_ok THEN 'FAILED_RESEARCH_IDENTITY'
           WHEN NOT r.price_adjustment_ok THEN 'FAILED_PRICE_ADJUSTMENT'
-          WHEN r.price IS NULL OR r.price < 20 THEN 'FAILED_MIN_PRICE'
-          WHEN r.listing_age_sessions IS NULL OR r.listing_age_sessions < 272 THEN 'FAILED_MIN_HISTORY'
-          WHEN r.positive_volume_days_60 IS NULL OR r.positive_volume_days_60 < 40 THEN 'FAILED_POSITIVE_VOLUME_DAYS_60'
-          WHEN r.median_traded_value_60 IS NULL OR r.median_traded_value_60 < 5000000 THEN 'FAILED_MEDIAN_TRADED_VALUE_60'
+          WHEN r.price IS NULL OR r.price < {price_min} THEN 'FAILED_MIN_PRICE'
+          WHEN r.listing_age_sessions IS NULL OR r.listing_age_sessions < {listing_age_min} THEN 'FAILED_MIN_HISTORY'
+          WHEN r.positive_volume_days_60 IS NULL OR r.positive_volume_days_60 < {positive_volume_min} THEN 'FAILED_POSITIVE_VOLUME_DAYS_60'
+          WHEN r.median_traded_value_60 IS NULL OR r.median_traded_value_60 < {median_value_min} THEN 'FAILED_MEDIAN_TRADED_VALUE_60'
           ELSE 'FAILED_UNKNOWN_PROFILE_RULE'
         END AS eligibility_reason_codes
       FROM ranked r

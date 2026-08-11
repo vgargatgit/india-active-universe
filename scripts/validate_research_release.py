@@ -9,6 +9,8 @@ from pathlib import Path
 
 import duckdb
 
+from india_active_universe.profiles import LIQUID_V1_DEFINITION
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -17,6 +19,12 @@ def main() -> None:
     args = parser.parse_args()
     release = Path(args.release).resolve()
     r = str(release).replace("'", "''")
+    price_min = LIQUID_V1_DEFINITION["price_min"]
+    listing_age_min = LIQUID_V1_DEFINITION["listing_age_sessions_min"]
+    positive_volume_min = LIQUID_V1_DEFINITION["positive_volume_days_60_min"]
+    median_value_min = LIQUID_V1_DEFINITION["median_traded_value_60_min"]
+    instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
+    trading_status = LIQUID_V1_DEFINITION["trading_status"]
     connection = duckdb.connect()
     try:
         metrics = {
@@ -215,10 +223,10 @@ def main() -> None:
             "liquid_predicate_failures": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
               WHERE NSE_BROAD_LIQUID_PIT_V1_eligible AND NOT (
-                instrument_type = 'ORDINARY_EQUITY' AND trading_status = 'ACTIVE_TRADING'
-                AND research_identity_ok AND price_adjustment_ok AND price >= 20
-                AND listing_age_sessions >= 272 AND positive_volume_days_60 >= 40
-                AND median_traded_value_60 >= 5000000
+                instrument_type = '{instrument_type}' AND trading_status = '{trading_status}'
+                AND research_identity_ok AND price_adjustment_ok AND price >= {price_min}
+                AND listing_age_sessions >= {listing_age_min} AND positive_volume_days_60 >= {positive_volume_min}
+                AND median_traded_value_60 >= {median_value_min}
               )
             """).fetchone()[0],
             "artifact_alias_failures": connection.execute(f"""

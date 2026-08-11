@@ -12,6 +12,8 @@ from pathlib import Path
 
 import duckdb
 
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
+
 
 REQUIRED = [
     "security_master.parquet", "symbol_history.parquet", "issuer_master.parquet",
@@ -248,22 +250,13 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         "recommended_signal_price_series": "price_return_adjusted_close",
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
-        "top_liquidity_ranking_metric": "median_traded_value_126",
+        "top_liquidity_ranking_metric": TOP_LIQUIDITY_RANKING_METRIC,
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
     }
     for key, expected in expected_contract_fields.items():
         if research_manifest.get(key) != expected:
             failures.append(f"research manifest {key} is not {expected}")
-    expected_liquid_v1_definition = {
-        "instrument_type": "ORDINARY_EQUITY",
-        "active": True,
-        "trading_status": "ACTIVE_TRADING",
-        "price_min": 20,
-        "listing_age_sessions_min": 272,
-        "positive_volume_days_60_min": 40,
-        "median_traded_value_60_min": 5_000_000,
-    }
-    if research_manifest.get("liquid_v1_definition") != expected_liquid_v1_definition:
+    if research_manifest.get("liquid_v1_definition") != LIQUID_V1_DEFINITION:
         failures.append("research manifest liquid_v1_definition is not the published LIQUID_V1 contract")
     required_numeric_metrics = (
         "required_research_securities",
