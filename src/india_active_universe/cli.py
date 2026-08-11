@@ -30,6 +30,8 @@ def main() -> None:
     parser.add_argument("--release-id")
     parser.add_argument("--source-release")
     parser.add_argument("--terminal-events")
+    parser.add_argument("--ci-run-id")
+    parser.add_argument("--ci-status-report")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     root = Path(args.root)
@@ -78,6 +80,10 @@ def main() -> None:
             command.extend(["--start", args.start])
         if args.end:
             command.extend(["--end", args.end])
+        if args.ci_run_id:
+            command.extend(["--ci-run-id", args.ci_run_id])
+        if args.ci_status_report:
+            command.extend(["--ci-status-report", args.ci_status_report])
         if args.dry_run:
             print(" ".join(command))
             return

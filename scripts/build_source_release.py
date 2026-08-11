@@ -25,6 +25,8 @@ def main() -> None:
     parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
     parser.add_argument("--corporate-actions", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
     parser.add_argument("--suspension-events", default="data/derived/suspension_events_resolved_v1.parquet")
+    parser.add_argument("--ci-run-id", help="GitHub Actions run ID to convert into release CI evidence.")
+    parser.add_argument("--ci-status-report", help="Existing ci_status_<release_id>.json evidence file to copy into reports.")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -36,8 +38,14 @@ def main() -> None:
         raise SystemExit("release or build workspace already exists; immutable build target refused")
     if not terminal.is_file():
         raise SystemExit(f"terminal evidence file does not exist: {terminal}")
+    if not args.dry_run and not args.ci_run_id and not args.ci_status_report:
+        raise SystemExit("build-source-release requires --ci-run-id or --ci-status-report because v2.0 completion audit requires CI evidence")
+    if args.ci_run_id and args.ci_status_report:
+        raise SystemExit("provide only one of --ci-run-id or --ci-status-report")
     raw = root / args.raw
     corporate_actions = root / args.corporate_actions
+    reports = root / "reports"
+    ci_status_target = reports / f"ci_status_{args.release_id}.json"
     commands = []
     core = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(raw), "--out", str(work), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")]
     if args.start:
@@ -81,6 +89,10 @@ def main() -> None:
     if args.dry_run:
         for command in commands:
             print(" ".join(command))
+        if args.ci_run_id:
+            print(" ".join([sys.executable, str(root / "scripts/write_ci_status_report.py"), "--release", str(release), "--run-id", args.ci_run_id, "--out", str(ci_status_target)]))
+        if args.ci_status_report:
+            print(f"copy {root / args.ci_status_report} {ci_status_target}")
         return
     work.mkdir(parents=True)
     release.mkdir(parents=True)
@@ -89,7 +101,16 @@ def main() -> None:
         target = work / "raw/manifests/source_manifest.json"
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(manifest_source, target)
+    reports.mkdir(parents=True, exist_ok=True)
     for command in commands:
+        if command[1].endswith("build_research_reports.py"):
+            if args.ci_run_id:
+                run(root, [sys.executable, str(root / "scripts/write_ci_status_report.py"), "--release", str(release), "--run-id", args.ci_run_id, "--out", str(ci_status_target)])
+            elif args.ci_status_report:
+                source_report = root / args.ci_status_report
+                if not source_report.is_file():
+                    raise SystemExit(f"CI status report does not exist: {source_report}")
+                shutil.copy2(source_report, ci_status_target)
         run(root, command)
     print(f"SOURCE_RELEASE_COMPLETE {release}")
 
