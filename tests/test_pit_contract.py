@@ -2036,6 +2036,8 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
             {
                 "candidate_start": "2011-01-01",
                 "candidate_audit_status": "PASS",
+                "feature_readiness": {"feature_warmup_not_ready": False},
+                "refined_earliest_passing_snapshot": "2011-01-31",
                 "hard_failures": hard_failures,
             }
         ]
@@ -2045,6 +2047,8 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
             {
                 "candidate_start": "2011-01-01",
                 "status": "PASS",
+                "feature_readiness": {"feature_warmup_not_ready": False},
+                "refined_earliest_passing_snapshot": "2011-01-31",
                 "hard_failures": hard_failures,
             }
         ]
@@ -2074,6 +2078,30 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
     }
     assert candidate_manifest_audit_consistency_failures(stale_hard_failures, report) == [
         "candidate 2011-01-01 decision hard_failures do not match candidate audit report"
+    ]
+
+    stale_feature_readiness = {
+        "candidate_promotion_decisions": [
+            {
+                **manifest["candidate_promotion_decisions"][0],
+                "feature_readiness": {"feature_warmup_not_ready": True},
+            }
+        ]
+    }
+    assert candidate_manifest_audit_consistency_failures(stale_feature_readiness, report) == [
+        "candidate 2011-01-01 decision feature_readiness does not match candidate audit report"
+    ]
+
+    stale_refined_snapshot = {
+        "candidate_promotion_decisions": [
+            {
+                **manifest["candidate_promotion_decisions"][0],
+                "refined_earliest_passing_snapshot": "2011-02-28",
+            }
+        ]
+    }
+    assert candidate_manifest_audit_consistency_failures(stale_refined_snapshot, report) == [
+        "candidate 2011-01-01 decision refined_earliest_passing_snapshot does not match candidate audit report"
     ]
 
 

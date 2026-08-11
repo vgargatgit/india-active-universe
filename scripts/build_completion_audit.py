@@ -269,6 +269,10 @@ def candidate_manifest_audit_consistency_failures(research_manifest: dict, candi
             failures.append(f"candidate {candidate_start} decision status does not match candidate audit report")
         if decision.get("hard_failures") != audit.get("hard_failures"):
             failures.append(f"candidate {candidate_start} decision hard_failures do not match candidate audit report")
+        if decision.get("feature_readiness") != audit.get("feature_readiness"):
+            failures.append(f"candidate {candidate_start} decision feature_readiness does not match candidate audit report")
+        if decision.get("refined_earliest_passing_snapshot") != audit.get("refined_earliest_passing_snapshot"):
+            failures.append(f"candidate {candidate_start} decision refined_earliest_passing_snapshot does not match candidate audit report")
     return failures
 
 
