@@ -452,6 +452,10 @@ def main() -> None:
         quality = dict(con.execute("SELECT total_return_quality, count(*) FROM read_parquet(?) GROUP BY 1", [str(adjusted)]).fetchall())
         adjusted_columns = {row[0] for row in con.execute("DESCRIBE SELECT * FROM read_parquet(?)", [str(adjusted)]).fetchall()}
         missing_adjusted_contract = sorted({"price_return_adjusted_close", "total_return_adjusted_close"} - adjusted_columns)
+    liquidity_window_failures = con.execute("""
+        SELECT COUNT(*) FROM read_parquet(?)
+        WHERE liquidity_window_definition IS DISTINCT FROM 'OFFICIAL_NSE_SESSION_WINDOW'
+    """, [str(release / "liquidity_features.parquet")]).fetchone()[0]
     boundary_path = release / "corporate_action_boundary_validation.parquet"
     boundary_quality = {}
     if boundary_path.exists():
@@ -474,6 +478,7 @@ def main() -> None:
         f"- Status interval overlaps: {overlap_count:,}." if overlap_count is not None else "- Status interval overlaps: not measured.",
         f"- Adjusted-price quality counts: `{json.dumps(quality, sort_keys=True)}`.",
         f"- Adjusted-price contract missing columns: `{missing_adjusted_contract}`.",
+        f"- Liquidity feature rows with non-official session window: {liquidity_window_failures:,}.",
         f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
         f"- RAW integrity validation: `{json.dumps(raw_summary, sort_keys=True)}`.",
         f"- Source coverage validation: `{json.dumps(source_summary, sort_keys=True)}`.",
@@ -501,6 +506,8 @@ def main() -> None:
         failures.append(f"RAW integrity validation is not clean: {json.dumps(raw_summary, sort_keys=True)}")
     if missing_adjusted_contract:
         failures.append(f"adjusted-price artifact is missing contract columns: {missing_adjusted_contract}")
+    if liquidity_window_failures:
+        failures.append(f"liquidity features are not all official-session windows: {liquidity_window_failures}")
     if test_summary["tests"] <= 0 or test_summary["failures"] or test_summary["errors"]:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:
