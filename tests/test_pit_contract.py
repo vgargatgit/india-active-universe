@@ -1529,6 +1529,22 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, missing_candidate_decisions)
     assert "research manifest candidate_promotion_decisions is missing or not a list" in failures
 
+    pre_warmup_rhc = {
+        **valid_manifest,
+        "research_quality_intervals": [
+            {
+                "start": "2007-01-31",
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+            }
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, pre_warmup_rhc)
+    assert "research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
+
     stale_candidate_decisions = {
         **valid_manifest,
         "candidate_promotion_decisions": valid_manifest["candidate_promotion_decisions"][:-1],
@@ -2055,6 +2071,22 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
     }
     failures = data_manifest_contract_failures(release, missing_component_quality)
     assert "data manifest component_quality.research_universe_2013_onward is not RESEARCH_HIGH_CONFIDENCE" in failures
+
+    pre_warmup_rhc = {
+        **manifest,
+        "research_quality_intervals": [
+            {
+                "start": "2007-01-31",
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+            }
+        ],
+    }
+    failures = data_manifest_contract_failures(release, pre_warmup_rhc)
+    assert "data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
 
     missing_monthly_snapshot_start = {
         **manifest,

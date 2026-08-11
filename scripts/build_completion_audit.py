@@ -419,6 +419,17 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         if isinstance(item, dict)
     ):
         failures.append("data manifest research_quality_intervals has no scoped RESEARCH_HIGH_CONFIDENCE interval")
+    if isinstance(intervals, list):
+        earliest_fully_warmed = warmup.get("earliest_fully_warmed_date")
+        for item in intervals:
+            if (
+                isinstance(item, dict)
+                and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+                and item.get("start")
+                and str(item.get("start")) < RESEARCH_START_DATE
+                and (not earliest_fully_warmed or str(item.get("start")) < str(earliest_fully_warmed))
+            ):
+                failures.append("data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date")
     component_quality = manifest.get("component_quality") or {}
     for key, expected in COMPONENT_QUALITY.items():
         if component_quality.get(key) != expected:
@@ -512,6 +523,17 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         if isinstance(item, dict)
     ):
         failures.append("research manifest research_quality_intervals has no scoped RESEARCH_HIGH_CONFIDENCE interval")
+    if isinstance(intervals, list):
+        earliest_fully_warmed = warmup.get("earliest_fully_warmed_date")
+        for item in intervals:
+            if (
+                isinstance(item, dict)
+                and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+                and item.get("start")
+                and str(item.get("start")) < RESEARCH_START_DATE
+                and (not earliest_fully_warmed or str(item.get("start")) < str(earliest_fully_warmed))
+            ):
+                failures.append("research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date")
     candidate_decisions = research_manifest.get("candidate_promotion_decisions")
     if not isinstance(candidate_decisions, list):
         failures.append("research manifest candidate_promotion_decisions is missing or not a list")
