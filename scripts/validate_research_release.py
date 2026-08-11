@@ -25,6 +25,7 @@ def main() -> None:
     median_value_min = LIQUID_V1_DEFINITION["median_traded_value_60_min"]
     instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
     trading_status = LIQUID_V1_DEFINITION["trading_status"]
+    active = "TRUE" if LIQUID_V1_DEFINITION["active"] else "FALSE"
     connection = duckdb.connect()
     try:
         metrics = {
@@ -35,11 +36,11 @@ def main() -> None:
                 GROUP BY 1, 2 HAVING COUNT(*) > 1
               )
             """).fetchone()[0],
-            "non_ordinary_rows": connection.execute(f"SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') WHERE instrument_type <> 'ORDINARY_EQUITY'").fetchone()[0],
+            "non_ordinary_rows": connection.execute(f"SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') WHERE instrument_type <> '{instrument_type}'").fetchone()[0],
             "non_active_trading_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
-              WHERE COALESCE(active, FALSE) <> TRUE
-                 OR trading_status IS DISTINCT FROM 'ACTIVE_TRADING'
+              WHERE COALESCE(active, FALSE) <> {active}
+                 OR trading_status IS DISTINCT FROM '{trading_status}'
             """).fetchone()[0],
             "missing_quality_fields": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
@@ -206,7 +207,7 @@ def main() -> None:
             "required_artifact_instrument_classification_failures": connection.execute(f"""
               SELECT COUNT(*)
               FROM read_parquet('{r}/required_research_security.parquet')
-              WHERE instrument_type IS DISTINCT FROM 'ORDINARY_EQUITY'
+              WHERE instrument_type IS DISTINCT FROM '{instrument_type}'
                  OR instrument_type_quality IS NULL
                  OR instrument_type_quality = 'UNRESOLVED'
             """).fetchone()[0],
