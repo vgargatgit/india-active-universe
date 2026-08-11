@@ -17,6 +17,7 @@ from india_active_universe.profiles import (
     PROFILE_VERSION,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_HIGH_CONFIDENCE_STATUS,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -206,7 +207,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
         json.dumps(
             {
                 "research_quality": {
-                    "status": "RESEARCH_HIGH_CONFIDENCE",
+                    "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
                     "start": "2013-01-01",
                     "end": "2026-08-10",
                 }
@@ -220,7 +221,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
 
     platform = DataPlatform.from_release(release, strict=True)
     assert platform.verified_start == date(2013, 1, 1)
-    assert platform.quality_tier == "RESEARCH_HIGH_CONFIDENCE"
+    assert platform.quality_tier == RESEARCH_HIGH_CONFIDENCE_STATUS
     with pytest.raises(CoverageError):
         platform.active_on("2012-12-31")
 
@@ -237,7 +238,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "release_id": release.name,
         "git_sha": "abc123",
         "research_quality": {
-            "status": "RESEARCH_HIGH_CONFIDENCE",
+            "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
             "start": "2013-01-01",
             "end": "2026-08-10",
             "monthly_snapshot_start": "2013-01-31",

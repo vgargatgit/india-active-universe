@@ -22,6 +22,7 @@ from india_active_universe.profiles import (
     PROFILE_VERSION,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_HIGH_CONFIDENCE_STATUS,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -221,7 +222,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
 
     quality = research_manifest.get("research_quality") or {}
     expected_quality = {
-        "status": "RESEARCH_HIGH_CONFIDENCE",
+        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
         "start": "2013-01-01",
         "universe_profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
@@ -411,7 +412,7 @@ def main() -> None:
         missing_reports.append(ci_status_report.name)
     partition_manifest_path = release / "partitioned_artifacts_manifest.json"
     manifest_mismatch = manifest.get("release_id") != release.name
-    research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
+    research_quality_ok = research_manifest.get("research_quality", {}).get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
     data_contract_failures = data_manifest_contract_failures(release, manifest)
     research_contract_failures = research_manifest_contract_failures(release, manifest, research_manifest)
     if missing or missing_reports or manifest_mismatch or not research_quality_ok or data_contract_failures or research_contract_failures:
@@ -420,7 +421,7 @@ def main() -> None:
         if manifest_mismatch:
             rows.extend(["", f"- FAIL: manifest release_id does not match directory `{release.name}`"])
         if not research_quality_ok:
-            rows.extend(["", "- FAIL: research quality is not RESEARCH_HIGH_CONFIDENCE"])
+            rows.extend(["", f"- FAIL: research quality is not {RESEARCH_HIGH_CONFIDENCE_STATUS}"])
         rows.extend(f"- FAIL: {failure}" for failure in data_contract_failures)
         rows.extend(f"- FAIL: {failure}" for failure in research_contract_failures)
         rows.extend(f"- FAIL: missing research report `{name}`" for name in missing_reports)
@@ -566,7 +567,7 @@ def main() -> None:
     if manifest.get("release_id") != release.name:
         failures.append(f"manifest release_id {manifest.get('release_id')!r} does not match directory {release.name!r}")
     if not research_quality_ok:
-        failures.append("research release is not RESEARCH_HIGH_CONFIDENCE")
+        failures.append(f"research release is not {RESEARCH_HIGH_CONFIDENCE_STATUS}")
     failures.extend(data_contract_failures)
     failures.extend(research_contract_failures)
     failures.extend(f"missing required research report: {name}" for name in missing_reports)

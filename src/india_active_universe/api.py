@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
-from .profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
+from .profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, RESEARCH_HIGH_CONFIDENCE_STATUS, TOP_LIQUIDITY_RANKING_METRIC
 from .storage import iter_jsonl, read_jsonl
 
 
@@ -477,7 +477,7 @@ class DataPlatform:
             import json
             research_manifest = json.loads(research_manifest_path.read_text(encoding="utf-8"))
             research_quality = research_manifest.get("research_quality", {})
-            if research_quality.get("status") == "RESEARCH_HIGH_CONFIDENCE":
+            if research_quality.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS:
                 platform.verified_start = _as_date(research_quality["start"]) if research_quality.get("start") else platform.verified_start
                 platform.verified_end = _as_date(research_quality["end"]) if research_quality.get("end") else platform.verified_end
                 platform.quality_tier = research_quality["status"]

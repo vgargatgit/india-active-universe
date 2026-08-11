@@ -20,6 +20,8 @@ from india_active_universe.profiles import (
     PROFILE_VERSION,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_EXPLORATORY_STATUS,
+    RESEARCH_HIGH_CONFIDENCE_STATUS,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -245,7 +247,7 @@ def main() -> None:
     identity_failure_count = int(counts[5])
     missing_factor_count = sum(int(row[2]) for row in event_rows)
     gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(unresolved_boundary_count) == 0 and int(status_overlap) == 0
-    quality = "RESEARCH_HIGH_CONFIDENCE" if gate_pass else "RESEARCH_EXPLORATORY"
+    quality = RESEARCH_HIGH_CONFIDENCE_STATUS if gate_pass else RESEARCH_EXPLORATORY_STATUS
     research_start = "2013-01-01"
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     validation_path = reports / f"research_invariant_validation_{release.name}.json"
