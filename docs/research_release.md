@@ -8,6 +8,8 @@ The monthly snapshot is `research_universe_monthly.parquet`. The Top-500, Top-75
 
 Consumer profile rows carry `profile_id`, `profile_version`, `as_of_date`, `eligibility_result`, and `eligibility_reason_codes`. A selected LIQUID_V1 row has `eligibility_result=ELIGIBLE` and `eligibility_reason_codes=PASSED_LIQUID_V1`. Excluded monthly rows carry the first failed profile rule where available.
 
+The required-security scope is materialized as `required_research_security.parquet`. A security enters this artifact if it appears in monthly `LIQUID_V1` or monthly Top-750 liquidity scope. The artifact carries `first_research_date`, `last_research_date`, `enters_liquid_v1`, `enters_top750`, `best_rank_126`, `worst_rank_126`, `max_median_traded_value_60`, `max_median_traded_value_126`, `max_positive_volume_days_60`, `research_identity_quality`, `price_adjustment_quality`, `price_adjustment_ok`, `instrument_type`, `instrument_type_quality`, `status_quality`, and `active_trading_ok`. The release validator fails if these fields do not match monthly PIT evidence or if identity, adjustment, instrument, or status quality is outside the promoted research threshold.
+
 Use:
 
 - `daily_prices_raw.parquet` for nominal execution prices.
