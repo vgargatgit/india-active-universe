@@ -55,6 +55,7 @@ def main() -> None:
           f.median_traded_value_126, f.average_traded_value_60,
           f.absent_observation_days_60, f.zero_volume_days_60,
           f.liquidity_rank_126, f.liquidity_percentile_126,
+          f.liquidity_percentile_126 AS liquidity_percentile,
           f.liquidity_bucket_126,
           adj.adjustment_quality AS price_adjustment_quality,
           adj.total_return_quality,
@@ -119,10 +120,24 @@ def main() -> None:
         r.rank_126 <= 500 AS top500_liquidity,
         r.rank_126 <= 750 AS top750_liquidity,
         r.rank_126 <= 1000 AS top1000_liquidity,
+        r.liquid_v1_eligible AS LIQUID_V1_eligible,
         r.liquid_v1_eligible AS NSE_BROAD_LIQUID_PIT_V1_eligible,
         'NSE_BROAD_LIQUID_PIT_V1' AS profile_id,
         'LIQUID_V1' AS profile_version,
-        CASE WHEN r.liquid_v1_eligible THEN 'ELIGIBLE' ELSE 'EXCLUDED' END AS eligibility_result
+        r.date AS as_of_date,
+        CASE WHEN r.liquid_v1_eligible THEN 'ELIGIBLE' ELSE 'EXCLUDED' END AS eligibility_result,
+        CASE
+          WHEN r.liquid_v1_eligible THEN 'PASSED_LIQUID_V1'
+          WHEN r.instrument_type <> 'ORDINARY_EQUITY' THEN 'FAILED_INSTRUMENT_TYPE'
+          WHEN r.trading_status <> 'ACTIVE_TRADING' THEN 'FAILED_TRADING_STATUS'
+          WHEN NOT r.research_identity_ok THEN 'FAILED_RESEARCH_IDENTITY'
+          WHEN NOT r.price_adjustment_ok THEN 'FAILED_PRICE_ADJUSTMENT'
+          WHEN r.price IS NULL OR r.price < 20 THEN 'FAILED_MIN_PRICE'
+          WHEN r.listing_age_sessions IS NULL OR r.listing_age_sessions < 272 THEN 'FAILED_MIN_HISTORY'
+          WHEN r.positive_volume_days_60 IS NULL OR r.positive_volume_days_60 < 40 THEN 'FAILED_POSITIVE_VOLUME_DAYS_60'
+          WHEN r.median_traded_value_60 IS NULL OR r.median_traded_value_60 < 5000000 THEN 'FAILED_MEDIAN_TRADED_VALUE_60'
+          ELSE 'FAILED_UNKNOWN_PROFILE_RULE'
+        END AS eligibility_reason_codes
       FROM ranked r
     ) TO '{monthly}' (FORMAT PARQUET, COMPRESSION ZSTD, ROW_GROUP_SIZE 25000)
     """

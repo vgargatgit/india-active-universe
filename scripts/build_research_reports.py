@@ -320,6 +320,11 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "research_quality": {"status": quality, "start": research_start, "end": str(coverage[1]), "monthly_snapshot_start": str(coverage[0]), "universe_profile": "NSE_BROAD_LIQUID_PIT_V1", "profile_version": "LIQUID_V1", "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750"},
         "source_coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10", "research_start": research_start, "research_end": str(coverage[1])},
         "required_research_securities": int(required_count),
+        "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
+        "recommended_signal_price_series": "price_return_adjusted_close",
+        "raw_execution_price_artifact": "daily_prices_raw.parquet",
+        "liquidity_artifact": "liquidity_features.parquet",
+        "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
         "liquid_v1_securities": int(counts[3]),
         "identity_failures": int(required_scope_failure_count),
         "material_price_action_missing_factors": missing_factor_count,
@@ -334,6 +339,13 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
         "quality_reports": {name: sha256(reports / name) for name in ("data_source_coverage.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},
         "known_policy": {"signals": "price-return adjusted close", "execution": "raw nominal OHLC", "terminal_values": "explicit recovery scenarios; no invented canonical value"},
+        "known_limitations": [
+            "Complete 2006 onward archive remains dataset-wide exploratory outside the scoped research universe.",
+            "Terminal-event, merger, insolvency, and terminal-value history is partial; unresolved values require downstream recovery sensitivity.",
+            "Cash-dividend and total-return coverage is partial and separately quality-labelled.",
+            "Historical PIT market-cap and sector datasets are not fabricated in this release.",
+            "Historical source retrieval timestamps may reflect local raw-file metadata where original HTTP retrieval metadata is unavailable.",
+        ],
     }
     (release / "research_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"quality": quality, "liquid_v1": counts[3], "required": required_count, "identity_failures": int(required_scope_failure_count), "missing_price_action_factors": missing_factor_count}, sort_keys=True))

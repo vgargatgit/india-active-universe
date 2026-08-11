@@ -2,10 +2,11 @@ from datetime import date
 
 import pytest
 
-from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
+from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, ParquetUniverseStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
+from scripts.build_completion_audit import research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -166,6 +167,117 @@ def test_strict_platform_rejects_out_of_range_dates():
         platform.active_on("2009-12-31")
 
 
+def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
+    import json
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / "data_release_manifest.json").write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
+                "verified_start_date": "2006-01-02",
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / "research_release_manifest.json").write_text(
+        json.dumps(
+            {
+                "research_quality": {
+                    "status": "RESEARCH_HIGH_CONFIDENCE",
+                    "start": "2013-01-01",
+                    "end": "2026-08-10",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    pq.write_table(pa.table({"security_id": []}), release / "security_master.parquet")
+    for name in ("active_universe_daily.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet"):
+        pq.write_table(pa.table({"date": [], "security_id": []}), release / name)
+
+    platform = DataPlatform.from_release(release, strict=True)
+    assert platform.verified_start == date(2013, 1, 1)
+    assert platform.quality_tier == "RESEARCH_HIGH_CONFIDENCE"
+    with pytest.raises(CoverageError):
+        platform.active_on("2012-12-31")
+
+
+def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
+    release = tmp_path / "india_equity_data_v2.0.0"
+    release.mkdir()
+    data_manifest = {"release_id": release.name, "git_commit": "abc123"}
+    valid_manifest = {
+        "release_id": release.name,
+        "git_sha": "abc123",
+        "research_quality": {
+            "status": "RESEARCH_HIGH_CONFIDENCE",
+            "start": "2013-01-01",
+            "end": "2026-08-10",
+            "monthly_snapshot_start": "2013-01-31",
+            "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
+            "profile_version": "LIQUID_V1",
+            "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+        },
+        "source_coverage": {
+            "observed_start": "2006-01-02",
+            "observed_end": "2026-08-10",
+            "research_start": "2013-01-01",
+            "research_end": "2026-08-10",
+        },
+        "known_policy": {
+            "signals": "price-return adjusted close",
+            "execution": "raw nominal OHLC",
+            "terminal_values": "explicit recovery scenarios; no invented canonical value",
+        },
+        "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
+        "recommended_signal_price_series": "price_return_adjusted_close",
+        "raw_execution_price_artifact": "daily_prices_raw.parquet",
+        "liquidity_artifact": "liquidity_features.parquet",
+        "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "artifacts": {
+            "research_universe_monthly.parquet": "0" * 64,
+            "required_research_security.parquet": "0" * 64,
+            "liquidity_features.parquet": "0" * 64,
+            "daily_prices_raw.parquet": "0" * 64,
+            "daily_prices_adjusted.parquet": "0" * 64,
+            "corporate_actions.parquet": "0" * 64,
+            "corporate_action_boundary_validation.parquet": "0" * 64,
+            "trading_status_intervals.parquet": "0" * 64,
+            "suspension_events_resolved.parquet": "0" * 64,
+        },
+        "config_sha256": "0" * 64,
+        "manual_override_sha256": "0" * 64,
+        "research_invariant_validation_sha256": "0" * 64,
+        "test_result_sha256": "0" * 64,
+        "quality_reports": {"research_universe_coverage.md": "0" * 64},
+        "known_limitations": [
+            "Complete archive remains exploratory outside the scoped research universe.",
+            "Terminal-event and terminal-value history is partial.",
+            "Dividend and total-return coverage is partial.",
+            "Historical market-cap data is not fabricated.",
+            "Historical sector data is not fabricated.",
+            "Retrieval timestamps may reflect local file metadata.",
+        ],
+    }
+
+    assert research_manifest_contract_failures(release, data_manifest, valid_manifest) == []
+
+    incomplete = {**valid_manifest, "known_limitations": ["Terminal values are partial."]}
+    failures = research_manifest_contract_failures(release, data_manifest, incomplete)
+    assert "research manifest known_limitations are incomplete" in failures
+    assert any("market-cap" in failure for failure in failures)
+
+    missing_artifact_contract = {**valid_manifest, "liquidity_artifact": "research_universe_monthly.parquet"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_artifact_contract)
+    assert "research manifest liquidity_artifact is not liquidity_features.parquet" in failures
+
+
 def test_raw_and_adjusted_history_are_separate():
     platform = DataPlatform()
     platform.prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-01", "raw_close": 100.0}])
@@ -207,12 +319,168 @@ def test_terminal_event_queue_accepts_downstream_holdings():
     assert [row["event_id"] for row in store.resolution_queue_for_holdings(["DEAD"])] == ["E1"]
 
 
+def test_platform_terminal_event_queue_accepts_downstream_holdings():
+    platform = DataPlatform()
+    platform.terminal_events = TerminalEventStore([
+        {"security_id": "DEAD", "event_id": "E1", "terminal_event_type": "UNKNOWN_TERMINAL_EVENT"},
+        {"security_id": "LIVE", "event_id": "E2"},
+    ])
+    queue = platform.terminal_event_resolution_queue_for_holdings(["DEAD"])
+    assert [row["event_id"] for row in queue] == ["E1"]
+
+
 def test_optional_positive_volume_filter_is_downstream_only():
     store = UniverseStore([
         {"date": date(2020, 1, 1), "security_id": "A", "active": True, "close": 20.0, "history_sessions": 60, "zero_volume_days_60": 10, "median_traded_value_60": 6_000_000},
         {"date": date(2020, 1, 1), "security_id": "B", "active": True, "close": 20.0, "history_sessions": 60, "zero_volume_days_60": 5, "median_traded_value_60": 6_000_000},
     ])
     assert [row["security_id"] for row in store.eligible_on("2020-01-01", min_positive_volume_days_60=55)] == ["B"]
+
+
+def test_positive_volume_filter_uses_session_correct_feature_when_present():
+    store = UniverseStore([
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "SPARSE",
+            "active": True,
+            "close": 20.0,
+            "history_sessions": 60,
+            "positive_volume_days_60": 35,
+            "zero_volume_days_60": 5,
+            "absent_observation_days_60": 20,
+            "median_traded_value_60": 6_000_000,
+        },
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "LIQUID",
+            "active": True,
+            "close": 20.0,
+            "history_sessions": 60,
+            "positive_volume_days_60": 40,
+            "zero_volume_days_60": 0,
+            "absent_observation_days_60": 20,
+            "median_traded_value_60": 6_000_000,
+        },
+    ])
+    eligible = store.eligible_on("2020-01-01", min_positive_volume_days_60=40)
+    assert [row["security_id"] for row in eligible] == ["LIQUID"]
+
+
+def test_profile_on_adds_downstream_audit_metadata():
+    store = UniverseStore([
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "LIQUID",
+            "active": True,
+            "NSE_BROAD_LIQUID_PIT_V1_eligible": True,
+        }
+    ])
+    row = store.profile_on("2020-01-01", "LIQUID_V1")[0]
+    assert row["profile_id"] == "NSE_BROAD_LIQUID_PIT_V1"
+    assert row["profile_version"] == "LIQUID_V1"
+    assert row["as_of_date"] == date(2020, 1, 1)
+    assert row["eligibility_result"] == "ELIGIBLE"
+    assert row["eligibility_reason_codes"] == "PASSED_LIQUID_V1"
+
+
+def test_profile_on_executes_liquid_v1_when_materialized_flag_is_absent():
+    store = UniverseStore([
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "PASS",
+            "active": True,
+            "instrument_type": "ORDINARY_EQUITY",
+            "trading_status": "ACTIVE_TRADING",
+            "research_identity_ok": True,
+            "price_adjustment_ok": True,
+            "price": 25.0,
+            "listing_age_sessions": 300,
+            "positive_volume_days_60": 40,
+            "median_traded_value_60": 5_000_000,
+        },
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "FAIL",
+            "active": True,
+            "instrument_type": "ORDINARY_EQUITY",
+            "trading_status": "ACTIVE_TRADING",
+            "research_identity_ok": True,
+            "price_adjustment_ok": True,
+            "price": 25.0,
+            "listing_age_sessions": 300,
+            "positive_volume_days_60": 39,
+            "median_traded_value_60": 5_000_000,
+        },
+    ])
+    assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
+
+
+def test_profile_on_fails_closed_when_identity_or_status_fields_are_missing():
+    store = UniverseStore([
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "MISSING_STATUS",
+            "active": True,
+            "instrument_type": "ORDINARY_EQUITY",
+            "research_identity_ok": True,
+            "price_adjustment_ok": True,
+            "price": 25.0,
+            "listing_age_sessions": 300,
+            "positive_volume_days_60": 40,
+            "median_traded_value_60": 5_000_000,
+        },
+        {
+            "date": date(2020, 1, 1),
+            "security_id": "MISSING_IDENTITY",
+            "active": True,
+            "instrument_type": "ORDINARY_EQUITY",
+            "trading_status": "ACTIVE_TRADING",
+            "price_adjustment_ok": True,
+            "price": 25.0,
+            "listing_age_sessions": 300,
+            "positive_volume_days_60": 40,
+            "median_traded_value_60": 5_000_000,
+        },
+    ])
+    assert store.profile_on("2020-01-01", "LIQUID_V1") == []
+
+
+def test_ranked_liquid_on_excludes_non_ordinary_or_non_active_status():
+    store = UniverseStore([
+        {"date": date(2020, 1, 1), "security_id": "ETF", "active": True, "instrument_type": "ETF", "trading_status": "ACTIVE_TRADING", "median_traded_value_126": 100.0},
+        {"date": date(2020, 1, 1), "security_id": "SUSPENDED", "active": True, "instrument_type": "ORDINARY_EQUITY", "trading_status": "SUSPENDED", "median_traded_value_126": 90.0},
+        {"date": date(2020, 1, 1), "security_id": "MISSING_TYPE", "active": True, "trading_status": "ACTIVE_TRADING", "median_traded_value_126": 85.0},
+        {"date": date(2020, 1, 1), "security_id": "MISSING_STATUS", "active": True, "instrument_type": "ORDINARY_EQUITY", "median_traded_value_126": 82.0},
+        {"date": date(2020, 1, 1), "security_id": "EQUITY", "active": True, "instrument_type": "ORDINARY_EQUITY", "trading_status": "ACTIVE_TRADING", "median_traded_value_126": 80.0},
+    ])
+    assert [row["security_id"] for row in store.ranked_liquid_on("2020-01-01", 10)] == ["EQUITY"]
+
+
+def test_parquet_profile_on_executes_liquid_v1_when_materialized_flag_is_absent(tmp_path):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    path = tmp_path / "research_universe_monthly.parquet"
+    pq.write_table(
+        pa.table(
+            {
+                "date": [date(2020, 1, 1), date(2020, 1, 1)],
+                "security_id": ["PASS", "FAIL"],
+                "active": [True, True],
+                "instrument_type": ["ORDINARY_EQUITY", "ORDINARY_EQUITY"],
+                "trading_status": ["ACTIVE_TRADING", "ACTIVE_TRADING"],
+                "research_identity_ok": [True, True],
+                "price_adjustment_ok": [True, True],
+                "price": [25.0, 25.0],
+                "listing_age_sessions": [300, 300],
+                "positive_volume_days_60": [40, 39],
+                "median_traded_value_60": [5_000_000, 5_000_000],
+            }
+        ),
+        path,
+    )
+    store = ParquetUniverseStore(path)
+    assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
 
 
 def test_calendar_returns_only_official_sessions():

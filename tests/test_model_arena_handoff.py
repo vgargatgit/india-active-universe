@@ -30,8 +30,13 @@ MANDATORY_UNIVERSE_FIELDS = (
     "median_traded_value_60",
     "median_traded_value_126",
     "liquidity_rank_126",
+    "liquidity_percentile",
+    "LIQUID_V1_eligible",
     "profile_id",
     "profile_version",
+    "as_of_date",
+    "eligibility_result",
+    "eligibility_reason_codes",
 )
 
 
@@ -51,6 +56,8 @@ def test_model_arena_handoff_reads_profile_history_liquidity_and_execution_price
         for row in candidates:
             assert row["profile_id"] == "NSE_BROAD_LIQUID_PIT_V1"
             assert row["profile_version"] == "LIQUID_V1"
+            assert row["eligibility_result"] == "ELIGIBLE"
+            assert row["eligibility_reason_codes"] == "PASSED_LIQUID_V1"
             assert row["instrument_type"] == "ORDINARY_EQUITY"
             assert row["research_identity_ok"] is True
             assert row["price_adjustment_ok"] is True

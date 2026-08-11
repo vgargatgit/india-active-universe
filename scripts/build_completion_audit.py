@@ -103,6 +103,97 @@ def partition_summary(path: Path) -> dict:
     }
 
 
+def research_manifest_contract_failures(release: Path, manifest: dict, research_manifest: dict) -> list[str]:
+    failures: list[str] = []
+    if not research_manifest:
+        return ["missing research_release_manifest.json contract"]
+    if research_manifest.get("release_id") != release.name:
+        failures.append("research manifest release_id does not match release directory")
+    if not research_manifest.get("git_sha"):
+        failures.append("research manifest is missing git_sha")
+
+    quality = research_manifest.get("research_quality") or {}
+    expected_quality = {
+        "status": "RESEARCH_HIGH_CONFIDENCE",
+        "start": "2013-01-01",
+        "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
+        "profile_version": "LIQUID_V1",
+        "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+    }
+    for key, expected in expected_quality.items():
+        if quality.get(key) != expected:
+            failures.append(f"research_quality.{key} is not {expected}")
+    if not quality.get("end"):
+        failures.append("research_quality.end is missing")
+    if not quality.get("monthly_snapshot_start"):
+        failures.append("research_quality.monthly_snapshot_start is missing")
+
+    coverage = research_manifest.get("source_coverage") or {}
+    for key in ("observed_start", "observed_end", "research_start", "research_end"):
+        if not coverage.get(key):
+            failures.append(f"source_coverage.{key} is missing")
+
+    policy = research_manifest.get("known_policy") or {}
+    expected_policy = {
+        "signals": "price-return adjusted close",
+        "execution": "raw nominal OHLC",
+        "terminal_values": "explicit recovery scenarios; no invented canonical value",
+    }
+    for key, expected in expected_policy.items():
+        if policy.get(key) != expected:
+            failures.append(f"known_policy.{key} is not the published downstream contract")
+    expected_contract_fields = {
+        "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
+        "recommended_signal_price_series": "price_return_adjusted_close",
+        "raw_execution_price_artifact": "daily_prices_raw.parquet",
+        "liquidity_artifact": "liquidity_features.parquet",
+        "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+    }
+    for key, expected in expected_contract_fields.items():
+        if research_manifest.get(key) != expected:
+            failures.append(f"research manifest {key} is not {expected}")
+
+    required_artifacts = {
+        "research_universe_monthly.parquet",
+        "required_research_security.parquet",
+        "liquidity_features.parquet",
+        "daily_prices_raw.parquet",
+        "daily_prices_adjusted.parquet",
+        "corporate_actions.parquet",
+        "corporate_action_boundary_validation.parquet",
+        "trading_status_intervals.parquet",
+        "suspension_events_resolved.parquet",
+    }
+    artifacts = research_manifest.get("artifacts") or {}
+    for name in required_artifacts:
+        if name not in artifacts:
+            failures.append(f"research manifest artifact hash missing for {name}")
+
+    for key in ("config_sha256", "manual_override_sha256", "research_invariant_validation_sha256", "test_result_sha256"):
+        if not research_manifest.get(key):
+            failures.append(f"research manifest {key} is missing")
+    if not research_manifest.get("quality_reports"):
+        failures.append("research manifest quality_reports are missing")
+    limitations = research_manifest.get("known_limitations") or []
+    required_limit_tokens = (
+        "exploratory",
+        "terminal",
+        "dividend",
+        "market-cap",
+        "sector",
+        "retrieval",
+    )
+    joined_limitations = " ".join(str(item).lower() for item in limitations)
+    if len(limitations) < 5:
+        failures.append("research manifest known_limitations are incomplete")
+    for token in required_limit_tokens:
+        if token not in joined_limitations:
+            failures.append(f"research manifest known_limitations do not mention {token}")
+    if manifest.get("git_commit") and research_manifest.get("git_sha") != manifest.get("git_commit"):
+        failures.append("research manifest git_sha does not match data manifest git_commit")
+    return failures
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True)
@@ -127,13 +218,15 @@ def main() -> None:
     partition_manifest_path = release / "partitioned_artifacts_manifest.json"
     manifest_mismatch = manifest.get("release_id") != release.name
     research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
-    if missing or missing_reports or manifest_mismatch or not research_quality_ok:
+    research_contract_failures = research_manifest_contract_failures(release, manifest, research_manifest)
+    if missing or missing_reports or manifest_mismatch or not research_quality_ok or research_contract_failures:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Required artifact checks", ""]
         rows.extend(f"- {'PASS' if name not in missing else 'FAIL'}: `{name}`" for name in REQUIRED)
         if manifest_mismatch:
             rows.extend(["", f"- FAIL: manifest release_id does not match directory `{release.name}`"])
         if not research_quality_ok:
             rows.extend(["", "- FAIL: research quality is not RESEARCH_HIGH_CONFIDENCE"])
+        rows.extend(f"- FAIL: {failure}" for failure in research_contract_failures)
         rows.extend(f"- FAIL: missing research report `{name}`" for name in missing_reports)
         Path(args.out).write_text("\n".join(rows) + "\n", encoding="utf-8")
         print(f"WROTE {args.out}")
@@ -249,6 +342,7 @@ def main() -> None:
         failures.append(f"manifest release_id {manifest.get('release_id')!r} does not match directory {release.name!r}")
     if not research_quality_ok:
         failures.append("research release is not RESEARCH_HIGH_CONFIDENCE")
+    failures.extend(research_contract_failures)
     failures.extend(f"missing required research report: {name}" for name in missing_reports)
     if test_summary["tests"] <= 0 or test_summary["failures"] or test_summary["errors"]:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")

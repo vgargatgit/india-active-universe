@@ -28,6 +28,50 @@ def main() -> None:
               )
             """).fetchone()[0],
             "non_ordinary_rows": connection.execute(f"SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') WHERE instrument_type <> 'ORDINARY_EQUITY'").fetchone()[0],
+            "non_active_trading_rows": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE COALESCE(active, FALSE) <> TRUE
+                 OR trading_status IS DISTINCT FROM 'ACTIVE_TRADING'
+            """).fetchone()[0],
+            "missing_quality_fields": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE identity_quality IS NULL
+                 OR research_identity_ok IS NULL
+                 OR price_adjustment_quality IS NULL
+                 OR price_adjustment_ok IS NULL
+                 OR status_quality IS NULL
+            """).fetchone()[0],
+            "required_scope_quality_failures": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE (COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                     OR COALESCE(top750_liquidity, FALSE))
+                AND (research_identity_ok IS DISTINCT FROM TRUE
+                     OR price_adjustment_ok IS DISTINCT FROM TRUE)
+            """).fetchone()[0],
+            "required_scope_missing_research_fields": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE (COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                     OR COALESCE(top750_liquidity, FALSE))
+                AND (
+                  date IS NULL
+                  OR security_id IS NULL
+                  OR listing_episode_id IS NULL
+                  OR symbol_at_date IS NULL
+                  OR instrument_type IS NULL
+                  OR identity_quality IS NULL
+                  OR price IS NULL
+                  OR history_sessions IS NULL
+                  OR positive_volume_days_60 IS NULL
+                  OR median_traded_value_60 IS NULL
+                  OR median_traded_value_126 IS NULL
+                  OR liquidity_rank_126 IS NULL
+                  OR liquidity_percentile IS NULL
+                  OR LIQUID_V1_eligible IS NULL
+                  OR research_identity_ok IS NULL
+                  OR price_adjustment_quality IS NULL
+                  OR status_quality IS NULL
+                )
+            """).fetchone()[0],
             "future_listing_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') u
               JOIN (SELECT security_id, MIN(CAST(date AS DATE)) AS first_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) p USING (security_id)
@@ -46,6 +90,39 @@ def main() -> None:
                 AND listing_age_sessions >= 272 AND positive_volume_days_60 >= 40
                 AND median_traded_value_60 >= 5000000
               )
+            """).fetchone()[0],
+            "artifact_alias_failures": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE COALESCE(LIQUID_V1_eligible, FALSE) <> COALESCE(NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                 OR liquidity_percentile IS DISTINCT FROM liquidity_percentile_126
+            """).fetchone()[0],
+            "eligible_profile_metadata_failures": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE NSE_BROAD_LIQUID_PIT_V1_eligible AND NOT (
+                profile_id = 'NSE_BROAD_LIQUID_PIT_V1'
+                AND profile_version = 'LIQUID_V1'
+                AND CAST(as_of_date AS DATE) = CAST(date AS DATE)
+                AND eligibility_result = 'ELIGIBLE'
+                AND eligibility_reason_codes = 'PASSED_LIQUID_V1'
+              )
+            """).fetchone()[0],
+            "excluded_profile_metadata_failures": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE NOT NSE_BROAD_LIQUID_PIT_V1_eligible AND (
+                profile_id <> 'NSE_BROAD_LIQUID_PIT_V1'
+                OR profile_version <> 'LIQUID_V1'
+                OR CAST(as_of_date AS DATE) <> CAST(date AS DATE)
+                OR eligibility_result <> 'EXCLUDED'
+                OR eligibility_reason_codes IS NULL
+              )
+            """).fetchone()[0],
+            "top_liquidity_flag_failures": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE COALESCE(top500_liquidity, FALSE) <> COALESCE(rank_126 <= 500, FALSE)
+                 OR COALESCE(top750_liquidity, FALSE) <> COALESCE(rank_126 <= 750, FALSE)
+                 OR COALESCE(top1000_liquidity, FALSE) <> COALESCE(rank_126 <= 1000, FALSE)
+                 OR (COALESCE(top500_liquidity, FALSE) AND NOT COALESCE(top750_liquidity, FALSE))
+                 OR (COALESCE(top750_liquidity, FALSE) AND NOT COALESCE(top1000_liquidity, FALSE))
             """).fetchone()[0],
         }
     finally:

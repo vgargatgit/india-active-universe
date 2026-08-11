@@ -132,22 +132,54 @@ class UniverseStore:
         point = _as_date(as_of_date)
         return [row for row in self.rows if row.get("date") == point and row.get("active") is True]
 
+    def _positive_volume_days_60(self, row: dict[str, Any]) -> int:
+        if row.get("positive_volume_days_60") is not None:
+            return row["positive_volume_days_60"]
+        sessions = min(row.get("history_sessions", 0), 60)
+        return max(0, sessions - (row.get("zero_volume_days_60") or 0))
+
+    def _liquid_v1_eligible(self, row: dict[str, Any]) -> bool:
+        if row.get("NSE_BROAD_LIQUID_PIT_V1_eligible") is not None:
+            return row["NSE_BROAD_LIQUID_PIT_V1_eligible"] is True
+        price = row.get("price", row.get("close"))
+        listing_age = row.get("listing_age_sessions", row.get("history_sessions", 0))
+        return (
+            row.get("active") is True
+            and row.get("instrument_type") == "ORDINARY_EQUITY"
+            and row.get("trading_status") == "ACTIVE_TRADING"
+            and row.get("research_identity_ok") is True
+            and row.get("price_adjustment_ok") is True
+            and price is not None and price >= 20
+            and listing_age >= 272
+            and self._positive_volume_days_60(row) >= 40
+            and row.get("median_traded_value_60", 0) >= 5_000_000
+        )
+
     def eligible_on(self, as_of_date: str | date, *, min_price: float | None = None, min_history_sessions: int = 0, min_positive_volume_days_60: int | None = None, min_median_traded_value_60: float | None = None) -> list[dict[str, Any]]:
         rows = self.active_on(as_of_date)
-        def positive_volume_days(row: dict[str, Any]) -> int:
-            sessions = min(row.get("history_sessions", 0), 60)
-            return max(0, sessions - (row.get("zero_volume_days_60") or 0))
-        return [row for row in rows if (min_price is None or (row.get("close") is not None and row["close"] >= min_price)) and row.get("history_sessions", 0) >= min_history_sessions and (min_positive_volume_days_60 is None or positive_volume_days(row) >= min_positive_volume_days_60) and (min_median_traded_value_60 is None or row.get("median_traded_value_60", 0) >= min_median_traded_value_60)]
+        return [row for row in rows if (min_price is None or (row.get("close") is not None and row["close"] >= min_price)) and row.get("history_sessions", 0) >= min_history_sessions and (min_positive_volume_days_60 is None or self._positive_volume_days_60(row) >= min_positive_volume_days_60) and (min_median_traded_value_60 is None or row.get("median_traded_value_60", 0) >= min_median_traded_value_60)]
 
     def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
-        rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
+        rows = [
+            row for row in self.active_on(as_of_date)
+            if row.get(metric) is not None
+            and row.get("instrument_type") == "ORDINARY_EQUITY"
+            and row.get("trading_status") == "ACTIVE_TRADING"
+        ]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
     def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
         point = _as_date(as_of_date)
         if profile != "LIQUID_V1":
             raise ValueError(f"Unknown universe profile: {profile}")
-        return [row for row in self.rows if row.get("date") == point and row.get("NSE_BROAD_LIQUID_PIT_V1_eligible") is True]
+        rows = [row for row in self.rows if row.get("date") == point and self._liquid_v1_eligible(row)]
+        for row in rows:
+            row.setdefault("profile_id", "NSE_BROAD_LIQUID_PIT_V1")
+            row.setdefault("profile_version", profile)
+            row.setdefault("as_of_date", point)
+            row.setdefault("eligibility_result", "ELIGIBLE")
+            row.setdefault("eligibility_reason_codes", "PASSED_LIQUID_V1")
+        return rows
 
 
 class FileUniverseStore(UniverseStore):
@@ -184,7 +216,12 @@ class ParquetUniverseStore(UniverseStore):
         return output
 
     def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
-        rows = [row for row in self.active_on(as_of_date) if row.get(metric) is not None]
+        rows = [
+            row for row in self.active_on(as_of_date)
+            if row.get(metric) is not None
+            and row.get("instrument_type") == "ORDINARY_EQUITY"
+            and row.get("trading_status") == "ACTIVE_TRADING"
+        ]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
     def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
@@ -192,7 +229,18 @@ class ParquetUniverseStore(UniverseStore):
             raise ValueError(f"Unknown universe profile: {profile}")
         point = _as_date(as_of_date)
         import pyarrow.parquet as parquet
-        return parquet.read_table(self.path, filters=[("date", "=", point), ("NSE_BROAD_LIQUID_PIT_V1_eligible", "=", True)]).to_pylist()
+        try:
+            rows = parquet.read_table(self.path, filters=[("date", "=", point), ("NSE_BROAD_LIQUID_PIT_V1_eligible", "=", True)]).to_pylist()
+        except Exception:
+            date_rows = parquet.read_table(self.path, filters=[("date", "=", point)]).to_pylist()
+            rows = [row for row in date_rows if self._liquid_v1_eligible(row)]
+        for row in rows:
+            row.setdefault("profile_id", "NSE_BROAD_LIQUID_PIT_V1")
+            row.setdefault("profile_version", profile)
+            row.setdefault("as_of_date", point)
+            row.setdefault("eligibility_result", "ELIGIBLE")
+            row.setdefault("eligibility_reason_codes", "PASSED_LIQUID_V1")
+        return rows
 
 
 class StatusStore:
@@ -404,13 +452,22 @@ class DataPlatform:
         manifest_path = base / "data_release_manifest.json"
         if manifest_path.exists():
             import json
-            coverage = json.loads(manifest_path.read_text(encoding="utf-8")).get("coverage", {})
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            coverage = manifest.get("coverage", {})
             platform.coverage_start = _as_date(coverage["observed_start"]) if coverage.get("observed_start") else None
             platform.coverage_end = _as_date(coverage["observed_end"]) if coverage.get("observed_end") else None
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             platform.verified_start = _as_date(manifest["verified_start_date"]) if manifest.get("verified_start_date") else None
             platform.verified_end = _as_date(manifest["verified_end_date"]) if manifest.get("verified_end_date") else None
             platform.quality_tier = manifest.get("quality_tier")
+        research_manifest_path = base / "research_release_manifest.json"
+        if research_manifest_path.exists():
+            import json
+            research_manifest = json.loads(research_manifest_path.read_text(encoding="utf-8"))
+            research_quality = research_manifest.get("research_quality", {})
+            if research_quality.get("status") == "RESEARCH_HIGH_CONFIDENCE":
+                platform.verified_start = _as_date(research_quality["start"]) if research_quality.get("start") else platform.verified_start
+                platform.verified_end = _as_date(research_quality["end"]) if research_quality.get("end") else platform.verified_end
+                platform.quality_tier = research_quality["status"]
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)

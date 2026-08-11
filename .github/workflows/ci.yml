@@ -16,6 +16,7 @@ jobs:
       - run: python -m pip install -e '.[data,dev]'
       - run: PYTHONPATH=.:src pytest -q --junitxml=test-results.xml
       - run: PYTHONPATH=.:src python scripts/validate_pit.py
+      - run: PYTHONPATH=.:src python scripts/validate_manual_identity_overrides.py --input data/reference/manual_identity_overrides.yaml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
