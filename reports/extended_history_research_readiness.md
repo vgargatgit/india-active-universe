@@ -1,19 +1,5 @@
 # Extended history research readiness
 
-## Corrective status
-
-`india_equity_data_v2.1.1` is superseded for any research-quality claim that spans June 2011.
-The current artifacts show an artificial `LIQUID_V1` collapse from `2011-06-30` through `2012-06-29`.
-The root cause is canonical identity fragmentation when NSE source records begin carrying ISINs.
-
-Authoritative corrective evidence:
-
-- `reports/identity_transition_root_cause.md`
-- `reports/pre_post_isin_identity_transition.md`
-- `reports/2011_identity_count_spike_audit.md`
-
-Do not treat the `2006-01-31` through `2026-08-10` interval as `RESEARCH_HIGH_CONFIDENCE` until identity continuity is repaired and all Phase 3 gates are recomputed.
-
 This report answers whether the bounded liquid decision universe can move before the current 2013 control start.
 It is generated from release artifacts and companion audit reports. It does not promote an interval by prose.
 
@@ -32,19 +18,19 @@ It is generated from release artifacts and companion audit reports. It does not 
 11. Early identities requiring intervention: see `pre2013_identity_priority.md` and `pre2013_identity_episode_audit.md`.
 12. Required securities unresolved before `2013-01-01`: `0` monthly required-scope identity failures.
 13. Material corporate actions lacking factors in promoted required scope: `0`.
-14. Left-censored material boundaries: `341`.
+14. Left-censored material boundaries: `73`.
 15. Boundary contamination capability: see `pre2013_adjusted_return_quality.md`; only candidate lookback/signal-window non-PASS boundaries are promotion-relevant.
 16. Price-return series trust: `price_return_adjusted_close` is the promoted signal series when price-action candidate gates pass.
 17. Liquidity features session-correct: `session_correct_liquidity_audit.md` documents official-session windows.
 18. Survivorship protection: see `pre2013_survivorship_evidence.md` and `survivorship_audit.md`.
-19. 2013+ v2.0.1 regression status: `PASS_WITH_JUSTIFIED_SCOPE_CORRECTION`.
+19. 2013+ v2.0.1 regression status: `REVIEW_REQUIRED`.
 20. RESEARCH_HIGH_CONFIDENCE intervals:
-- `2006-01-31` through `2026-08-10`: `SUPERSEDED_BY_IDENTITY_CONTINUITY_BLOCKER` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
+- `2012-08-31` through `2026-08-10`: `RESEARCH_HIGH_CONFIDENCE` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 - `2004-01-01` through `2005-03-14`: `SOURCE_ONLY` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 21. RESEARCH_EXPLORATORY intervals: any interval marked `RESEARCH_EXPLORATORY` in `research_quality_intervals`, plus candidate intervals whose gates are not all pass.
 22. SOURCE_ONLY interval: source observations before the first promoted research interval remain `SOURCE_ONLY` or warmup-only evidence.
 23. Downstream Model Arena safe pre-2013 start: not declared by this report unless all hard gates plus CI/test evidence pass.
-24. Earliest PIT-universe gate-pass start: `2006-01-01`. Refined earliest PIT monthly/session boundary: `2006-01-31`. Earliest all-gates research candidate start: `2006-01-01`. Candidate recommended PIT-universe interval: `{'status': 'CANDIDATE_REFINED_BOUNDARY_AVAILABLE', 'start': '2006-01-31', 'end': '2026-08-10', 'profile': 'NSE_BROAD_LIQUID_PIT_V1', 'profile_version': 'LIQUID_V1', 'boundary_scan_method': 'MONTHLY_SNAPSHOT_BOUNDARIES_WITH_OFFICIAL_SESSION_LOOKBACK', 'promotion_status': 'NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS', 'interval_type': 'PIT_UNIVERSE', 'feature_readiness_policy': 'FEATURE_READINESS_REPORTED_SEPARATELY'}`. This is not a final safe start unless full release evidence also passes.
+24. Earliest PIT-universe gate-pass start: `2006-01-01`. Refined earliest PIT monthly/session boundary: `2012-08-31`. Earliest all-gates research candidate start: `None`. Candidate recommended PIT-universe interval: `{'status': 'CANDIDATE_REFINED_BOUNDARY_AVAILABLE', 'start': '2012-08-31', 'end': '2026-08-10', 'profile': 'NSE_BROAD_LIQUID_PIT_V1', 'profile_version': 'LIQUID_V1', 'boundary_scan_method': 'MONTHLY_SNAPSHOT_BOUNDARIES_WITH_OFFICIAL_SESSION_LOOKBACK', 'promotion_status': 'NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS', 'interval_type': 'PIT_UNIVERSE', 'feature_readiness_policy': 'FEATURE_READINESS_REPORTED_SEPARATELY'}`. This is not a final safe start unless full release evidence also passes.
 25. Remaining limitations: terminal values and total-return dividends remain partial; market cap and historical sector data are not fabricated.
 
 ## Candidate gate matrix
@@ -52,10 +38,10 @@ It is generated from release artifacts and companion audit reports. It does not 
 A missing candidate audit row is an explicit non-pass state.
 | Candidate start | Candidate audit | Decision-window gate | Warmup gate | Session-liquidity gate | Identity gate | Price-action gate | Instrument gate | Status gate | Hard failures | Promotion interpretation |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2011-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `none` | `CANDIDATE_GATE_PASS_PENDING_FULL_RELEASE_EVIDENCE` |
-| 2009-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `none` | `CANDIDATE_GATE_PASS_PENDING_FULL_RELEASE_EVIDENCE` |
-| 2007-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `none` | `CANDIDATE_GATE_PASS_PENDING_FULL_RELEASE_EVIDENCE` |
-| 2006-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `none` | `CANDIDATE_GATE_PASS_PENDING_FULL_RELEASE_EVIDENCE` |
+| 2011-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=5, price_action.contaminating_signal_window_non_pass_boundaries=5` | `NOT_READY` |
+| 2009-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=12, price_action.contaminating_signal_window_non_pass_boundaries=12` | `NOT_READY` |
+| 2007-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=19, price_action.contaminating_signal_window_non_pass_boundaries=19` | `NOT_READY` |
+| 2006-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=19, price_action.contaminating_signal_window_non_pass_boundaries=19` | `NOT_READY` |
 
 ## Final promotion rule
 

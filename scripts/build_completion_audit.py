@@ -226,6 +226,7 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
         fully_warmed_required_rows = item.get("fully_warmed_required_rows")
         monthly_snapshots_after_decision = item.get("monthly_snapshots_after_decision")
         pit_universe_gate_pass = item.get("pit_universe_gate_pass")
+        research_candidate_gate_pass = item.get("research_candidate_gate_pass")
         feature_model_readiness_complete = item.get("feature_model_readiness_complete")
         active_hard_failures = (
             [
@@ -245,6 +246,7 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or not isinstance(hard_failures, dict)
             or not isinstance(feature_readiness, dict)
             or type(pit_universe_gate_pass) is not bool
+            or type(research_candidate_gate_pass) is not bool
             or type(feature_model_readiness_complete) is not bool
             or type(feature_readiness.get("feature_warmup_not_ready")) is not bool
             or "refined_earliest_passing_snapshot" not in item
@@ -257,9 +259,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or fully_warmed_required_rows > required_rows
             or (item.get("status") == CANDIDATE_PASS_VALUE and bool(active_hard_failures))
             or (item.get("status") == CANDIDATE_PASS_VALUE and refined_earliest_passing_snapshot is None)
-            or (item.get("status") == CANDIDATE_FAIL_VALUE and not active_hard_failures)
             or (item.get("status") == CANDIDATE_PASS_VALUE and monthly_snapshots_after_decision <= 0)
-            or (pit_universe_gate_pass != (item.get("status") == CANDIDATE_PASS_VALUE))
+            or (research_candidate_gate_pass != (item.get("status") == CANDIDATE_PASS_VALUE))
             or (feature_model_readiness_complete == feature_readiness.get("feature_warmup_not_ready"))
             or (monthly_snapshots_after_decision <= 0 and hard_failures.get("decision_window_snapshots_missing") is False)
             or (monthly_snapshots_after_decision > 0 and hard_failures.get("decision_window_snapshots_missing") is True)
@@ -658,10 +659,6 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append(f"research manifest candidate {item.get('candidate_start')} feature_model_readiness_complete contradicts feature_readiness")
             if "pit_universe_gate_pass" in item and type(item.get("pit_universe_gate_pass")) is not bool:
                 failures.append(f"research manifest candidate {item.get('candidate_start')} pit_universe_gate_pass is not bool")
-            if type(item.get("pit_universe_gate_pass")) is bool and (
-                item.get("pit_universe_gate_pass") != (item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE)
-            ):
-                failures.append(f"research manifest candidate {item.get('candidate_start')} pit_universe_gate_pass contradicts candidate_audit_status")
             hard_failures = item.get("hard_failures")
             if not isinstance(hard_failures, dict):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures is not an object")
@@ -669,6 +666,16 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures keys do not match the candidate audit contract")
             elif candidate_hard_failure_type_failures(hard_failures):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures value types do not match the candidate audit contract")
+            elif type(item.get("pit_universe_gate_pass")) is bool and item.get("pit_universe_gate_pass") != (
+                hard_failures.get("not_materialized") is False
+                and hard_failures.get("candidate_start_snapshot_missing") is False
+                and hard_failures.get("decision_window_snapshots_missing") is False
+                and int(hard_failures.get("identity_failures") or 0) == 0
+                and int(hard_failures.get("instrument_failures") or 0) == 0
+                and int(hard_failures.get("status_failures") or 0) == 0
+                and int(hard_failures.get("session_liquidity_window_failures") or 0) == 0
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} pit_universe_gate_pass contradicts PIT hard_failures")
             elif item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE and any(
                 value is True or (isinstance(value, int) and value != 0)
                 for value in hard_failures.values()
@@ -704,14 +711,10 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 or (item.get("status_gate") == CANDIDATE_FAIL_VALUE and int(hard_failures.get("status_failures") or 0) == 0)
             ):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} status_gate contradicts hard_failures")
-            if isinstance(hard_failures, dict) and item.get("candidate_audit_status") == CANDIDATE_FAIL_VALUE and not (
-                any(
-                    value is True or (isinstance(value, int) and value != 0)
-                    for value in hard_failures.values()
-                )
-                or item.get("warmup_gate") == CANDIDATE_FAIL_VALUE
-            ):
-                failures.append(f"research manifest candidate {item.get('candidate_start')} claims FAIL candidate audit without active hard_failures")
+            if type(item.get("research_candidate_gate_pass")) is not bool:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} research_candidate_gate_pass is not bool")
+            elif item.get("research_candidate_gate_pass") != (item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} research_candidate_gate_pass contradicts candidate audit status")
             if item.get("promotion_interpretation") not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
                 failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid promotion_interpretation")
             if item.get("promotion_interpretation") == pass_interpretation:
@@ -772,14 +775,19 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             failures.append("research manifest candidate_recommended_research_interval is missing or not an object")
         else:
             expected_recommendation_status = (
-                "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE"
-                if earliest_candidate_gate_pass_start
-                else "NO_RESEARCH_GATE_PASS"
+                "CANDIDATE_REFINED_RESEARCH_BOUNDARY_AVAILABLE"
+                if refined_earliest_candidate_gate_pass_boundary
+                else (
+                    "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE"
+                    if earliest_candidate_gate_pass_start
+                    else "NO_RESEARCH_GATE_PASS"
+                )
             )
+            expected_recommendation_start = refined_earliest_candidate_gate_pass_boundary or earliest_candidate_gate_pass_start
             if recommended_interval.get("status") != expected_recommendation_status:
                 failures.append("research manifest candidate_recommended_research_interval.status does not match research gate-pass availability")
-            if recommended_interval.get("start") != earliest_candidate_gate_pass_start:
-                failures.append("research manifest candidate_recommended_research_interval.start does not match earliest candidate gate-pass start")
+            if recommended_interval.get("start") != expected_recommendation_start:
+                failures.append("research manifest candidate_recommended_research_interval.start does not match earliest research boundary")
             if not isinstance(recommended_interval.get("end"), str):
                 failures.append("research manifest candidate_recommended_research_interval.end is missing or not a string")
             if recommended_interval.get("profile") != PROFILE_ID:

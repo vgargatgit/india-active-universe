@@ -7,10 +7,10 @@ Each row applies the existing research identity gate to required securities from
 
 | Candidate start | First scoped month | Last scoped month | Required securities | RECONSTRUCTED_TRADING_IDENTITY | Other accepted identities | Identity failures | Hard gate |
 |---|---|---|---:|---:|---:|---:|---|
-| 2011-01-01 | 2011-01-31 | 2012-12-31 | 1818 | 1818 | 0 | 0 | `PASS` |
-| 2009-01-01 | 2009-01-30 | 2012-12-31 | 2138 | 2138 | 0 | 0 | `PASS` |
-| 2007-01-01 | 2007-01-31 | 2012-12-31 | 2345 | 2345 | 0 | 0 | `PASS` |
-| 2006-01-01 | 2006-01-31 | 2012-12-31 | 2505 | 2505 | 0 | 0 | `PASS` |
+| 2011-01-01 | 2011-01-31 | 2012-12-31 | 1004 | 68 | 936 | 0 | `PASS` |
+| 2009-01-01 | 2009-01-30 | 2012-12-31 | 1249 | 154 | 1095 | 0 | `PASS` |
+| 2007-01-01 | 2007-01-31 | 2012-12-31 | 1442 | 251 | 1191 | 0 | `PASS` |
+| 2006-01-01 | 2006-01-31 | 2012-12-31 | 1597 | 343 | 1254 | 0 | `PASS` |
 
 Hard gate: zero required-scope identity failures for the candidate interval.
 `NOT_MATERIALIZED` means the current release does not yet contain monthly candidate snapshots for that interval.

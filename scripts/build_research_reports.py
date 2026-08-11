@@ -2022,9 +2022,15 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
     refined_earliest_candidate_gate_pass_boundary = refined_candidate_boundaries[0] if refined_candidate_boundaries else None
     promotion_requested = bool(args.promote_research_start)
     promotion_start_is_gate_pass = (
-        any(candidate_start <= args.promote_research_start for candidate_start in pass_candidate_starts)
+        (
+            any(candidate_start <= args.promote_research_start for candidate_start in pass_candidate_starts)
+            or (
+                refined_earliest_candidate_gate_pass_boundary is not None
+                and args.promote_research_start >= refined_earliest_candidate_gate_pass_boundary
+            )
+        )
         and (
-            not refined_earliest_candidate_gate_pass_boundary
+            refined_earliest_candidate_gate_pass_boundary is None
             or args.promote_research_start >= refined_earliest_candidate_gate_pass_boundary
         )
         if args.promote_research_start
@@ -2053,8 +2059,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         raise SystemExit(f"Cannot promote {args.promote_research_start}: {', '.join(blockers)}")
     quality = RESEARCH_HIGH_CONFIDENCE_STATUS if promotion_gate_pass else RESEARCH_EXPLORATORY_STATUS
     candidate_recommended_research_interval = {
-        "status": "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE" if earliest_candidate_gate_pass_start else "NO_RESEARCH_GATE_PASS",
-        "start": earliest_candidate_gate_pass_start,
+        "status": "CANDIDATE_REFINED_RESEARCH_BOUNDARY_AVAILABLE" if refined_earliest_candidate_gate_pass_boundary else ("CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE" if earliest_candidate_gate_pass_start else "NO_RESEARCH_GATE_PASS"),
+        "start": refined_earliest_candidate_gate_pass_boundary or earliest_candidate_gate_pass_start,
         "end": str(coverage[1]),
         "profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,

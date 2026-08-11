@@ -708,7 +708,7 @@ def test_candidate_promotion_loader_rejects_invalid_candidate_values():
         ({**row, "candidate_audit_status": "UNKNOWN"}, "candidate_audit_status is invalid"),
         ({**row, "identity_gate": "UNKNOWN"}, "identity_gate is invalid"),
         ({**row, "feature_model_readiness_complete": False}, "feature_model_readiness_complete contradicts feature_readiness"),
-        ({**row, "pit_universe_gate_pass": True}, "pit_universe_gate_pass contradicts candidate_audit_status"),
+        ({**row, "pit_universe_gate_pass": True}, "pit_universe_gate_pass contradicts PIT hard_failures"),
         ({**row, "promotion_interpretation": "UNKNOWN"}, "promotion_interpretation is invalid"),
     )
     for invalid_row, message in invalid_cases:
@@ -777,8 +777,11 @@ def test_candidate_promotion_loader_rejects_audit_status_hard_failure_contradict
         "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
     }
 
-    with pytest.raises(ValueError, match="FAIL without active hard failures"):
-        _normalize_candidate_promotion_decisions([row])
+    normalized = _normalize_candidate_promotion_decisions([
+        {**row, "candidate_start": candidate_start}
+        for candidate_start in CANDIDATE_RESEARCH_START_DATES
+    ])
+    assert all(item["research_candidate_gate_pass"] is False for item in normalized)
 
     with pytest.raises(ValueError, match="PASS with active hard failures"):
         _normalize_candidate_promotion_decisions([
@@ -786,6 +789,7 @@ def test_candidate_promotion_loader_rejects_audit_status_hard_failure_contradict
                 **row,
                 "candidate_audit_status": "PASS",
                 "identity_gate": "PASS",
+                "research_candidate_gate_pass": True,
                 "hard_failures": {**no_failures, "identity_failures": 1},
             }
         ])
@@ -818,7 +822,7 @@ def test_candidate_promotion_loader_rejects_gate_pass_interpretation_contradicti
         "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
     }
 
-    with pytest.raises(ValueError, match="gate-pass interpretation without PASS audit status and all PASS gates"):
+    with pytest.raises(ValueError, match="research_candidate_gate_pass contradicts candidate_audit_status"):
         _normalize_candidate_promotion_decisions([
             {
                 **gate_pass_row,
@@ -1401,8 +1405,9 @@ def test_release_loader_requires_refined_boundary_when_data_manifest_candidate_r
             "identity_gate": "FAIL",
             "price_action_gate": "PASS",
             "instrument_gate": "PASS",
-            "status_gate": "PASS",
-            "refined_earliest_passing_snapshot": None,
+                    "status_gate": "PASS",
+                    "research_candidate_gate_pass": False,
+                    "refined_earliest_passing_snapshot": None,
             "hard_failures": {
                 **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
                 "not_materialized": False,
@@ -1516,8 +1521,8 @@ def test_release_loader_validates_candidate_interval_recommendations(tmp_path):
         for candidate_start in CANDIDATE_RESEARCH_START_DATES
     ]
     valid_recommendation = {
-        "status": "NO_RESEARCH_GATE_PASS",
-        "start": None,
+        "status": "CANDIDATE_REFINED_RESEARCH_BOUNDARY_AVAILABLE",
+        "start": "2011-01-31",
         "end": "2026-08-10",
         "profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
@@ -1639,6 +1644,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 "instrument_gate": "PASS",
 
                 "status_gate": "PASS",
+                "research_candidate_gate_pass": False,
                 "refined_earliest_passing_snapshot": None,
                 "hard_failures": {
                     **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
@@ -2053,23 +2059,19 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, pass_candidate_audit_with_active_hard_failure)
     assert any("claims PASS candidate audit with active hard_failures" in failure for failure in failures)
 
-    fail_candidate_audit_without_active_hard_failure = {
+    fail_candidate_audit_with_true_research_pass = {
         **valid_manifest,
         "candidate_promotion_decisions": [
             {
                 **valid_manifest["candidate_promotion_decisions"][0],
                 "candidate_audit_status": "FAIL",
-                "warmup_gate": "PASS",
-                "feature_readiness": {"feature_warmup_not_ready": True},
-                "hard_failures": {
-                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
-                },
+                "research_candidate_gate_pass": True,
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
         ],
     }
-    failures = research_manifest_contract_failures(release, data_manifest, fail_candidate_audit_without_active_hard_failure)
-    assert any("claims FAIL candidate audit without active hard_failures" in failure for failure in failures)
+    failures = research_manifest_contract_failures(release, data_manifest, fail_candidate_audit_with_true_research_pass)
+    assert any("research_candidate_gate_pass contradicts candidate audit status" in failure for failure in failures)
 
     contradictory_decision_window_gate = {
         **valid_manifest,
@@ -2335,7 +2337,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         },
     }
     failures = research_manifest_contract_failures(release, data_manifest, mismatched_recommended_interval)
-    assert "research manifest candidate_recommended_research_interval.start does not match earliest candidate gate-pass start" in failures
+    assert "research manifest candidate_recommended_research_interval.start does not match earliest research boundary" in failures
 
     missing_partition_hash = {key: value for key, value in valid_manifest.items() if key != "partitioned_artifacts_manifest_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_partition_hash)
@@ -2569,6 +2571,7 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         "feature_readiness": {"feature_warmup_not_ready": False},
         "feature_model_readiness_complete": True,
         "pit_universe_gate_pass": True,
+        "research_candidate_gate_pass": True,
         "refined_earliest_passing_snapshot": "2011-01-31",
         "hard_failures": {key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
     }
@@ -2578,10 +2581,12 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
 
     stale_row = {
         **valid_row,
+        "status": "FAIL",
         "candidate_start": "2009-01-01",
         "fully_warmed_required_rows": 9,
         "feature_readiness": {"feature_warmup_not_ready": True},
         "feature_model_readiness_complete": False,
+        "research_candidate_gate_pass": False,
     }
     missing_evidence_row = {key: value for key, value in {**valid_row, "candidate_start": "2007-01-01"}.items() if key != "required_rows"}
     valid_2006_row = {**valid_row, "candidate_start": "2006-01-01"}
@@ -2741,11 +2746,12 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
             {
                 "candidate_start": "2011-01-01",
                 "candidate_audit_status": "PASS",
-                "feature_readiness": {"feature_warmup_not_ready": False},
-                "feature_model_readiness_complete": True,
-                "pit_universe_gate_pass": True,
-                "refined_earliest_passing_snapshot": "2011-01-31",
-                "hard_failures": hard_failures,
+        "feature_readiness": {"feature_warmup_not_ready": False},
+        "feature_model_readiness_complete": True,
+        "pit_universe_gate_pass": True,
+        "research_candidate_gate_pass": True,
+        "refined_earliest_passing_snapshot": "2011-01-31",
+        "hard_failures": hard_failures,
             }
         ]
     }

@@ -6,42 +6,42 @@ This report demonstrates that early historical universes are not built from curr
 
 | Year | Required securities | Current survivors | Non-survivors | LIQUID_V1 securities | Top-750 securities |
 |---:|---:|---:|---:|---:|---:|
-| 2006 | 958 | 0 | 958 | 454 | 958 |
-| 2007 | 976 | 0 | 976 | 507 | 975 |
-| 2008 | 934 | 0 | 934 | 540 | 934 |
-| 2009 | 943 | 0 | 943 | 576 | 943 |
-| 2010 | 964 | 0 | 964 | 742 | 952 |
-| 2011 | 1694 | 429 | 1265 | 551 | 1691 |
-| 2012 | 916 | 462 | 454 | 509 | 916 |
+| 2006 | 958 | 477 | 481 | 454 | 958 |
+| 2007 | 976 | 523 | 453 | 507 | 975 |
+| 2008 | 934 | 502 | 432 | 540 | 934 |
+| 2009 | 943 | 532 | 411 | 576 | 943 |
+| 2010 | 964 | 571 | 393 | 742 | 952 |
+| 2011 | 911 | 557 | 354 | 598 | 911 |
+| 2012 | 899 | 572 | 327 | 569 | 899 |
 
 ## Example historical non-survivors retained in early snapshots
 
 | Security | Symbol | Company | First required month | Last required month | Best rank | LIQUID_V1 | Top-750 | Last observed | Terminal evidence |
 |---|---|---|---|---|---:|---|---|---|---|
-| `SEC_063a4b287a57d01a` | `MIC` | `None` | 2007-05-31 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_09d50b76b47887dc` | `PRAKASHSTL` | `None` | 2010-08-31 | 2011-05-31 | 1 | `False` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_0c30eff28bbf2575` | `ASTERSILI` | `None` | 2010-07-30 | 2010-11-30 | 1 | `False` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_21d77867a851cfd4` | `SBIN` | `None` | 2006-01-31 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_24ac1a2897cbf578` | `ICICIBANK` | `None` | 2011-06-30 | 2012-12-31 | 1 | `True` | `True` | 2014-12-04 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_3473199ed780ece4` | `POWERGRID` | `None` | 2007-10-31 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_38ffad92da66b58c` | `SBIN` | `None` | 2011-06-30 | 2012-12-31 | 1 | `True` | `True` | 2014-11-20 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_6bcac538d0c349d2` | `NISSAN` | `None` | 2006-12-29 | 2006-12-29 | 1 | `False` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_6e42f02c7ac3c765` | `BSTRANSCOM` | `None` | 2010-10-29 | 2011-05-31 | 1 | `False` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_7e47dd2ac863e16e` | `PARSVNATH` | `None` | 2006-11-30 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_a7aac55236734eb1` | `IBREALEST` | `None` | 2007-03-30 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_b772f5b4d96df932` | `OIL` | `None` | 2009-09-30 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_dd4eac259b25ca49` | `COALINDIA` | `None` | 2010-11-30 | 2011-05-31 | 1 | `False` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_df5ecc48a6969dc8` | `HDIL` | `None` | 2007-07-31 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_e9a2d40fa5a85f88` | `RELIANCE` | `None` | 2006-01-31 | 2011-05-31 | 1 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_0de60877f139f7a7` | `RELCAPITAL` | `None` | 2006-01-31 | 2011-05-31 | 2 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_1f4997de4086bf63` | `NISSAN` | `None` | 2006-12-29 | 2006-12-29 | 1 | `False` | `True` | 2011-09-28 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_336a9eadd1a43080` | `PARSVNATH` | `PARSVNATH DEVELOPER LTD` | 2006-11-30 | 2012-12-31 | 1 | `True` | `True` | 2026-04-20 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_3370ec232e920581` | `ASTERSILI` | `None` | 2010-07-30 | 2010-11-30 | 1 | `False` | `True` | 2016-05-19 | `UNKNOWN_TERMINAL_EVENT, COMPULSORY_DELISTING` |
+| `SEC_43b9f2f458ab2fbd` | `HDIL` | `None` | 2007-07-31 | 2012-12-31 | 1 | `True` | `True` | 2019-11-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_544f356bde8b4579` | `BSLIMITED` | `None` | 2010-10-29 | 2012-12-31 | 1 | `True` | `True` | 2018-02-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_b6ce92c0f2420a5b` | `MIC` | `None` | 2007-05-31 | 2012-11-30 | 1 | `True` | `True` | 2021-05-14 | `UNKNOWN_TERMINAL_EVENT` |
 | `SEC_166a4322c5cc0428` | `RCVL` | `None` | 2006-03-31 | 2006-05-31 | 2 | `False` | `True` | 2006-06-29 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_1e59812657a51294` | `GVKPIL` | `None` | 2006-02-28 | 2011-05-31 | 2 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_3c726e614154aab0` | `INFOSYSTCH` | `None` | 2006-01-31 | 2011-05-31 | 2 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_494f2d622f9b35c6` | `MCDOWELL-N` | `None` | 2011-06-30 | 2012-12-31 | 2 | `True` | `True` | 2018-06-15 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_4a72bea92dc80675` | `ICICIBANK` | `None` | 2006-01-31 | 2011-05-31 | 2 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_4a7b090afd44b9fa` | `PGEL` | `PG ELECTROPLAST LTD` | 2011-09-30 | 2012-12-31 | 2 | `True` | `True` | 2024-07-09 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_68ffe6fea35da1fc` | `IBPOW` | `None` | 2009-10-30 | 2011-05-31 | 2 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_494f2d622f9b35c6` | `MCDOWELL-N` | `None` | 2006-01-31 | 2012-12-31 | 2 | `True` | `True` | 2024-06-06 | `UNKNOWN_TERMINAL_EVENT` |
 | `SEC_6d5474065011e3ae` | `RNRL` | `None` | 2006-03-31 | 2010-10-29 | 2 | `True` | `True` | 2010-11-09 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_869353235495f9bb` | `UNITECH` | `None` | 2006-01-31 | 2011-05-31 | 2 | `True` | `True` | 2011-06-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_854afabe4e4ad0c9` | `GVKPIL` | `GVK POW. & INFRA LTD.` | 2006-02-28 | 2012-12-31 | 2 | `True` | `True` | 2024-07-19 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_d114358b51030eaf` | `RELCAPITAL` | `None` | 2006-01-31 | 2012-12-31 | 2 | `True` | `True` | 2022-05-24 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_f45dbdfa0fad3fd4` | `REL` | `None` | 2006-01-31 | 2008-04-30 | 2 | `True` | `True` | 2008-05-15 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_0b4b0afdcfb9b5ed` | `RCOM` | `None` | 2006-06-30 | 2012-12-31 | 3 | `True` | `True` | 2022-05-24 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_1b93499c05c06d89` | `ILFSTRANS` | `None` | 2010-03-31 | 2010-03-31 | 3 | `False` | `True` | 2010-04-15 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_a98ef6310149ea9f` | `TATAMOTORS` | `TATA MOTORS LIMITED` | 2006-01-31 | 2012-12-31 | 3 | `True` | `True` | 2025-10-23 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_d34ed9b600758e6a` | `LITL` | `None` | 2006-11-30 | 2012-12-31 | 3 | `True` | `True` | 2018-09-12 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_dd27b242f1131bab` | `GBN` | `None` | 2007-02-28 | 2008-04-30 | 3 | `True` | `True` | 2008-05-14 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_0a037912d05afe63` | `SATYAMCOMP` | `None` | 2006-01-31 | 2012-12-31 | 4 | `True` | `True` | 2013-07-03 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_3e5b5bfaf64bf5ea` | `AUTOIND` | `AUTOLINE INDUSTRIES LTD` | 2007-01-31 | 2012-12-31 | 4 | `True` | `True` | 2026-05-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_87e4a15c8ff9fb9d` | `AANJANEYA` | `None` | 2011-05-31 | 2012-12-31 | 4 | `True` | `True` | 2015-05-21 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_e485f1b3720e3c05` | `RPL` | `None` | 2006-05-31 | 2009-08-31 | 4 | `True` | `True` | 2009-09-24 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_a3e4bb5b2f5e58f7` | `MINDTREE` | `None` | 2007-03-30 | 2012-12-31 | 5 | `True` | `True` | 2022-11-22 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_fa7db5c024cf929b` | `PSTL` | `None` | 2007-01-31 | 2010-03-31 | 5 | `True` | `True` | 2010-05-31 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_2c27f5f4d78cbcc0` | `HDFC` | `None` | 2006-01-31 | 2012-12-31 | 6 | `True` | `True` | 2023-07-12 | `UNKNOWN_TERMINAL_EVENT` |
+| `SEC_30ed0395dc7bd4f3` | `RELINFRA` | `RELIANCE INFRASTRUCTU LTD` | 2008-05-30 | 2012-12-31 | 6 | `True` | `True` | 2025-06-04 | `UNKNOWN_TERMINAL_EVENT` |
 
 Current survival is used only as a QA comparison. It never constructs historical membership.

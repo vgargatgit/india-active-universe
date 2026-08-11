@@ -1,7 +1,7 @@
 # Security coverage
 
 - Observations: 7,914,924
-- Canonical security IDs: 5,872
+- Canonical security IDs: 3,969
 - Covered dates: 2004-01-01 through 2026-08-10
 - Master rows: 6,362
 

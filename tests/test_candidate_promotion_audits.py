@@ -114,4 +114,5 @@ def test_candidate_promotion_audit_emits_all_configured_candidates(tmp_path):
     assert all(row["hard_failures"]["decision_window_snapshots_missing"] is False for row in audits)
     assert all(row["hard_failures"]["session_liquidity_window_failures"] == 0 for row in audits)
     assert all(row["refined_earliest_passing_snapshot"] is not None for row in audits)
-    assert all(row["status"] == "PASS" for row in audits)
+    assert all(row["status"] == ("PASS" if row["research_candidate_gate_pass"] else "FAIL") for row in audits)
+    assert any(row["status"] == "FAIL" for row in audits)

@@ -82,7 +82,6 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
         if type(feature_readiness.get("feature_warmup_not_ready")) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness.feature_warmup_not_ready must be bool")
         row = {
-            "pit_universe_gate_pass": audit_status == CANDIDATE_PASS_VALUE,
             "research_candidate_gate_pass": False,
             "price_action_evidence": {},
             **row,
@@ -95,12 +94,12 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             )
         if "pit_universe_gate_pass" in row and type(row["pit_universe_gate_pass"]) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].pit_universe_gate_pass must be bool")
-        if row.get("pit_universe_gate_pass") != (audit_status == CANDIDATE_PASS_VALUE):
-            raise ValueError(
-                f"candidate_promotion_decisions[{index}].pit_universe_gate_pass contradicts candidate_audit_status"
-            )
         if "research_candidate_gate_pass" in row and type(row["research_candidate_gate_pass"]) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].research_candidate_gate_pass must be bool")
+        if row.get("research_candidate_gate_pass") != (audit_status == CANDIDATE_PASS_VALUE):
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}].research_candidate_gate_pass contradicts candidate_audit_status"
+            )
         price_action_evidence = row.get("price_action_evidence")
         if not isinstance(price_action_evidence, dict):
             raise ValueError(f"candidate_promotion_decisions[{index}].price_action_evidence must be an object")
@@ -140,8 +139,21 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
                 f"candidate_promotion_decisions[{index}] is PASS with active hard failures: "
                 f"{active_hard_failures}"
             )
-        if audit_status == CANDIDATE_FAIL_VALUE and not active_hard_failures:
-            raise ValueError(f"candidate_promotion_decisions[{index}] is FAIL without active hard failures")
+        pit_hard_failure_pass = (
+            hard_failures["not_materialized"] is False
+            and hard_failures["candidate_start_snapshot_missing"] is False
+            and hard_failures["decision_window_snapshots_missing"] is False
+            and hard_failures["identity_failures"] == 0
+            and hard_failures["instrument_failures"] == 0
+            and hard_failures["status_failures"] == 0
+            and hard_failures["session_liquidity_window_failures"] == 0
+        )
+        if "pit_universe_gate_pass" not in row:
+            row["pit_universe_gate_pass"] = pit_hard_failure_pass
+        if row.get("pit_universe_gate_pass") != pit_hard_failure_pass:
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}].pit_universe_gate_pass contradicts PIT hard_failures"
+            )
         gate_failures = [
             field for field in CANDIDATE_DECISION_GATE_KEYS
             if row[field] != CANDIDATE_PASS_VALUE
@@ -245,8 +257,15 @@ def _validate_candidate_interval_recommendations(
     required: bool,
 ) -> None:
     research_gate_pass_start = manifest.get("earliest_candidate_gate_pass_start")
-    expected_research_status = "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE" if research_gate_pass_start else "NO_RESEARCH_GATE_PASS"
-    expected_research_start = _as_date(research_gate_pass_start).isoformat() if research_gate_pass_start else None
+    if refined_boundary:
+        expected_research_status = "CANDIDATE_REFINED_RESEARCH_BOUNDARY_AVAILABLE"
+        expected_research_start = refined_boundary.isoformat()
+    elif research_gate_pass_start:
+        expected_research_status = "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE"
+        expected_research_start = _as_date(research_gate_pass_start).isoformat()
+    else:
+        expected_research_status = "NO_RESEARCH_GATE_PASS"
+        expected_research_start = None
     expected_pit_status = "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if refined_boundary else "NO_REFINED_BOUNDARY"
     expected_pit_start = refined_boundary.isoformat() if refined_boundary else None
 

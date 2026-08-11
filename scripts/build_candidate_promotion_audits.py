@@ -443,7 +443,7 @@ def main() -> None:
             and not feature_readiness["feature_warmup_not_ready"]
         )
         feature_model_readiness_complete = not feature_readiness["feature_warmup_not_ready"]
-        status = "PASS" if pit_universe_gate_pass else "FAIL"
+        status = "PASS" if research_candidate_gate_pass else "FAIL"
         audits.append({
             "candidate_start": str(candidate_start),
             "first_decision_session": str(first_decision_session) if first_decision_session else None,

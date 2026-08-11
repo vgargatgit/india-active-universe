@@ -1,32 +1,368 @@
 # v2.0.1 regression comparison
 
 Baseline release: `releases/india_equity_data_v2.0.1`.
-Candidate release: `releases/india_equity_data_v2.1.1`.
+Candidate release: `releases/india_equity_data_v2.2.0`.
 Comparison interval: `2013-01-01` through `2026-08-10`.
 
 | Check | Difference rows |
 |---|---:|
-| Monthly universe counts | 135 |
-| LIQUID_V1 membership | 140 |
-| Top-750 membership | 370 |
-| Signal price series | 0 |
-| Material corporate-action factors | 50 |
+| Monthly universe counts | 164 |
+| LIQUID_V1 membership | 39937 |
+| Top-750 membership | 34812 |
+| Signal price series | 1256856 |
+| Material corporate-action factors | 52 |
 
 ## Difference interpretation
 
-- Candidate-only `LIQUID_V1` membership differences: `0`.
-- Baseline-only monthly rows explained by excluded non-ordinary symbols containing `GOLD` or `NIFTY`: `658` of `658`.
+- Candidate-only `LIQUID_V1` membership differences: `21542`.
+- Baseline-only monthly rows explained by excluded non-ordinary symbols containing `GOLD` or `NIFTY`: `854` of `29517`.
 - Existing material corporate-action factor value changes: `0`.
 - Baseline-only `LIQUID_V1` symbols removed by the ordinary-equity scope correction:
 
 | Symbol | Difference rows |
 |---|---:|
+| `BHEL` | 164 |
+| `CRISIL` | 164 |
+| `RALLIS` | 164 |
+| `TATAPOWER` | 164 |
+| `TITAN` | 164 |
+| `VIPIND` | 164 |
+| `GSFC` | 154 |
+| `TATAMOTORS` | 153 |
+| `SYMPHONY` | 152 |
+| `HDFCBANK` | 151 |
+| `WABAG` | 151 |
+| `M&MFIN` | 150 |
+| `BOMDYEING` | 148 |
+| `PIIND` | 148 |
+| `BBTC` | 147 |
+| `ASHOKA` | 145 |
+| `ASIANPAINT` | 144 |
+| `AJANTPHARM` | 143 |
+| `CCL` | 143 |
+| `FEDERALBNK` | 141 |
+| `GODREJPROP` | 140 |
+| `TATAMTRDVR` | 139 |
+| `KSCL` | 138 |
+| `CARBORUNIV` | 134 |
+| `RELAXO` | 134 |
+| `AXISBANK` | 132 |
+| `HAVELLS` | 131 |
+| `ASTRAL` | 130 |
+| `INDOCO` | 130 |
+| `SBIN` | 129 |
+| `GODFRYPHLP` | 128 |
+| `ICICIBANK` | 128 |
+| `JKTYRE` | 128 |
+| `PNB` | 128 |
+| `BANKBARODA` | 127 |
+| `BERGEPAINT` | 127 |
+| `ORISSAMINE` | 126 |
+| `SUDARSCHEM` | 126 |
+| `SWANENERGY` | 126 |
+| `TECHM` | 125 |
+| `GRANULES` | 124 |
+| `KANSAINER` | 124 |
+| `HIKAL` | 123 |
+| `DEEPAKNTR` | 122 |
+| `J&KBANK` | 122 |
+| `MAYURUNIQ` | 122 |
+| `AMARAJABAT` | 120 |
+| `BATAINDIA` | 118 |
+| `JKIL` | 116 |
+| `NATCOPHARM` | 116 |
+| `LAOPALA` | 112 |
+| `GREENPLY` | 110 |
+| `LUXIND` | 110 |
+| `MANINFRA` | 109 |
+| `AMRUTANJAN` | 108 |
+| `PNCINFRA` | 108 |
+| `TRENT` | 107 |
+| `VGUARD` | 107 |
+| `CAPLIPOINT` | 106 |
+| `GRASIM` | 106 |
+| `ITDCEM` | 106 |
+| `KAJARIACER` | 106 |
+| `KARURVYSYA` | 105 |
+| `KNRCON` | 104 |
+| `SOLARINDS` | 104 |
+| `ATULAUTO` | 103 |
+| `JAMNAAUTO` | 103 |
+| `JSWSTEEL` | 103 |
+| `SHILPAMED` | 103 |
+| `AVANTIFEED` | 102 |
+| `GRAVITA` | 102 |
+| `BEL` | 101 |
+| `MOLDTKPAC` | 101 |
+| `ADVENZYMES` | 99 |
+| `ICIL` | 97 |
+| `NAVINFLUOR` | 97 |
+| `SUNTECK` | 97 |
+| `ASHIANA` | 94 |
+| `BAJFINANCE` | 94 |
+| `CANFINHOME` | 94 |
+| `HERITGFOOD` | 94 |
+| `NESCO` | 94 |
+| `SHALPAINTS` | 94 |
+| `TATACOFFEE` | 94 |
+| `IGL` | 93 |
+| `NBCC` | 93 |
+| `AEGISCHEM` | 92 |
+| `FCL` | 91 |
+| `DWARKESH` | 88 |
+| `CGCL` | 85 |
+| `CONCOR` | 85 |
+| `MUNJALAU` | 85 |
+| `TIRUMALCHM` | 84 |
+| `PANAMAPET` | 83 |
+| `KPRMILL` | 82 |
+| `POLYMED` | 82 |
+| `ZENSARTECH` | 82 |
+| `IEX` | 81 |
+| `NELCAST` | 81 |
+| `BLS` | 80 |
+| `BRITANNIA` | 80 |
+| `TWL` | 80 |
+| `APCOTEXIND` | 79 |
+| `WELSPUNIND` | 79 |
+| `GUJGASLTD` | 77 |
+| `DOLLAR` | 75 |
+| `SIYSIL` | 75 |
+| `ALKYLAMINE` | 74 |
+| `CHOLAFIN` | 74 |
+| `GRUH` | 74 |
+| `SMSPHARMA` | 71 |
+| `AVTNPL` | 69 |
+| `LUMAXTECH` | 69 |
 | `KOTAKGOLD` | 68 |
+| `POKARNA` | 68 |
+| `JINDWORLD` | 67 |
+| `SIS` | 67 |
+| `DAAWAT` | 66 |
+| `VINATIORGA` | 66 |
+| `FILATEX` | 65 |
+| `CADILAHC` | 64 |
+| `IRCON` | 64 |
+| `SATIA` | 64 |
+| `RSYSTEMS` | 63 |
+| `INDNIPPON` | 62 |
+| `PRECWIRE` | 62 |
+| `STERTOOLS` | 62 |
+| `DECCANCE` | 61 |
+| `20MICRONS` | 60 |
+| `EICHERMOT` | 60 |
+| `GULPOLY` | 60 |
+| `MCDOWELL-N` | 59 |
+| `GAEL` | 58 |
+| `LAURUSLABS` | 58 |
+| `MINDAIND` | 58 |
+| `HATHWAY` | 57 |
+| `INFIBEAM` | 57 |
+| `TRIDENT` | 57 |
+| `APLAPOLLO` | 56 |
+| `MARATHON` | 56 |
+| `SESHAPAPER` | 55 |
+| `DIXON` | 53 |
+| `FINPIPE` | 52 |
+| `SHARDAMOTR` | 52 |
+| `KOTAKNIFTY` | 51 |
+| `VAIBHAVGBL` | 51 |
+| `KUANTUM` | 48 |
+| `SAGCEM` | 48 |
+| `CESC` | 47 |
 | `GOLDSHARE` | 47 |
+| `AFFLE` | 46 |
+| `ARTEMISMED` | 46 |
+| `BHAGERIA` | 46 |
+| `INDTERRAIN` | 46 |
+| `IRCTC` | 45 |
+| `SARLAPOLY` | 45 |
+| `TTKPRESTIG` | 44 |
+| `ANDHRSUGAR` | 43 |
+| `CORPBANK` | 43 |
+| `IPCALAB` | 43 |
+| `PCBL` | 43 |
+| `ICICIGOLD` | 42 |
+| `SCHAEFFLER` | 42 |
+| `MENONBE` | 41 |
+| `RKFORGE` | 41 |
+| `YESBANK` | 41 |
+| `GOLDIAM` | 40 |
+| `JUBLFOOD` | 40 |
+| `VTL` | 40 |
+| `BIGBLOC` | 39 |
+| `DFMFOODS` | 39 |
+| `SAREGAMA` | 39 |
+| `GREENLAM` | 38 |
+| `SDBL` | 38 |
+| `ARIHANTCAP` | 37 |
+| `HNDFDS` | 37 |
+| `PAISALO` | 37 |
+| `RGL` | 37 |
+| `GAYAPROJ` | 36 |
+| `SUTLEJTEX` | 36 |
+| `TATASTEEL` | 36 |
+| `BAJAJFINSV` | 35 |
+| `PDSL` | 35 |
+| `SOTL` | 35 |
+| `HLEGLAS` | 34 |
+| `GPIL` | 33 |
+| `SSWL` | 33 |
+| `TDPOWERSYS` | 33 |
+| `PHILIPCARB` | 32 |
+| `RUBYMILLS` | 32 |
+| `JMCPROJECT` | 31 |
+| `SPLPETRO` | 31 |
+| `TRIL` | 31 |
+| `VISHNU` | 31 |
+| `SAKSOFT` | 30 |
+| `360ONE` | 29 |
+| `HITECH` | 29 |
+| `RAMASTEEL` | 29 |
+| `TIDEWATER` | 29 |
+| `DEEPINDS` | 28 |
+| `IRB` | 28 |
+| `RSSOFTWARE` | 28 |
+| `APOLLO` | 27 |
+| `LIKHITHA` | 27 |
+| `VIVIMEDLAB` | 27 |
+| `IONEXCHANG` | 26 |
+| `ALANKIT` | 25 |
+| `BBOX` | 25 |
+| `SHIVAMAUTO` | 25 |
+| `TPLPLASTEH` | 25 |
+| `SARDAEN` | 24 |
+| `ADFFOODS` | 23 |
+| `JBMA` | 23 |
+| `MARINE` | 23 |
+| `ONEPOINT` | 23 |
 | `RELGOLD` | 23 |
+| `ADVANTA` | 22 |
+| `HAL` | 22 |
+| `SURYAROSNI` | 22 |
+| `THEMISMED` | 22 |
+| `BCLIND` | 21 |
+| `CANTABIL` | 21 |
+| `JBCHEPHARM` | 21 |
+| `RADHIKAJWE` | 21 |
+| `TALBROAUTO` | 21 |
+| `BANSWRAS` | 20 |
+| `CLEDUCATE` | 20 |
+| `COMPINFO` | 20 |
+| `BASML` | 19 |
+| `COCHINSHIP` | 19 |
+| `IRISDOREME` | 19 |
+| `NESTLEIND` | 19 |
+| `PLASTIBLEN` | 19 |
+| `8KMILES` | 18 |
+| `MEDICO` | 18 |
+| `VISAKAIND` | 18 |
+| `MANORAMA` | 17 |
+| `BBL` | 16 |
+| `PERSISTENT` | 16 |
+| `RADIOCITY` | 16 |
+| `REFEX` | 16 |
+| `SHAILY` | 16 |
+| `BDL` | 15 |
+| `BHAGCHEM` | 15 |
+| `CANBK` | 15 |
+| `SIGACHI` | 15 |
+| `ARE&M` | 14 |
+| `HMAAGRO` | 14 |
+| `PREMEXPLN` | 14 |
+| `SHAREINDIA` | 14 |
+| `TIPSMUSIC` | 14 |
+| `VAKRANGEE` | 14 |
+| `AEGISLOG` | 13 |
+| `ELECON` | 13 |
+| `KPIGREEN` | 13 |
+| `KSB` | 13 |
+| `LTFOODS` | 13 |
+| `PGEL` | 13 |
+| `PTL` | 13 |
+| `REMSONSIND` | 13 |
+| `TITAGARH` | 13 |
+| `UNITDSPR` | 13 |
+| `UNOMINDA` | 13 |
+| `VBL` | 13 |
+| `WELSPUNLIV` | 13 |
+| `ZYDUSLIFE` | 13 |
+| `CEMPRO` | 12 |
+| `GLOBAL` | 12 |
+| `SWANCORP` | 12 |
+| `BSLIMITED` | 11 |
+| `DEVIT` | 11 |
+| `EASEMYTRIP` | 11 |
+| `KIMS` | 11 |
+| `SAPPHIRE` | 11 |
+| `SPORTKING` | 11 |
+| `TARIL` | 11 |
+| `TMPV` | 11 |
+| `HEG` | 10 |
+| `HINDCOMPOS` | 10 |
+| `JAYBARMARU` | 10 |
+| `JINDALSAW` | 10 |
+| `SALASAR` | 10 |
+| `SANGHVIMOV` | 10 |
+| `AXITA` | 9 |
+| `DRREDDY` | 9 |
+| `JASH` | 9 |
+| `JTLIND` | 9 |
+| `LAMBODHARA` | 9 |
+| `ROTO` | 9 |
+| `WEL` | 9 |
+| `HPAL` | 8 |
+| `NIPPOBATRY` | 8 |
+| `POCL` | 8 |
+| `JAGSNPHARM` | 7 |
+| `MAZDOCK` | 7 |
+| `NAVA` | 7 |
+| `SECURKLOUD` | 7 |
+| `SHRIRAMFIN` | 7 |
+| `ANDHRAPAP` | 6 |
+| `BSHSL` | 6 |
+| `FOCUS` | 6 |
+| `KSOLVES` | 6 |
+| `RAJTV` | 6 |
+| `SAKUMA` | 6 |
+| `SENCO` | 6 |
+| `SIGNET` | 6 |
+| `VAKRANSOFT` | 6 |
+| `APOLSINHOT` | 5 |
+| `HARDWYN` | 5 |
+| `IOLCP` | 5 |
+| `TARACHAND` | 5 |
+| `COASTCORP` | 4 |
+| `MGEL` | 4 |
+| `PITTILAM` | 4 |
+| `RAMAPHO` | 4 |
+| `RUSHIL` | 4 |
+| `TIPSINDLTD` | 4 |
+| `BALAXI` | 3 |
+| `CORALFINAC` | 3 |
+| `DPSCLTD` | 3 |
+| `JAIBALAJI` | 3 |
+| `KAMDHENU` | 3 |
+| `NAUKRI` | 3 |
 | `AXISGOLD` | 2 |
+| `COFORGE` | 2 |
+| `GALLISPAT` | 2 |
+| `GUJENERGY` | 2 |
+| `ICICIBANKN` | 2 |
+| `ICICITECH` | 2 |
+| `OSIAHYPER` | 2 |
+| `SHARONBIO` | 2 |
+| `SURANASOL` | 2 |
+| `VESUVIUS` | 2 |
+| `ACUTAAS` | 1 |
+| `JMA` | 1 |
+| `JMTAUTOLTD` | 1 |
+| `NBIFIN` | 1 |
+| `UJAAS` | 1 |
+| `UNIPLY` | 1 |
+| `VISHWARAJ` | 1 |
 
 A non-zero Top-750 membership difference is expected when baseline non-ordinary instruments are removed: the PIT rank cutoff admits replacement ordinary-equity names without changing signal prices.
 Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and the signal price series diff is zero.
 
-Regression status: `PASS_WITH_JUSTIFIED_SCOPE_CORRECTION`.
+Regression status: `REVIEW_REQUIRED`.

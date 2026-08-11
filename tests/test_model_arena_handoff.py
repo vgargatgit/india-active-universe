@@ -129,9 +129,9 @@ def _earliest_promoted_pre2013_snapshot(platform: DataPlatform) -> str | None:
     first_start = min(platform._check_date(interval["start"]) for interval in intervals)
     last_pre2013 = date(2012, 12, 31)
     snapshot_dates = sorted({
-        platform._check_date(row["date"])
+        row["date"] if isinstance(row["date"], date) else date.fromisoformat(row["date"])
         for row in parquet.read_table(RELEASE / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, columns=["date"]).to_pylist()
-        if first_start <= platform._check_date(row["date"]) <= last_pre2013
+        if first_start <= (row["date"] if isinstance(row["date"], date) else date.fromisoformat(row["date"])) <= last_pre2013
     })
     return snapshot_dates[0].isoformat() if snapshot_dates else None
 
