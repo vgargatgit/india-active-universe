@@ -47,7 +47,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--master", default="data/canonical/security_master.jsonl")
     parser.add_argument("--raw-dir", default="data/raw/nse/delistings")
-    parser.add_argument("--unknown", default="releases/india_equity_data_v0.4.0/terminal_events.parquet")
+    parser.add_argument("--unknown", required=True, help="Existing terminal-event gap artifact to merge; pass an explicit release path")
     parser.add_argument("--out", default="data/canonical/terminal_events.jsonl")
     args = parser.parse_args()
     master = json.loads("[" + ",".join(line for line in Path(args.master).read_text(encoding="utf-8").splitlines() if line) + "]")
