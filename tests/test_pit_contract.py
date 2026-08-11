@@ -243,6 +243,8 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "git_commit": "abc123",
         "build_mode": SOURCE_BUILD_MODE,
         "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
+        "config_sha256": "0" * 64,
+        "manual_override_sha256": "0" * 64,
     }
     valid_manifest = {
         "release_id": release.name,
