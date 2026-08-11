@@ -1,5 +1,11 @@
 # Release completion audit: `india_equity_data_v2.1.1`
 
+## Corrective status
+
+This release is superseded for any research-quality interval that spans June 2011.
+Later diagnostics found an artificial `LIQUID_V1` collapse caused by identity fragmentation across the no-ISIN to ISIN source transition.
+Do not use the `2006-01-31` research promotion until a corrected immutable release recomputes identity continuity, liquidity, candidate gates, tests, and CI.
+
 ## Proven facts
 
 - Coverage: `2004-01-01` through `2026-08-10`.

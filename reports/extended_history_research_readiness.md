@@ -1,5 +1,19 @@
 # Extended history research readiness
 
+## Corrective status
+
+`india_equity_data_v2.1.1` is superseded for any research-quality claim that spans June 2011.
+The current artifacts show an artificial `LIQUID_V1` collapse from `2011-06-30` through `2012-06-29`.
+The root cause is canonical identity fragmentation when NSE source records begin carrying ISINs.
+
+Authoritative corrective evidence:
+
+- `reports/identity_transition_root_cause.md`
+- `reports/pre_post_isin_identity_transition.md`
+- `reports/2011_identity_count_spike_audit.md`
+
+Do not treat the `2006-01-31` through `2026-08-10` interval as `RESEARCH_HIGH_CONFIDENCE` until identity continuity is repaired and all Phase 3 gates are recomputed.
+
 This report answers whether the bounded liquid decision universe can move before the current 2013 control start.
 It is generated from release artifacts and companion audit reports. It does not promote an interval by prose.
 
@@ -25,7 +39,7 @@ It is generated from release artifacts and companion audit reports. It does not 
 18. Survivorship protection: see `pre2013_survivorship_evidence.md` and `survivorship_audit.md`.
 19. 2013+ v2.0.1 regression status: `PASS_WITH_JUSTIFIED_SCOPE_CORRECTION`.
 20. RESEARCH_HIGH_CONFIDENCE intervals:
-- `2006-01-31` through `2026-08-10`: `RESEARCH_HIGH_CONFIDENCE` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
+- `2006-01-31` through `2026-08-10`: `SUPERSEDED_BY_IDENTITY_CONTINUITY_BLOCKER` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 - `2004-01-01` through `2005-03-14`: `SOURCE_ONLY` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 21. RESEARCH_EXPLORATORY intervals: any interval marked `RESEARCH_EXPLORATORY` in `research_quality_intervals`, plus candidate intervals whose gates are not all pass.
 22. SOURCE_ONLY interval: source observations before the first promoted research interval remain `SOURCE_ONLY` or warmup-only evidence.
