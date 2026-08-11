@@ -167,7 +167,7 @@ def main() -> None:
                  COALESCE(t.terminal_types, 'UNKNOWN_TERMINAL_EVENT')
           FROM eligible e JOIN last_seen l USING (security_id) JOIN symbols s USING (security_id)
           LEFT JOIN terminal t USING (security_id)
-          WHERE l.last_observed_date < DATE '2026-08-10'
+          WHERE l.last_observed_date < DATE '{coverage[1]}'
           ORDER BY e.last_eligible_date DESC, e.security_id
           LIMIT 25
         """).fetchall()
@@ -175,13 +175,13 @@ def main() -> None:
           SELECT COUNT(*) FROM (
             SELECT security_id, MAX(CAST(date AS DATE)) AS last_observed
             FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id
-          ) WHERE last_observed < DATE '2026-08-10'
+          ) WHERE last_observed < DATE '{coverage[1]}'
         """)
         current_survivor_eligible = scalar(connection, f"""
           SELECT COUNT(DISTINCT u.security_id)
           FROM read_parquet('{r}/research_universe_monthly.parquet') u
           JOIN (SELECT security_id, MAX(CAST(date AS DATE)) AS last_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) l USING (security_id)
-          WHERE u.NSE_BROAD_LIQUID_PIT_V1_eligible AND l.last_seen = DATE '2026-08-10'
+          WHERE u.NSE_BROAD_LIQUID_PIT_V1_eligible AND l.last_seen = DATE '{coverage[1]}'
         """)
         historical_eligible = scalar(connection, f"SELECT COUNT(DISTINCT security_id) FROM read_parquet('{r}/research_universe_monthly.parquet') WHERE NSE_BROAD_LIQUID_PIT_V1_eligible")
         required_scope_failure_count = scalar(connection, f"""

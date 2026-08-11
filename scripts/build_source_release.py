@@ -65,7 +65,7 @@ def main() -> None:
         [sys.executable, str(root / "scripts/validate_corporate_action_boundaries.py"), "--events", str(release / "corporate_actions.parquet"), "--prices", str(release / "daily_prices_raw.parquet"), "--calendar", str(release / "trading_calendar.parquet"), "--out", str(release / "corporate_action_boundary_validation.parquet")],
         [sys.executable, str(root / "scripts/build_status_intervals.py"), "--master", str(work / "canonical/security_master.jsonl"), "--terminal-events", str(release / "terminal_events.parquet"), "--out", str(release / "trading_status_intervals.parquet")],
         [sys.executable, str(root / "scripts/build_identity_history_artifacts.py"), "--master", str(release / "security_master.parquet"), "--out-dir", str(release)],
-        [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", "2013-01-01", "--end", args.end or "2026-08-10"],
+        [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", "2013-01-01"],
         [sys.executable, str(root / "scripts/build_partitioned_release_artifacts.py"), "--release", str(release)],
         [sys.executable, str(root / "scripts/validate_research_release.py"), "--release", str(release), "--out", str(root / "reports" / f"research_invariant_validation_{args.release_id}.json")],
         [sys.executable, "-m", "pytest", "-q", "--junitxml", str(root / "reports" / f"test_results_{args.release_id}.xml")],
@@ -74,6 +74,11 @@ def main() -> None:
         [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
     ])
+    if args.end:
+        for command in commands:
+            if command[1].endswith("build_research_universe.py"):
+                command.extend(["--end", args.end])
+                break
     suspension_events = root / args.suspension_events
     if suspension_events.is_file():
         status_index = next(index for index, command in enumerate(commands) if command[1].endswith("build_identity_history_artifacts.py"))
