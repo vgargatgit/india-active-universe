@@ -180,6 +180,12 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
     for key in ("nse_bhavcopy", "canonicalization"):
         if not parser_versions.get(key):
             failures.append(f"data manifest parser_versions.{key} is missing")
+    artifacts = manifest.get("artifacts") or {}
+    for name in REQUIRED:
+        if name == "data_release_manifest.json":
+            continue
+        if f"release/{name}" not in artifacts:
+            failures.append(f"data manifest artifact hash missing for release/{name}")
     return failures
 
 

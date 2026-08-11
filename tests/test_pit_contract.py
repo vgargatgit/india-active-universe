@@ -7,7 +7,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from scripts.build_completion_audit import REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
+from scripts.build_completion_audit import REQUIRED, REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -412,6 +412,7 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
         "parser_versions": {"nse_bhavcopy": "nse-bhavcopy-v2", "canonicalization": "identity-v1"},
+        "artifacts": {f"release/{name}": "0" * 64 for name in REQUIRED if name != "data_release_manifest.json"},
     }
 
     assert data_manifest_contract_failures(release, manifest) == []
@@ -419,6 +420,16 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
     incomplete = {**manifest, "manual_override_sha256": None}
     failures = data_manifest_contract_failures(release, incomplete)
     assert "data manifest manual_override_sha256 is missing or invalid" in failures
+
+    missing_release_hash = {
+        **manifest,
+        "artifacts": {
+            key: value for key, value in manifest["artifacts"].items()
+            if key != "release/unresolved_observed_trading.parquet"
+        },
+    }
+    failures = data_manifest_contract_failures(release, missing_release_hash)
+    assert "data manifest artifact hash missing for release/unresolved_observed_trading.parquet" in failures
 
 
 def test_invariant_validation_summary_reports_nonzero_metrics_as_failures(tmp_path):

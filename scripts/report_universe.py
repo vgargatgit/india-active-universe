@@ -65,8 +65,6 @@ def main() -> None:
     (reports / "security_identity_quality.md").write_text("# Security identity quality\n\n" + "\n".join(f"- {key}: {value:,}" for key, value in sorted(quality_counts.items())) + "\n", encoding="utf-8")
     (reports / "survivorship_audit.md").write_text("# Survivorship audit\n\nThis first release is observation-based. Securities are retained for every dated official observation, independent of whether they appear in the current NSE reference universe. Terminal-event classification remains a subsequent evidence-enrichment stage.\n", encoding="utf-8")
     artifacts = {}
-    for path in (master_path, prices_path, universe_path, root / "derived/liquidity_features.jsonl", root / "derived/data_quality_findings.jsonl"):
-        artifacts[str(path.relative_to(root))] = file_hash(path)
     if source_manifest.exists():
         release_source_manifest = release_dir / "source_manifest.json"
         if not release_source_manifest.exists():
