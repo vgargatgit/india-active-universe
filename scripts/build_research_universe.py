@@ -152,7 +152,8 @@ def main() -> None:
                  MAX(date) AS last_research_date,
                  MAX(CASE WHEN liquid_v1_eligible THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
                  MAX(CASE WHEN top750_liquidity THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750,
-                 MAX(rank_126) FILTER (WHERE rank_126 IS NOT NULL) AS worst_rank_126,
+                 MIN(rank_126) FILTER (WHERE (liquid_v1_eligible OR top750_liquidity) AND rank_126 IS NOT NULL) AS best_rank_126,
+                 MAX(rank_126) FILTER (WHERE (liquid_v1_eligible OR top750_liquidity) AND rank_126 IS NOT NULL) AS worst_rank_126,
                  MIN(research_identity_quality) AS research_identity_quality,
                  MIN(price_adjustment_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS price_adjustment_quality,
                  MIN(CASE

@@ -128,6 +128,23 @@ def main() -> None:
               WHERE CAST(rrs.first_research_date AS DATE) IS DISTINCT FROM CAST(m.first_research_date AS DATE)
                  OR CAST(rrs.last_research_date AS DATE) IS DISTINCT FROM CAST(m.last_research_date AS DATE)
             """).fetchone()[0],
+            "required_artifact_rank_evidence_failures": connection.execute(f"""
+              WITH monthly_ranks AS (
+                SELECT security_id,
+                       MIN(rank_126) AS best_rank_126,
+                       MAX(rank_126) AS worst_rank_126
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE (COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                       OR COALESCE(top750_liquidity, FALSE))
+                  AND rank_126 IS NOT NULL
+                GROUP BY security_id
+              )
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              JOIN monthly_ranks m USING (security_id)
+              WHERE rrs.best_rank_126 IS DISTINCT FROM m.best_rank_126
+                 OR rrs.worst_rank_126 IS DISTINCT FROM m.worst_rank_126
+            """).fetchone()[0],
             "required_artifact_identity_quality_failures": connection.execute(f"""
               SELECT COUNT(*)
               FROM read_parquet('{r}/required_research_security.parquet')
