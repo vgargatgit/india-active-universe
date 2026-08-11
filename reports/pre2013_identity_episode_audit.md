@@ -96,7 +96,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_0bcd0daedaf47a3c` | `UCAL` | `UCAL LIMITED` | 2004-01-01 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 37 | `ISIN_MULTIPLE_SYMBOLS,LEFT_CENSORED_SOURCE_START` |
 | `SEC_1d8abf0e215b554c` | `TTKHEALTH` | `TTK HEALTHCARE LIMITED` | 2010-01-08 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 30 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_5eacaddbe2ba0d0d` | `BILVYAPAR` | `BIL VYAPAR LIMITED` | 2006-09-27 | 2025-11-25 | 1 | 2 | 1 | 2 | 1 | 1 | 1 | 2 | 28 | `ISIN_MULTIPLE_SYMBOLS,COMPANY_NAME_VARIANTS` |
-| `SEC_764c3f01a7df2e1d` | `REVATHI` | `SEMAC CONSTRUCTION LTD` | 2005-08-11 | 2026-05-15 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 28 | `ISIN_MULTIPLE_SYMBOLS` |
+| `SEC_764c3f01a7df2e1d` | `REVATHI` | `SEMAC CONSULTANTS LIMITED` | 2005-08-11 | 2026-05-15 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 28 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_80c5e1207f6f866c` | `ZEEMEDIA` | `ZEE MEDIA CORPORATION LTD` | 2007-01-10 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 28 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_6170f8af569ca958` | `MAXWELL` | `VIP CLOTHING LIMITED` | 2007-08-06 | 2026-05-15 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 19 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_4ed6291f7c18c70a` | `JUBILANT` | `JUBILANT PHARMOVA LTD` | 2004-01-01 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 10 | `ISIN_MULTIPLE_SYMBOLS,LEFT_CENSORED_SOURCE_START` |
@@ -177,7 +177,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_f693f1d8fb3befa0` | `DALMIABEL` | `None` | 2011-02-10 | 2018-11-28 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_f6b2ce41d5cd48e9` | `TATACONSUM` | `TATA CONSUMER PRODUCT LTD` | 2010-07-21 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_f8bfa69aaa4e6e38` | `CINELINE` | `CINELINE INDIA LIMITED` | 2012-06-27 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
-| `SEC_ffcfecfbe25cdd31` | `EMBDL` | `EMBASSY DEVELOPMENTS LTD` | 2007-03-23 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
+| `SEC_ffcfecfbe25cdd31` | `EMBDL` | `EQUINOX INDIA DEV LTD` | 2007-03-23 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_fff65cbe0cabcb4d` | `MADRASCEM` | `THE RAMCO CEMENTS LIMITED` | 2004-01-01 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS,LEFT_CENSORED_SOURCE_START` |
 | `SEC_1f4997de4086bf63` | `NISSAN` | `None` | 2006-12-29 | 2011-09-28 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 768 | `LONG_GAP_REVIEW` |
 | `SEC_7438a2bb0cb334b2` | `KITPLYIND` | `None` | 2004-01-01 | 2013-06-20 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 535 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -745,7 +745,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_5802aa11fb6822b9` | `GLODYNE` | `None` | 2007-11-19 | 2014-11-05 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_58ca57b43082b453` | `20MICRONS` | `20 MICRONS LTD` | 2008-10-06 | 2026-08-10 | 1 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 1 | `SYMBOL_MULTIPLE_ISIN` |
 | `SEC_5ec08ae8f2bae9a7` | `PGHH` | `P&G HYGIENE & HEALTH CARE` | 2004-07-08 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_6060af6599afd2ee` | `HERCULES` | `HERCULES INVESTMENTS LTD` | 2008-02-20 | 2026-01-01 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
+| `SEC_6060af6599afd2ee` | `HERCULES` | `HERCULES HOI. LTD.` | 2008-02-20 | 2026-01-01 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_616ceae37f35fa3a` | `STAR` | `STRIDES PHARMA SCI LTD` | 2004-01-01 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_6314d7f27e31f9ee` | `ISFT` | `INTRASOFT TECH. LTD` | 2010-04-12 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_64cd0355bcc5bb91` | `HONAUT` | `HONEYWELL AUTOMATION IND` | 2005-03-24 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
@@ -895,7 +895,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_24698e5ae611a836` | `SELMCL` | `None` | 2007-08-21 | 2020-03-26 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_2499a44b32e8ab65` | `JSL` | `JINDAL STAINLESS LIMITED` | 2008-10-23 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_24ac1a2897cbf578` | `ICICIBANK` | `ICICI BANK LTD.` | 2004-01-01 | 2026-08-10 | 1 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 0 | `SYMBOL_MULTIPLE_ISIN,LEFT_CENSORED_SOURCE_START` |
-| `SEC_24bfa19941802ce4` | `JINDALSTEL` | `JINDAL STEEL & POWER LTD` | 2004-01-01 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `LEFT_CENSORED_SOURCE_START` |
+| `SEC_24bfa19941802ce4` | `JINDALSTEL` | `JINDAL STEEL LIMITED` | 2004-01-01 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_24e67b206deac1c8` | `UBENGG` | `None` | 2009-06-16 | 2014-09-23 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_2536c17c41b88a5d` | `INGERRAND` | `INGERSOLL-RAND INDIA LTD` | 2004-01-01 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_267d7967f4117002` | `RMMIL` | `None` | 2012-06-27 | 2016-05-20 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
