@@ -254,6 +254,17 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key, expected in expected_contract_fields.items():
         if research_manifest.get(key) != expected:
             failures.append(f"research manifest {key} is not {expected}")
+    expected_liquid_v1_definition = {
+        "instrument_type": "ORDINARY_EQUITY",
+        "active": True,
+        "trading_status": "ACTIVE_TRADING",
+        "price_min": 20,
+        "listing_age_sessions_min": 272,
+        "positive_volume_days_60_min": 40,
+        "median_traded_value_60_min": 5_000_000,
+    }
+    if research_manifest.get("liquid_v1_definition") != expected_liquid_v1_definition:
+        failures.append("research manifest liquid_v1_definition is not the published LIQUID_V1 contract")
     required_numeric_metrics = (
         "required_research_securities",
         "identity_failures",

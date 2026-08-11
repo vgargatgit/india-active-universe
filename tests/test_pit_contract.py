@@ -245,6 +245,15 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
         "top_liquidity_ranking_metric": "median_traded_value_126",
+        "liquid_v1_definition": {
+            "instrument_type": "ORDINARY_EQUITY",
+            "active": True,
+            "trading_status": "ACTIVE_TRADING",
+            "price_min": 20,
+            "listing_age_sessions_min": 272,
+            "positive_volume_days_60_min": 40,
+            "median_traded_value_60_min": 5_000_000,
+        },
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
         "required_research_securities": 10,
         "identity_failures": 0,
@@ -337,6 +346,13 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_artifact_contract = {**valid_manifest, "liquidity_artifact": "research_universe_monthly.parquet"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_artifact_contract)
     assert "research manifest liquidity_artifact is not liquidity_features.parquet" in failures
+
+    loose_liquid_v1_contract = {
+        **valid_manifest,
+        "liquid_v1_definition": {**valid_manifest["liquid_v1_definition"], "positive_volume_days_60_min": 30},
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, loose_liquid_v1_contract)
+    assert "research manifest liquid_v1_definition is not the published LIQUID_V1 contract" in failures
 
     missing_unresolved_artifact_hash = {
         **valid_manifest,
