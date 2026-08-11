@@ -215,6 +215,7 @@ def main() -> None:
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     validation_path = reports / f"research_invariant_validation_{release.name}.json"
     test_result_path = reports / f"test_results_{release.name}.xml"
+    ci_status_path = reports / f"ci_status_{release.name}.json"
 
     year_map = {int(row[0]): row[1:] for row in yearly_required_rows}
     year_text = ["| Year | Active ordinary | LIQUID_V1 | Top-750 | Required | Identity passing | Identity failures | Price-action failures | Unknown-status exclusions | Sparse names |", "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
@@ -325,6 +326,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "status_interval_overlaps": int(status_overlap),
         "research_invariant_validation_sha256": sha256(validation_path) if validation_path.exists() else None,
         "test_result_sha256": sha256(test_result_path) if test_result_path.exists() else None,
+        "ci_status_sha256": sha256(ci_status_path) if ci_status_path.exists() else None,
         "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet", "suspension_events_resolved.parquet")},
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),

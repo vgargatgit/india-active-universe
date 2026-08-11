@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -61,6 +62,34 @@ def junit_summary(path: Path) -> dict:
     }
 
 
+def is_ancestor(ancestor: str | None, descendant: str | None) -> bool:
+    if not ancestor or not descendant:
+        return False
+    try:
+        subprocess.run(["git", "merge-base", "--is-ancestor", ancestor, descendant], check=True, capture_output=True)
+        return True
+    except (OSError, subprocess.CalledProcessError):
+        return ancestor == descendant
+
+
+def ci_summary(path: Path, manifest: dict) -> dict:
+    report = json.loads(path.read_text(encoding="utf-8"))
+    jobs = report.get("jobs") or []
+    return {
+        "workflow_name": report.get("workflow_name"),
+        "run_id": report.get("run_id"),
+        "run_url": report.get("run_url"),
+        "head_sha": report.get("head_sha"),
+        "release_git_commit": manifest.get("git_commit"),
+        "status": report.get("status"),
+        "conclusion": report.get("conclusion"),
+        "job_count": len(jobs),
+        "failed_jobs": [job.get("name") for job in jobs if job.get("conclusion") != "success"],
+        "matches_release_git_commit": report.get("head_sha") == manifest.get("git_commit"),
+        "descends_from_release_git_commit": is_ancestor(manifest.get("git_commit"), report.get("head_sha")),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True)
@@ -79,6 +108,9 @@ def main() -> None:
     test_result_report = report_dir / f"test_results_{release.name}.xml"
     if not test_result_report.exists():
         missing_reports.append(test_result_report.name)
+    ci_status_report = report_dir / f"ci_status_{release.name}.json"
+    if not ci_status_report.exists():
+        missing_reports.append(ci_status_report.name)
     manifest_mismatch = manifest.get("release_id") != release.name
     research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
     if missing or missing_reports or manifest_mismatch or not research_quality_ok:
@@ -115,6 +147,9 @@ def main() -> None:
     test_expected = research_manifest.get("test_result_sha256")
     if test_expected and (not test_result_report.is_file() or sha256(test_result_report) != test_expected):
         hash_mismatches.append(f"report/{test_result_report.name}")
+    ci_expected = research_manifest.get("ci_status_sha256")
+    if ci_expected and (not ci_status_report.is_file() or sha256(ci_status_report) != ci_expected):
+        hash_mismatches.append(f"report/{ci_status_report.name}")
     if hash_mismatches:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Artifact hash checks", ""]
         rows.extend(f"- FAIL: `{key}`" if key in hash_mismatches else f"- PASS: `{key}`" for key in sorted(manifest.get("artifacts", {})))
@@ -125,6 +160,7 @@ def main() -> None:
             print(f"- artifact hash mismatch: {key}")
         raise SystemExit(1)
     test_summary = junit_summary(test_result_report)
+    ci = ci_summary(ci_status_report, manifest)
     con = duckdb.connect()
 
     def count(name: str, where: str = "") -> int:
@@ -172,6 +208,7 @@ def main() -> None:
         f"- Adjusted-price quality counts: `{json.dumps(quality, sort_keys=True)}`.",
         f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
         f"- Test results: `{json.dumps(test_summary, sort_keys=True)}`.",
+        f"- GitHub Actions CI: `{json.dumps(ci, sort_keys=True)}`.",
         "",
         "## Required artifact checks",
         "",
@@ -186,6 +223,8 @@ def main() -> None:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:
         failures.append("Model Arena handoff smoke test did not pass in release evidence")
+    if ci["status"] != "completed" or ci["conclusion"] != "success" or not ci["descends_from_release_git_commit"] or ci["failed_jobs"]:
+        failures.append(f"GitHub Actions CI evidence is not clean: {json.dumps(ci, sort_keys=True)}")
     for name in REQUIRED:
         present = (release / name).exists()
         rows.append(f"- {'PASS' if present else 'FAIL'}: `{name}`")

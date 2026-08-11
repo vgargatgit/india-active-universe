@@ -17,8 +17,9 @@
     "PASS": 432,
     "WARNING_LARGE_BOUNDARY_MOVE": 26
   },
+  "ci_status_sha256": "364bde25740c963b16a080395c83a2ce99f444d91f8e4e7f8fb3c57cdc0cfaa8",
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "70401f31c546eb43d52ea546859952f72e7fd448",
+  "git_sha": "a397747b47ef6375cc35ab7f749bdab8656c31ec",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
