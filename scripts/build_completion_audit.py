@@ -62,6 +62,19 @@ def junit_summary(path: Path) -> dict:
     }
 
 
+def invariant_validation_summary(path: Path) -> dict:
+    report = json.loads(path.read_text(encoding="utf-8"))
+    failures = {
+        key: value for key, value in report.items()
+        if key != "status" and isinstance(value, (int, float)) and value != 0
+    }
+    return {
+        "status": report.get("status"),
+        "failure_count": len(failures),
+        "failures": failures,
+    }
+
+
 def is_ancestor(ancestor: str | None, descendant: str | None) -> bool:
     if not ancestor or not descendant:
         return False
@@ -325,6 +338,7 @@ def main() -> None:
         for key in hash_mismatches:
             print(f"- artifact hash mismatch: {key}")
         raise SystemExit(1)
+    invariant_summary = invariant_validation_summary(validation_path)
     test_summary = junit_summary(test_result_report)
     ci = ci_summary(ci_status_report, manifest) if ci_status_report.exists() else {
         "workflow_name": None,
@@ -386,6 +400,7 @@ def main() -> None:
         f"- Status interval overlaps: {overlap_count:,}." if overlap_count is not None else "- Status interval overlaps: not measured.",
         f"- Adjusted-price quality counts: `{json.dumps(quality, sort_keys=True)}`.",
         f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
+        f"- Research invariant validation: `{json.dumps(invariant_summary, sort_keys=True)}`.",
         f"- Test results: `{json.dumps(test_summary, sort_keys=True)}`.",
         f"- GitHub Actions CI: `{json.dumps(ci, sort_keys=True)}`.",
         f"- Partitioned sidecar layout: `{json.dumps(partitions, sort_keys=True)}`.",
@@ -400,6 +415,8 @@ def main() -> None:
         failures.append("research release is not RESEARCH_HIGH_CONFIDENCE")
     failures.extend(research_contract_failures)
     failures.extend(f"missing required research report: {name}" for name in missing_reports)
+    if invariant_summary["status"] != "PASS" or invariant_summary["failure_count"]:
+        failures.append(f"research invariant validation is not clean: {json.dumps(invariant_summary, sort_keys=True)}")
     if test_summary["tests"] <= 0 or test_summary["failures"] or test_summary["errors"]:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:

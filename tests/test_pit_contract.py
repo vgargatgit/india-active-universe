@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 import pytest
@@ -6,7 +7,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from scripts.build_completion_audit import research_manifest_contract_failures
+from scripts.build_completion_audit import invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -344,6 +345,26 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
     failures = research_manifest_contract_failures(release, data_manifest, missing_monthly_field)
     assert any("research_universe_monthly_contract" in failure and "LIQUID_V1_eligible" in failure for failure in failures)
+
+
+def test_invariant_validation_summary_reports_nonzero_metrics_as_failures(tmp_path):
+    report = tmp_path / "research_invariant_validation.json"
+    report.write_text(
+        json.dumps(
+            {
+                "status": "FAIL",
+                "duplicate_month_security_rows": 0,
+                "required_artifact_identity_quality_failures": 2,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    summary = invariant_validation_summary(report)
+
+    assert summary["status"] == "FAIL"
+    assert summary["failure_count"] == 1
+    assert summary["failures"] == {"required_artifact_identity_quality_failures": 2}
 
 
 def test_raw_and_adjusted_history_are_separate():
