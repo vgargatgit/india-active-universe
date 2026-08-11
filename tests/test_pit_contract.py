@@ -949,7 +949,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
         platform.active_on("2012-12-31")
 
 
-def test_release_loader_rejects_pre_warmup_data_manifest_research_interval(tmp_path):
+def test_release_loader_rejects_pre_warmup_feature_model_data_manifest_research_interval(tmp_path):
     import json
 
     release = tmp_path / "india_equity_data_test"
@@ -967,6 +967,7 @@ def test_release_loader_rejects_pre_warmup_data_manifest_research_interval(tmp_p
                         "start": "2007-01-31",
                         "end": "2026-08-10",
                         "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                        "interval_type": "FEATURE_MODEL_READY",
                     }
                 ],
             }
@@ -974,8 +975,44 @@ def test_release_loader_rejects_pre_warmup_data_manifest_research_interval(tmp_p
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"):
+    with pytest.raises(ValueError, match="data manifest pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"):
         DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_allows_pre_warmup_pit_universe_data_manifest_interval(tmp_path):
+    import json
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "refined_earliest_candidate_gate_pass_boundary": "2007-01-31",
+                "research_quality_intervals": [
+                    {
+                        "start": "2007-01-31",
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                        "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    pq.write_table(pa.table({"security_id": []}), release / SECURITY_MASTER_ARTIFACT)
+    for name in (ACTIVE_UNIVERSE_ARTIFACT, LIQUIDITY_ARTIFACT, RAW_EXECUTION_PRICE_ARTIFACT):
+        pq.write_table(pa.table({"date": [], "security_id": []}), release / name)
+
+    platform = DataPlatform.from_release(release, strict=True)
+    assert platform.research_quality_on("2007-01-31") == RESEARCH_HIGH_CONFIDENCE_STATUS
 
 
 def test_release_loader_rejects_research_quality_start_without_matching_interval(tmp_path):
@@ -1018,7 +1055,7 @@ def test_release_loader_rejects_research_quality_start_without_matching_interval
         DataPlatform.from_release(release, strict=True)
 
 
-def test_release_loader_rejects_pre_warmup_research_manifest_research_interval(tmp_path):
+def test_release_loader_rejects_pre_warmup_feature_model_research_manifest_research_interval(tmp_path):
     import json
 
     release = tmp_path / "india_equity_data_test"
@@ -1051,6 +1088,7 @@ def test_release_loader_rejects_pre_warmup_research_manifest_research_interval(t
                         "start": "2007-01-31",
                         "end": "2026-08-10",
                         "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                        "interval_type": "FEATURE_MODEL_READY",
                     }
                 ],
             }
@@ -1058,7 +1096,7 @@ def test_release_loader_rejects_pre_warmup_research_manifest_research_interval(t
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"):
+    with pytest.raises(ValueError, match="research manifest pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"):
         DataPlatform.from_release(release, strict=True)
 
 
@@ -1785,11 +1823,28 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 "profile": PROFILE_ID,
                 "profile_version": PROFILE_VERSION,
                 "priority_scope": PRIORITY_SCOPE,
+                "interval_type": "FEATURE_MODEL_READY",
             }
         ],
     }
     failures = research_manifest_contract_failures(release, data_manifest, pre_warmup_rhc)
-    assert "research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
+    assert "research manifest pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
+
+    pre_warmup_pit_universe_rhc = {
+        **valid_manifest,
+        "research_quality_intervals": [
+            {
+                "start": "2007-04-30",
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+                "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+            }
+        ],
+    }
+    assert research_manifest_contract_failures(release, data_manifest, pre_warmup_pit_universe_rhc) == []
 
     pre_refined_boundary_rhc = {
         **valid_manifest,
@@ -2344,11 +2399,28 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
                 "profile": PROFILE_ID,
                 "profile_version": PROFILE_VERSION,
                 "priority_scope": PRIORITY_SCOPE,
+                "interval_type": "FEATURE_MODEL_READY",
             }
         ],
     }
     failures = data_manifest_contract_failures(release, pre_warmup_rhc)
-    assert "data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
+    assert "data manifest pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
+
+    pre_warmup_pit_universe_rhc = {
+        **manifest,
+        "research_quality_intervals": [
+            {
+                "start": "2007-04-30",
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+                "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+            }
+        ],
+    }
+    assert data_manifest_contract_failures(release, pre_warmup_pit_universe_rhc) == []
 
     pre_refined_boundary_rhc = {
         **manifest,

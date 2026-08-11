@@ -269,15 +269,17 @@ def _validate_research_quality_intervals_after_warmup(
         return
     earliest_fully_warmed = warmup_coverage.get("earliest_fully_warmed_date")
     for interval in intervals:
+        interval_type = interval.get("interval_type") if isinstance(interval, dict) else None
         if (
             isinstance(interval, dict)
             and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
             and interval.get("start")
+            and interval_type != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
             and _as_date(interval["start"]) < _as_date(RESEARCH_START_DATE)
             and (not earliest_fully_warmed or _as_date(interval["start"]) < _as_date(earliest_fully_warmed))
         ):
             raise ValueError(
-                f"{manifest_name} pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"
+                f"{manifest_name} pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"
             )
         if (
             isinstance(interval, dict)

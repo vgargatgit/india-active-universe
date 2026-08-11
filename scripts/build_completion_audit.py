@@ -423,14 +423,16 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         earliest_fully_warmed = warmup.get("earliest_fully_warmed_date")
         refined_boundary = manifest.get("refined_earliest_candidate_gate_pass_boundary")
         for item in intervals:
+            interval_type = item.get("interval_type") if isinstance(item, dict) else None
             if (
                 isinstance(item, dict)
                 and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
                 and item.get("start")
+                and interval_type != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
                 and str(item.get("start")) < RESEARCH_START_DATE
                 and (not earliest_fully_warmed or str(item.get("start")) < str(earliest_fully_warmed))
             ):
-                failures.append("data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date")
+                failures.append("data manifest pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date")
             if (
                 isinstance(item, dict)
                 and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
@@ -550,14 +552,16 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         earliest_fully_warmed = warmup.get("earliest_fully_warmed_date")
         refined_boundary = research_manifest.get("refined_earliest_candidate_gate_pass_boundary")
         for item in intervals:
+            interval_type = item.get("interval_type") if isinstance(item, dict) else None
             if (
                 isinstance(item, dict)
                 and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
                 and item.get("start")
+                and interval_type != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
                 and str(item.get("start")) < RESEARCH_START_DATE
                 and (not earliest_fully_warmed or str(item.get("start")) < str(earliest_fully_warmed))
             ):
-                failures.append("research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date")
+                failures.append("research manifest pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date")
             if (
                 isinstance(item, dict)
                 and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
