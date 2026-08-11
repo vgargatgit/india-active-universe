@@ -667,6 +667,28 @@ def test_ranked_liquid_on_excludes_non_ordinary_or_non_active_status():
     assert [row["security_id"] for row in store.ranked_liquid_on("2020-01-01", 10)] == ["EQUITY"]
 
 
+def test_parquet_ranked_liquid_on_excludes_non_ordinary_or_non_active_status(tmp_path):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    path = tmp_path / "active_universe_daily.parquet"
+    pq.write_table(
+        pa.table(
+            {
+                "date": ["2020-01-01", "2020-01-01", "2020-01-01"],
+                "security_id": ["ETF", "SUSPENDED", "EQUITY"],
+                "active": [True, True, True],
+                "instrument_type": ["ETF", LIQUID_V1_DEFINITION["instrument_type"], LIQUID_V1_DEFINITION["instrument_type"]],
+                "trading_status": [LIQUID_V1_DEFINITION["trading_status"], "SUSPENDED", LIQUID_V1_DEFINITION["trading_status"]],
+                TOP_LIQUIDITY_RANKING_METRIC: [100.0, 90.0, 80.0],
+            }
+        ),
+        path,
+    )
+    store = ParquetUniverseStore(path)
+    assert [row["security_id"] for row in store.ranked_liquid_on("2020-01-01", 10)] == ["EQUITY"]
+
+
 def test_parquet_profile_on_executes_liquid_v1_when_materialized_flag_is_absent(tmp_path):
     import pyarrow as pa
     import pyarrow.parquet as pq

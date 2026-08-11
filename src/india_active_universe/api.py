@@ -216,12 +216,12 @@ class ParquetUniverseStore(UniverseStore):
                         row[key] = feature[key]
         return output
 
-    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = "median_traded_value_126") -> list[dict[str, Any]]:
+    def ranked_liquid_on(self, as_of_date: str | date, n: int, *, metric: str = TOP_LIQUIDITY_RANKING_METRIC) -> list[dict[str, Any]]:
         rows = [
             row for row in self.active_on(as_of_date)
             if row.get(metric) is not None
-            and row.get("instrument_type") == "ORDINARY_EQUITY"
-            and row.get("trading_status") == "ACTIVE_TRADING"
+            and row.get("instrument_type") == LIQUID_V1_DEFINITION["instrument_type"]
+            and row.get("trading_status") == LIQUID_V1_DEFINITION["trading_status"]
         ]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
