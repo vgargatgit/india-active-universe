@@ -65,6 +65,10 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def is_sha256_digest(value: object) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(character in "0123456789abcdef" for character in value.lower())
+
+
 def junit_summary(path: Path) -> dict:
     root = ET.parse(path).getroot()
     suites = list(root.iter("testsuite"))
@@ -201,7 +205,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         failures.append(f"data manifest quality_tier is not {DATASET_QUALITY_TIER}")
     for key in ("source_manifest_sha256", "config_sha256", "manual_override_sha256"):
         digest = manifest.get(key)
-        if not isinstance(digest, str) or len(digest) != 64:
+        if not is_sha256_digest(digest):
             failures.append(f"data manifest {key} is missing or invalid")
     parser_versions = manifest.get("parser_versions") or {}
     for key, expected in PARSER_VERSIONS.items():
@@ -362,7 +366,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         "ci_status_sha256",
     ):
         digest = research_manifest.get(key)
-        if not isinstance(digest, str) or len(digest) != 64:
+        if not is_sha256_digest(digest):
             failures.append(f"research manifest {key} is missing or invalid")
     quality_reports = research_manifest.get("quality_reports") or {}
     if not quality_reports:
@@ -370,7 +374,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for name in REQUIRED_RESEARCH_REPORTS:
         if name not in quality_reports:
             failures.append(f"research manifest quality report hash missing for {name}")
-        elif not isinstance(quality_reports.get(name), str) or len(quality_reports[name]) != 64:
+        elif not is_sha256_digest(quality_reports.get(name)):
             failures.append(f"research manifest quality report hash for {name} is invalid")
     limitations = research_manifest.get("known_limitations") or []
     required_limit_tokens = (
