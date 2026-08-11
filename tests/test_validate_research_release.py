@@ -64,6 +64,9 @@ def _write_release(release, required_security_ids):
                 "instrument_type_quality": ["OFFICIAL_REFERENCE" for _ in required_security_ids],
                 "best_rank_126": [700 for _ in required_security_ids],
                 "worst_rank_126": [700 for _ in required_security_ids],
+                "max_median_traded_value_60": [10_000_000.0 for _ in required_security_ids],
+                "max_median_traded_value_126": [12_000_000.0 for _ in required_security_ids],
+                "max_positive_volume_days_60": [50 for _ in required_security_ids],
             }
         ),
         release / "required_research_security.parquet",
@@ -110,6 +113,7 @@ def test_research_release_validator_accepts_matching_required_artifact(tmp_path)
     assert metrics["required_artifact_status_failures"] == 0
     assert metrics["required_artifact_instrument_classification_failures"] == 0
     assert metrics["required_artifact_rank_evidence_failures"] == 0
+    assert metrics["required_artifact_liquidity_evidence_failures"] == 0
     assert metrics["status"] == "PASS"
 
 
@@ -151,6 +155,9 @@ def test_research_release_validator_fails_when_required_artifact_flags_mismatch_
                 "instrument_type_quality": ["OFFICIAL_REFERENCE"],
                 "best_rank_126": [700],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -190,6 +197,9 @@ def test_research_release_validator_fails_when_required_artifact_date_range_mism
                 "instrument_type_quality": ["OFFICIAL_REFERENCE"],
                 "best_rank_126": [700],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -229,6 +239,9 @@ def test_research_release_validator_fails_when_required_artifact_identity_qualit
                 "instrument_type_quality": ["OFFICIAL_REFERENCE"],
                 "best_rank_126": [700],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -268,6 +281,9 @@ def test_research_release_validator_fails_when_required_artifact_price_adjustmen
                 "instrument_type_quality": ["OFFICIAL_REFERENCE"],
                 "best_rank_126": [700],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -307,6 +323,9 @@ def test_research_release_validator_fails_when_required_artifact_status_is_not_a
                 "instrument_type_quality": ["OFFICIAL_REFERENCE"],
                 "best_rank_126": [700],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -346,6 +365,9 @@ def test_research_release_validator_fails_when_required_artifact_instrument_clas
                 "instrument_type_quality": ["UNRESOLVED"],
                 "best_rank_126": [700],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -385,6 +407,9 @@ def test_research_release_validator_fails_when_required_artifact_rank_evidence_m
                 "instrument_type_quality": ["OFFICIAL_REFERENCE"],
                 "best_rank_126": [650],
                 "worst_rank_126": [700],
+                "max_median_traded_value_60": [10_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
             }
         ),
         release / "required_research_security.parquet",
@@ -401,4 +426,46 @@ def test_research_release_validator_fails_when_required_artifact_rank_evidence_m
     assert result.returncode != 0
     metrics = json.loads(out.read_text(encoding="utf-8"))
     assert metrics["required_artifact_rank_evidence_failures"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def test_research_release_validator_fails_when_required_artifact_liquidity_evidence_mismatches_monthly_scope(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    pq.write_table(
+        pa.table(
+            {
+                "security_id": ["SEC1"],
+                "enters_liquid_v1": [True],
+                "enters_top750": [True],
+                "first_research_date": ["2020-03-31"],
+                "last_research_date": ["2020-03-31"],
+                "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
+                "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
+                "price_adjustment_ok": [True],
+                "status_quality": ["OBSERVED_OFFICIAL_TRADE"],
+                "active_trading_ok": [True],
+                "instrument_type": ["ORDINARY_EQUITY"],
+                "instrument_type_quality": ["OFFICIAL_REFERENCE"],
+                "best_rank_126": [700],
+                "worst_rank_126": [700],
+                "max_median_traded_value_60": [9_000_000.0],
+                "max_median_traded_value_126": [12_000_000.0],
+                "max_positive_volume_days_60": [50],
+            }
+        ),
+        release / "required_research_security.parquet",
+    )
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["required_artifact_liquidity_evidence_failures"] == 1
     assert metrics["status"] == "FAIL"

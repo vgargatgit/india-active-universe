@@ -145,6 +145,24 @@ def main() -> None:
               WHERE rrs.best_rank_126 IS DISTINCT FROM m.best_rank_126
                  OR rrs.worst_rank_126 IS DISTINCT FROM m.worst_rank_126
             """).fetchone()[0],
+            "required_artifact_liquidity_evidence_failures": connection.execute(f"""
+              WITH monthly_liquidity AS (
+                SELECT security_id,
+                       MAX(median_traded_value_60) AS max_median_traded_value_60,
+                       MAX(median_traded_value_126) AS max_median_traded_value_126,
+                       MAX(positive_volume_days_60) AS max_positive_volume_days_60
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                   OR COALESCE(top750_liquidity, FALSE)
+                GROUP BY security_id
+              )
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              JOIN monthly_liquidity m USING (security_id)
+              WHERE rrs.max_median_traded_value_60 IS DISTINCT FROM m.max_median_traded_value_60
+                 OR rrs.max_median_traded_value_126 IS DISTINCT FROM m.max_median_traded_value_126
+                 OR rrs.max_positive_volume_days_60 IS DISTINCT FROM m.max_positive_volume_days_60
+            """).fetchone()[0],
             "required_artifact_identity_quality_failures": connection.execute(f"""
               SELECT COUNT(*)
               FROM read_parquet('{r}/required_research_security.parquet')
