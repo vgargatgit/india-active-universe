@@ -21,6 +21,7 @@ SCHEMA = pa.schema([
     pa.field("pre_event_date", pa.string()),
     pa.field("pre_event_close", pa.float64()),
     pa.field("post_event_date", pa.string()),
+    pa.field("post_event_open", pa.float64()),
     pa.field("post_event_close", pa.float64()),
     pa.field("holder_value_ratio", pa.float64()),
     pa.field("validation_status", pa.string()),
@@ -107,6 +108,7 @@ def main() -> None:
                max_by(p.date, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_date,
                max_by(p.raw_close, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_close,
                min_by(p.date, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_date,
+               min_by(p.raw_open, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_open,
                min_by(p.raw_close, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_close,
                g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids,
                max_by(ec.session_no, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_session_no,
@@ -122,12 +124,13 @@ def main() -> None:
     """
     raw = con.execute(query, [args.calendar, args.events, args.prices]).fetchall()
     rows = []
-    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids, pre_session_no, post_session_no, event_session_no in raw:
+    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_open, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids, pre_session_no, post_session_no, event_session_no in raw:
         pre_gap = event_session_no - pre_session_no if event_session_no is not None and pre_session_no is not None else None
         post_gap = post_session_no - event_session_no if event_session_no is not None and post_session_no is not None else None
+        post_boundary_price = post_open if post_open is not None else post_close
         ratio, status = classify_boundary(
             pre_close,
-            post_close,
+            post_boundary_price,
             boundary_share_factor,
             args.warning_threshold,
             pre_gap,
@@ -139,7 +142,7 @@ def main() -> None:
             "event_id": event_id, "security_id": security_id, "event_type": event_type, "ex_date": ex_date,
             "price_factor": price_factor, "share_factor": share_factor,
             "pre_event_date": pre_date, "pre_event_close": pre_close,
-            "post_event_date": post_date, "post_event_close": post_close,
+            "post_event_date": post_date, "post_event_open": post_open, "post_event_close": post_close,
             "holder_value_ratio": ratio, "validation_status": status,
             "boundary_price_factor": boundary_price_factor, "boundary_share_factor": boundary_share_factor,
             "boundary_event_count": boundary_event_count, "boundary_event_ids": boundary_event_ids,

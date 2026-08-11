@@ -26,6 +26,12 @@ def test_boundary_classification_checks_holder_value_continuity():
     assert status == "NO_LOCAL_BOUNDARY_OBSERVATION"
 
 
+def test_ex_date_boundary_uses_opening_price_semantics():
+    ratio, status = classify_boundary(14363.85, 2961.0, 5.0, 0.15)
+    assert round(ratio, 6) == 1.030713
+    assert status == "PASS"
+
+
 def test_preference_share_bonus_is_not_common_equity_bonus():
     assert classify("Bonus Preference Shares 21:1") == "BONUS_PREFERENCE_SECURITY"
     assert classify("Bonus Ncrps 1:116") == "BONUS_PREFERENCE_SECURITY"
