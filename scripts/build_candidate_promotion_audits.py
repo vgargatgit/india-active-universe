@@ -22,6 +22,7 @@ from india_active_universe.profiles import (
 
 
 MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS')"
+HARD_BOUNDARY_STATUSES = "('WARNING_LARGE_BOUNDARY_MOVE', 'INVALID_PRE_EVENT_PRICE', 'NO_BOUNDARY_OBSERVATIONS', 'NO_BOUNDARY_VALIDATION')"
 
 
 def path_sql(path: Path) -> str:
@@ -184,8 +185,7 @@ def main() -> None:
                   AND any_post_adjusted_date IS NOT NULL
               ) AS left_censored_non_pass_no_crossing_boundaries,
               COUNT(DISTINCT event_id) FILTER (
-                WHERE validation_status <> 'PASS'
-                  AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
+                WHERE validation_status IN {HARD_BOUNDARY_STATUSES}
                   AND event_session_index >= decision_session_index - {max_window}
                   AND any_pre_adjusted_date IS NOT NULL
                   AND any_post_adjusted_date IS NOT NULL
@@ -284,8 +284,7 @@ def main() -> None:
                   AND any_post_adjusted_date IS NOT NULL
               ) AS left_censored_non_pass_no_crossing_boundaries,
               COUNT(DISTINCT event_id) FILTER (
-                WHERE validation_status <> 'PASS'
-                  AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
+                WHERE validation_status IN {HARD_BOUNDARY_STATUSES}
                   AND event_session_index >= boundary_session_index - {max_window}
                   AND any_pre_adjusted_date IS NOT NULL
                   AND any_post_adjusted_date IS NOT NULL

@@ -60,6 +60,7 @@ from india_active_universe.profiles import (
 
 
 MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS')"
+HARD_BOUNDARY_STATUSES = "('WARNING_LARGE_BOUNDARY_MOVE', 'INVALID_PRE_EVENT_PRICE', 'NO_BOUNDARY_OBSERVATIONS', 'NO_BOUNDARY_VALIDATION')"
 
 def path_sql(path: Path) -> str:
     return str(path.resolve()).replace("'", "''")
@@ -587,8 +588,7 @@ def main() -> None:
                 AND any_post_adjusted_date IS NOT NULL
             ) AS left_censored_non_pass_no_crossing_boundaries,
             COUNT(DISTINCT event_id) FILTER (
-              WHERE validation_status <> 'PASS'
-                AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
+              WHERE validation_status IN {HARD_BOUNDARY_STATUSES}
                 AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
                 AND any_pre_adjusted_date IS NOT NULL
                 AND any_post_adjusted_date IS NOT NULL
@@ -678,12 +678,16 @@ def main() -> None:
             sessions_before_first_required,
             CASE
               WHEN UPPER(subject) LIKE '%RIGHT%' THEN 'UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT'
+              WHEN validation_status = 'ADVISORY_BOUNDARY_DRIFT' THEN 'ADVISORY_BOUNDARY_DRIFT_NOT_HARD_BLOCKING'
               WHEN validation_status = 'WARNING_LARGE_BOUNDARY_MOVE' THEN 'LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED'
               ELSE 'NON_PASS_BOUNDARY_REVIEW_REQUIRED'
             END AS blocker_class
           FROM material_events
-          WHERE validation_status <> 'PASS'
-            AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
+          WHERE (
+              validation_status IN {HARD_BOUNDARY_STATUSES}
+              OR price_factor IS NULL
+              OR share_factor IS NULL
+            )
             AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
             AND any_pre_adjusted_date IS NOT NULL
             AND any_post_adjusted_date IS NOT NULL

@@ -33,7 +33,16 @@ SCHEMA = pa.schema([
 ])
 
 
-def classify_boundary(pre_close: float | None, post_close: float | None, share_factor: float, warning_threshold: float, pre_session_gap: int | None = None, post_session_gap: int | None = None, max_boundary_sessions: int = 5) -> tuple[float | None, str]:
+def classify_boundary(
+    pre_close: float | None,
+    post_close: float | None,
+    share_factor: float,
+    warning_threshold: float,
+    pre_session_gap: int | None = None,
+    post_session_gap: int | None = None,
+    max_boundary_sessions: int = 5,
+    hard_failure_threshold: float = 0.25,
+) -> tuple[float | None, str]:
     """Return holder-value ratio and an explicit boundary status."""
     if pre_close is None and post_close is None:
         return None, "NO_BOUNDARY_OBSERVATIONS"
@@ -47,7 +56,13 @@ def classify_boundary(pre_close: float | None, post_close: float | None, share_f
     if ((pre_session_gap is not None and pre_session_gap > max_boundary_sessions)
             or (post_session_gap is not None and post_session_gap > max_boundary_sessions)):
         return ratio, "NO_LOCAL_BOUNDARY_OBSERVATION"
-    status = "PASS" if abs(ratio - 1.0) <= warning_threshold else "WARNING_LARGE_BOUNDARY_MOVE"
+    drift = abs(ratio - 1.0)
+    if drift <= warning_threshold:
+        status = "PASS"
+    elif drift <= hard_failure_threshold:
+        status = "ADVISORY_BOUNDARY_DRIFT"
+    else:
+        status = "WARNING_LARGE_BOUNDARY_MOVE"
     return ratio, status
 
 
@@ -58,6 +73,7 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     parser.add_argument("--calendar", required=True)
     parser.add_argument("--warning-threshold", type=float, default=0.15)
+    parser.add_argument("--hard-failure-threshold", type=float, default=0.25)
     parser.add_argument("--max-boundary-sessions", type=int, default=5)
     args = parser.parse_args()
 
@@ -109,7 +125,16 @@ def main() -> None:
     for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids, pre_session_no, post_session_no, event_session_no in raw:
         pre_gap = event_session_no - pre_session_no if event_session_no is not None and pre_session_no is not None else None
         post_gap = post_session_no - event_session_no if event_session_no is not None and post_session_no is not None else None
-        ratio, status = classify_boundary(pre_close, post_close, boundary_share_factor, args.warning_threshold, pre_gap, post_gap, args.max_boundary_sessions)
+        ratio, status = classify_boundary(
+            pre_close,
+            post_close,
+            boundary_share_factor,
+            args.warning_threshold,
+            pre_gap,
+            post_gap,
+            args.max_boundary_sessions,
+            args.hard_failure_threshold,
+        )
         rows.append({
             "event_id": event_id, "security_id": security_id, "event_type": event_type, "ex_date": ex_date,
             "price_factor": price_factor, "share_factor": share_factor,

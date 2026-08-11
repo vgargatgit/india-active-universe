@@ -1,6 +1,6 @@
 """Published universe profile contracts."""
 
-TARGET_RELEASE_ID = "india_equity_data_v2.2.4"
+TARGET_RELEASE_ID = "india_equity_data_v2.2.5"
 SOURCE_BUILD_MODE = "SOURCE_BUILD"
 CACHED_PROMOTION_BUILD_MODE = "CACHED_PROMOTION"
 PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"

@@ -13,6 +13,10 @@ def test_boundary_classification_checks_holder_value_continuity():
     assert ratio == 1.0
     assert status == "PASS"
 
+    ratio, status = classify_boundary(100.0, 58.0, 2.0, 0.15)
+    assert ratio == 1.16
+    assert status == "ADVISORY_BOUNDARY_DRIFT"
+
     ratio, status = classify_boundary(100.0, 70.0, 2.0, 0.15)
     assert ratio == 1.4
     assert status == "WARNING_LARGE_BOUNDARY_MOVE"
