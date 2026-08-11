@@ -35,3 +35,15 @@ LIQUID_V1_DEFINITION = {
 }
 
 TOP_LIQUIDITY_RANKING_METRIC = "median_traded_value_126"
+RESEARCH_MANIFEST_ARTIFACTS = (
+    "research_universe_monthly.parquet",
+    "required_research_security.parquet",
+    LIQUIDITY_ARTIFACT,
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    "daily_prices_adjusted.parquet",
+    "corporate_actions.parquet",
+    "corporate_action_boundary_validation.parquet",
+    "trading_status_intervals.parquet",
+    "suspension_events_resolved.parquet",
+    "unresolved_observed_trading.parquet",
+)

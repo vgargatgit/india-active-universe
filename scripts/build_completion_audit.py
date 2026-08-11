@@ -22,6 +22,7 @@ from india_active_universe.profiles import (
     PROFILE_VERSION,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
@@ -281,20 +282,8 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         if isinstance(research_manifest.get(key), int) and research_manifest[key] != 0:
             failures.append(f"research manifest {key} is not zero")
 
-    required_artifacts = {
-        "research_universe_monthly.parquet",
-        "required_research_security.parquet",
-        "liquidity_features.parquet",
-        "daily_prices_raw.parquet",
-        "daily_prices_adjusted.parquet",
-        "corporate_actions.parquet",
-        "corporate_action_boundary_validation.parquet",
-        "trading_status_intervals.parquet",
-        "suspension_events_resolved.parquet",
-        "unresolved_observed_trading.parquet",
-    }
     artifacts = research_manifest.get("artifacts") or {}
-    for name in required_artifacts:
+    for name in RESEARCH_MANIFEST_ARTIFACTS:
         if name not in artifacts:
             failures.append(f"research manifest artifact hash missing for {name}")
     monthly_contract = {
