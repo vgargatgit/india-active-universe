@@ -453,16 +453,16 @@ def main() -> None:
             hash_mismatches.append(f"report/{name}")
     validation_expected = research_manifest.get("research_invariant_validation_sha256")
     validation_path = report_dir / f"research_invariant_validation_{release.name}.json"
-    if validation_expected and (not validation_path.is_file() or sha256(validation_path) != validation_expected):
+    if validation_expected and (not is_sha256_digest(validation_expected) or not validation_path.is_file() or sha256(validation_path) != validation_expected):
         hash_mismatches.append(f"report/{validation_path.name}")
     test_expected = research_manifest.get("test_result_sha256")
-    if test_expected and (not test_result_report.is_file() or sha256(test_result_report) != test_expected):
+    if test_expected and (not is_sha256_digest(test_expected) or not test_result_report.is_file() or sha256(test_result_report) != test_expected):
         hash_mismatches.append(f"report/{test_result_report.name}")
     ci_expected = research_manifest.get("ci_status_sha256")
-    if ci_expected and (not ci_status_report.is_file() or sha256(ci_status_report) != ci_expected):
+    if ci_expected and (not is_sha256_digest(ci_expected) or not ci_status_report.is_file() or sha256(ci_status_report) != ci_expected):
         hash_mismatches.append(f"report/{ci_status_report.name}")
     partition_expected = research_manifest.get("partitioned_artifacts_manifest_sha256")
-    if partition_expected and (not partition_manifest_path.is_file() or sha256(partition_manifest_path) != partition_expected):
+    if partition_expected and (not is_sha256_digest(partition_expected) or not partition_manifest_path.is_file() or sha256(partition_manifest_path) != partition_expected):
         hash_mismatches.append(f"release/{partition_manifest_path.name}")
     if hash_mismatches:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Artifact hash checks", ""]
