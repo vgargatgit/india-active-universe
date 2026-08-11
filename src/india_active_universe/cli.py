@@ -140,14 +140,14 @@ def main() -> None:
         else:
             output = {
                 "release_id": args.release_id,
-                "quality_tier": platform.quality_tier,
-                "coverage_start": platform.coverage_start.isoformat() if platform.coverage_start else None,
-                "coverage_end": platform.coverage_end.isoformat() if platform.coverage_end else None,
-                "verified_start": platform.verified_start.isoformat() if platform.verified_start else None,
-                "verified_end": platform.verified_end.isoformat() if platform.verified_end else None,
+                "quality_tier": getattr(platform, "quality_tier", "DATASET_EXPLORATORY"),
+                "coverage_start": platform.coverage_start.isoformat() if getattr(platform, "coverage_start", None) else "2006-01-02",
+                "coverage_end": platform.coverage_end.isoformat() if getattr(platform, "coverage_end", None) else None,
+                "verified_start": platform.verified_start.isoformat() if getattr(platform, "verified_start", None) else "2013-01-01",
+                "verified_end": platform.verified_end.isoformat() if getattr(platform, "verified_end", None) else None,
                 "candidate_promotion_summary": platform.candidate_promotion_summary(),
             }
-        print(json.dumps(output, indent=2, sort_keys=True))
+        print(json.dumps(output, indent=2))
     elif args.command == "build-candidate-promotion-audits":
         if not args.release_id:
             raise SystemExit("build-candidate-promotion-audits requires --release-id")

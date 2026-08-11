@@ -1,6 +1,6 @@
 """Published universe profile contracts."""
 
-TARGET_RELEASE_ID = "india_equity_data_v2.1.0"
+TARGET_RELEASE_ID = "india_equity_data_v2.1.1"
 SOURCE_BUILD_MODE = "SOURCE_BUILD"
 CACHED_PROMOTION_BUILD_MODE = "CACHED_PROMOTION"
 PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"
@@ -94,6 +94,9 @@ CANDIDATE_NUMERIC_HARD_FAILURE_KEYS = (
     "instrument_failures",
     "status_failures",
     "session_liquidity_window_failures",
+    "price_adjustment_failures",
+    "material_missing_factors",
+    "contaminating_signal_window_non_pass_boundaries",
 )
 CANDIDATE_HARD_FAILURE_KEYS = CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS + CANDIDATE_NUMERIC_HARD_FAILURE_KEYS
 CANDIDATE_ADVISORY_READINESS_KEYS = (
@@ -114,9 +117,6 @@ CANDIDATE_DECISION_REQUIRED_FIELDS = (
     *CANDIDATE_ADVISORY_READINESS_KEYS,
     "feature_readiness",
     "hard_failures",
-    "price_action_evidence",
-    "pit_universe_gate_pass",
-    "research_candidate_gate_pass",
     "promotion_interpretation",
 )
 CANDIDATE_PROMOTION_SUMMARY_FIELDS = (

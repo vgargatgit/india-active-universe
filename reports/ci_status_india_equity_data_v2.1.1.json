@@ -1,0 +1,20 @@
+{
+  "conclusion": "success",
+  "created_at": "2026-08-11T04:09:58Z",
+  "head_sha": "d0db60fd08fed6bb848e63b7cd46babc36915f87",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "name": "deterministic-tests",
+      "status": "completed",
+      "url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31457610669/job/93674578834"
+    }
+  ],
+  "release_git_commit": "d0db60fd08fed6bb848e63b7cd46babc36915f87",
+  "release_id": "india_equity_data_v2.0.1",
+  "run_id": 31457610669,
+  "run_url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31457610669",
+  "status": "completed",
+  "updated_at": "2026-08-11T04:10:24Z",
+  "workflow_name": "ci"
+}

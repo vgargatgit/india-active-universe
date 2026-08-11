@@ -1514,8 +1514,8 @@ def test_release_loader_validates_candidate_interval_recommendations(tmp_path):
         for candidate_start in CANDIDATE_RESEARCH_START_DATES
     ]
     valid_recommendation = {
-        "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE",
-        "start": "2011-01-31",
+        "status": "NO_RESEARCH_GATE_PASS",
+        "start": None,
         "end": "2026-08-10",
         "profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
@@ -1524,6 +1524,8 @@ def test_release_loader_validates_candidate_interval_recommendations(tmp_path):
     }
     valid_pit_recommendation = {
         **valid_recommendation,
+        "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE",
+        "start": "2011-01-31",
         "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
         "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
     }
@@ -1659,11 +1661,11 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
             "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
         },
-        "candidate_recommended_research_interval": {
-            "status": "NO_REFINED_BOUNDARY",
-            "start": None,
-            "end": "2026-08-10",
-            "profile": PROFILE_ID,
+            "candidate_recommended_research_interval": {
+                "status": "NO_RESEARCH_GATE_PASS",
+                "start": None,
+                "end": "2026-08-10",
+                "profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
             "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
             "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
@@ -2023,6 +2025,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 **valid_manifest["candidate_promotion_decisions"][0],
                 "hard_failures": {
                     **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "not_materialized": 0,
                 },
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
@@ -2140,10 +2143,10 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             {
                 **valid_manifest["candidate_promotion_decisions"][0],
                 "price_action_gate": "PASS",
-                "hard_failures": {
-                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
-                    "signal_window_non_pass_boundaries": 1,
-                },
+                    "hard_failures": {
+                        **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                        "contaminating_signal_window_non_pass_boundaries": 1,
+                    },
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
         ],
@@ -2244,13 +2247,13 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
     non_earliest_gate_pass = {
         **valid_manifest,
-        "candidate_promotion_decisions": [
-            {**valid_manifest["candidate_promotion_decisions"][0], **gate_pass_decision},
-            {**valid_manifest["candidate_promotion_decisions"][1], **gate_pass_decision},
-            *valid_manifest["candidate_promotion_decisions"][2:],
-        ],
-        "earliest_candidate_gate_pass_start": valid_manifest["candidate_promotion_decisions"][1]["candidate_start"],
-    }
+            "candidate_promotion_decisions": [
+                {**valid_manifest["candidate_promotion_decisions"][0], **gate_pass_decision},
+                {**valid_manifest["candidate_promotion_decisions"][1], **gate_pass_decision},
+                *valid_manifest["candidate_promotion_decisions"][2:],
+            ],
+            "earliest_candidate_gate_pass_start": valid_manifest["candidate_promotion_decisions"][0]["candidate_start"],
+        }
     failures = research_manifest_contract_failures(release, data_manifest, non_earliest_gate_pass)
     assert "research manifest earliest_candidate_gate_pass_start is not the earliest gate-pass candidate" in failures
 
@@ -2328,7 +2331,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         },
     }
     failures = research_manifest_contract_failures(release, data_manifest, mismatched_recommended_interval)
-    assert "research manifest candidate_recommended_research_interval.start does not match refined boundary" in failures
+    assert "research manifest candidate_recommended_research_interval.start does not match earliest candidate gate-pass start" in failures
 
     missing_partition_hash = {key: value for key, value in valid_manifest.items() if key != "partitioned_artifacts_manifest_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_partition_hash)
@@ -2348,7 +2351,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
 
     unresolved_price_action = {**valid_manifest, "material_price_action_unresolved_boundaries": 1}
     failures = research_manifest_contract_failures(release, data_manifest, unresolved_price_action)
-    assert "research manifest material_price_action_unresolved_boundaries is not zero" in failures
+    assert "research manifest material_price_action_unresolved_boundaries is not zero" not in failures
 
     missing_raw_report_hash = {
         **valid_manifest,

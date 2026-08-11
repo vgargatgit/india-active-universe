@@ -97,7 +97,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_fc950bf8c92eeb86` | `FEL` | `None` | 2011-06-22 | 2023-01-20 | 1 | 3 | 1 | 0 | 2 | 1 | 1 | 3 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_fd4a6c8a74ed99b3` | `CAREERP` | `CAREER POINT LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 3 | 1 | 2 | 2 | 1 | 1 | 3 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,COMPANY_NAME_VARIANTS` |
 | `SEC_45468fecaac84298` | `PIRLIFE` | `None` | 2011-06-22 | 2017-04-06 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 119 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,LONG_GAP_REVIEW` |
-| `SEC_28ded0cd606f9c53` | `HOTELRUGBY` | `None` | 2011-06-22 | 2023-12-18 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 97 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,LONG_GAP_REVIEW` |
 | `SEC_2a35ad69fc06f018` | `JINDALSWHL` | `JSW HOLDINGS LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 71 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,LONG_GAP_REVIEW` |
 | `SEC_b730f406fea57692` | `NUMERICPW` | `SWELECT ENERGY SYS LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 71 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,LONG_GAP_REVIEW` |
 | `SEC_4818ca72d03c918a` | `BHARATFIN` | `None` | 2011-06-22 | 2019-07-02 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 61 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,LONG_GAP_REVIEW` |
@@ -134,6 +133,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_37955d8d9d88e543` | `BHARATIDIL` | `None` | 2011-06-22 | 2017-09-27 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_3a83147bd6c02fad` | `EONELECT` | `None` | 2011-06-22 | 2012-04-26 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_3f521755315c4b1c` | `MERCATOR` | `None` | 2011-06-22 | 2022-05-24 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
+| `SEC_4241d87d6671b956` | `KSB` | `KSB LIMITED` | 2011-06-22 | 2024-07-24 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_4b761caf15ba84b0` | `IBPOW` | `RATTANINDIA POWER LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_4b9699c4d89a65a6` | `GMRAIRPORT` | `GMR AIRPORTS INFRA LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 2 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,COMPANY_NAME_VARIANTS` |
 | `SEC_4ed6291f7c18c70a` | `JUBILANT` | `JUBILANT PHARMOVA LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
@@ -174,6 +174,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_c5da5f5ba11462d8` | `ABREL` | `ADITYA BIRLA REAL EST LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 2 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS,COMPANY_NAME_VARIANTS` |
 | `SEC_c6f2535d135df0d8` | `63MOONS` | `63 MOONS TECHNOLOGIES LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_c84d84af4bc831a9` | `ISPATIND` | `None` | 2011-06-22 | 2013-06-10 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
+| `SEC_ca522a7a01180baa` | `AGCNET` | `None` | 2011-06-22 | 2022-05-16 | 1 | 2 | 1 | 0 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_d09c4eb92d7d738b` | `KAVDEFENCE` | `KAVVERI DFS & WIR TEC LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_d09d9b1abd2eb296` | `PEL` | `PIRAMAL ENTERPRISES LTD` | 2011-06-22 | 2025-09-22 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_d499e612015b5532` | `HGS` | `HINDUJA GLOBAL SOLS. LTD.` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 0 | `SYMBOL_REUSE_REVIEW,ISIN_MULTIPLE_SYMBOLS` |
@@ -213,7 +214,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_3173abac4501120c` | `PRAKASH` | `PRAKASH INDUSTRIES LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_57b821c3d8797612` | `MUNJALAU` | `MUNJAL AUTO IND. LTD.` | 2011-12-30 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_678c4806abbb4153` | `NCLIND` | `NCL INDUSTRIES LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
-| `SEC_68ad05f53e58be97` | `IFBAGRO` | `IFB AGRO INDUSTRIES LTD` | 2011-06-22 | 2026-05-15 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_930792d79e553dfe` | `JINDWORLD` | `None` | 2011-06-22 | 2017-12-26 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_a35271b11aa9b303` | `SHASUNPHAR` | `None` | 2011-06-22 | 2015-11-17 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_b2c611cd46ead5d8` | `KSK` | `None` | 2011-06-22 | 2020-11-27 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 71 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
@@ -290,6 +290,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_0bc2c599b86360bc` | `TANLA` | `TANLA PLATFORMS LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 13 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_75437c2a1a3d1d6d` | `RESURGERE` | `None` | 2011-06-22 | 2012-03-01 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 13 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_c80488571e628121` | `KGL` | `None` | 2011-06-22 | 2017-07-19 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 13 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_1fa65adacd436866` | `RESPONIND` | `RESPONSIVE INDUSTRIES LTD` | 2011-06-23 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_57e345007d17ad2c` | `PIIND` | `None` | 2011-06-22 | 2011-08-18 | 1 | 1 | 1 | 0 | 2 | 2 | 1 | 1 | 1 | `SYMBOL_REUSE_REVIEW,SYMBOL_MULTIPLE_ISIN` |
 | `SEC_7476e4cf619321bb` | `CHETTINAD` | `None` | 2011-06-27 | 2013-05-30 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_8cd4da2ca450e64a` | `PATINTLOG` | `PATEL INT. LOG. LTD` | 2011-06-22 | 2026-06-19 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 1 | `SYMBOL_REUSE_REVIEW` |
@@ -309,7 +310,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_03ecb5d1db164da3` | `SBT` | `None` | 2011-06-22 | 2017-03-15 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_046f3fbbd6ebef8f` | `TATACOFFEE` | `None` | 2011-06-22 | 2015-01-23 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_0477b2eef5d15298` | `GLENMARK` | `GLENMARK PHARMACEUTICALS` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_04d6751683afe66f` | `GOLDSHARE` | `None` | 2011-06-22 | 2021-03-25 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_0637c7ff04496b15` | `PROVOGUE` | `None` | 2011-06-22 | 2012-03-06 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_0648500efa0e4e48` | `GEMINI` | `None` | 2011-06-22 | 2018-02-06 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_068380a1a6512924` | `EROSMEDIA` | `EROS INTL MEDIA LTD` | 2011-06-22 | 2024-10-24 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -423,7 +423,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_2ea8f422e0cbc6a4` | `SICAL` | `None` | 2011-06-22 | 2022-12-28 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_2edb95d17c9894d5` | `KAJARIACER` | `None` | 2011-06-22 | 2016-10-04 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_2f2e9aaaeca604ce` | `CORPBANK` | `None` | 2011-06-22 | 2015-01-22 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_2f5d12c134043087` | `RELGOLD` | `None` | 2011-06-22 | 2016-11-02 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_2ff8c0c539929792` | `FKONCO` | `None` | 2011-06-22 | 2014-01-02 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_3006102dd0ebbfd5` | `REPRO` | `REPRO INDIA LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_30ed0395dc7bd4f3` | `RELINFRA` | `RELIANCE INFRASTRUCTU LTD` | 2011-06-22 | 2025-06-04 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -532,7 +531,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_59712d34d3207850` | `PANACEABIO` | `PANACEA BIOTEC LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_597f4bde9af6e04c` | `GITANJALI` | `None` | 2011-06-22 | 2018-04-26 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_5a29d7b7ad73dac7` | `PNB` | `None` | 2011-06-22 | 2014-12-18 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_5ace4461bc3b5352` | `QGOLDHALF` | `None` | 2011-06-22 | 2021-12-16 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_5b001ccc3b1692c6` | `TECHM` | `None` | 2011-06-22 | 2015-03-19 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_5b9e0108d0514e16` | `ZICOM` | `None` | 2011-06-22 | 2020-11-27 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_5ba44df37b39866c` | `BALRAMCHIN` | `BALRAMPUR CHINI MILLS LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -645,6 +643,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_858b6d9d13710d09` | `GUJNRECOKE` | `None` | 2011-06-22 | 2018-02-09 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_85d625132e645f5f` | `ITI` | `ITI LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_85e60cc800df7634` | `BALLARPUR` | `None` | 2011-06-22 | 2020-11-27 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_860ed53c4e355ade` | `BLISSGVS` | `BLISS GVS PHARMA LTD` | 2011-06-22 | 2026-07-02 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_86bada3234a0830d` | `GODREJCP` | `GODREJ CONSUMER PRODUCTS` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_870a469a3930bf07` | `PENINLAND` | `PENINSULA LAND LIMITED` | 2011-06-22 | 2026-04-23 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_871777c435fb21a7` | `3MINDIA` | `3M INDIA LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -906,13 +905,13 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_f250643cec2d48d4` | `VIVIMEDLAB` | `None` | 2011-06-22 | 2016-04-06 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f26d4b76f5708633` | `PAGEIND` | `PAGE INDUSTRIES LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f27a4ea7c3c1ba2f` | `BGRENERGY` | `BGR ENERGY SYSTEMS LTD` | 2011-06-22 | 2026-02-23 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_f30fb230beabc7e3` | `KOTAKGOLD` | `None` | 2011-06-22 | 2015-04-13 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f314cf8548a44d5f` | `REIAGROLTD` | `None` | 2011-06-22 | 2017-08-07 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f3383a7c7490d32a` | `JINDALPHOT` | `JINDAL PHOTO LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f38fc5841ce8f4f5` | `VOLTAS` | `VOLTAS LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f3cb6f8bc54438be` | `TIL` | `TIL LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f41b1c0cfde00f42` | `DENABANK` | `None` | 2011-06-22 | 2019-03-07 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f4526382bbd54fe6` | `JKLAKSHMI` | `JK LAKSHMI CEMENT LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_f47b914873d5e834` | `EDL` | `None` | 2011-06-22 | 2019-02-27 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f481852bc50bc2ef` | `GODREJPROP` | `None` | 2011-06-22 | 2013-11-21 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f483a27c8772fe40` | `SANWARIA` | `None` | 2011-06-22 | 2020-09-11 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f589d983dd77f57a` | `NCC` | `NCC LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -927,6 +926,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_f845c2d3e150fd56` | `UBHOLDINGS` | `None` | 2011-06-22 | 2017-05-19 | 1 | 1 | 1 | 0 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f85e94ff4d716742` | `GHCL` | `GHCL LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f8fba6e658ac6ad0` | `OBEROIRLTY` | `OBEROI REALTY LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_f935bb9f06a98b60` | `JAYNECOIND` | `JAYASWAL NECO INDUSTR LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f9b79ac31b83ebb8` | `SUNFLAG` | `SUNFLAG IRON AND STEEL CO` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f9f77f76363796e5` | `JMFINANCIL` | `JM FINANCIAL LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_fa822b374cea5549` | `IDBI` | `IDBI BANK LIMITED` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -947,7 +947,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_130b8c587c102842` | `KOPRAN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 226 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_73047f335db03385` | `GUJSIDHCEM` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 221 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_bdbf23d684a554cb` | `GENESYS` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 221 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
-| `SEC_2c1de760e903247a` | `HOTELRUGBY` | `None` | 2005-09-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 220 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_c7a768047ef3629a` | `NELCO` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 216 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_17e74fd6730574bb` | `PIRGLASS` | `None` | 2008-05-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 206 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
 | `SEC_3e320f86196ec4cc` | `DCM` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 202 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -956,7 +955,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_3444f5801dccd0ec` | `IFBIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 180 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_4c122250ecf918f2` | `JAICORPLTD` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 180 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_931bd367ce4fac88` | `BIRLACOT` | `None` | 2008-07-30 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 180 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
-| `SEC_1e6ae8d147ecee9f` | `IFBAGRO` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 174 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_5d0640e05a008d10` | `ATLASCYCLE` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 174 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_345ee390f919565f` | `WALCHANNAG` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 150 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_f934d01366493acd` | `FINANTECH` | `None` | 2005-06-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 150 | `SYMBOL_REUSE_REVIEW,LONG_GAP_REVIEW` |
@@ -1086,6 +1084,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_094eb899cc6b80d7` | `SURYAROSNI` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_0e3a95e943ee83bb` | `GAMMNINFRA` | `None` | 2008-04-03 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_0ff5b74435b9c7d2` | `ATFL` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_1207b1613ee50285` | `JAYNECOIND` | `None` | 2008-02-22 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_1949cdb898aad5c1` | `NECLIFE` | `None` | 2005-07-18 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_2dd4985339762c16` | `GARDENSILK` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_3ef067cfb80ccf83` | `VARDMNPOLY` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 50 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -1159,6 +1158,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_b093a81a8625c105` | `ALEMBICLTD` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 10 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_cd30daf4550bc9e7` | `BILPOWER` | `None` | 2007-01-29 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 10 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_03a271d521cb89f0` | `CERA` | `None` | 2007-11-02 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 7 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_0327bc3dc94c4fcc` | `RESPONIND` | `None` | 2010-10-29 | 2011-06-13 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 4 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_9624113cd13d698e` | `MAGMA` | `None` | 2004-04-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 4 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_069d92ee29806722` | `GANESHHOUC` | `None` | 2007-03-02 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 3 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_036e8ca754bfa558` | `SHRIRAMCIT` | `None` | 2005-04-04 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 2 | `SYMBOL_REUSE_REVIEW` |
@@ -1201,6 +1201,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_48c456d722c5bd5a` | `3MINDIA` | `None` | 2004-06-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_4b2532c5f998457f` | `GRINDWELL` | `None` | 2006-09-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_4b3f5639a5ff6f76` | `INSECTICID` | `None` | 2009-05-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_4bb152cbc345d361` | `EDL` | `None` | 2007-11-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_4bcaffe7355f88f6` | `NCLIND` | `None` | 2007-04-03 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_4da4d90df8570ac7` | `APARINDS` | `None` | 2004-07-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_512f1220d901d99a` | `20MICRONS` | `None` | 2008-10-06 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
@@ -1277,7 +1278,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_e734806eca7f7e11` | `KCP` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_e77a7f3f798f30e3` | `JINDALPHOT` | `None` | 2005-04-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_e9fdef1f7d98437d` | `OCL` | `None` | 2004-09-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_ed3ac458a14d22b9` | `QGOLDHALF` | `None` | 2008-02-28 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_eef2983eaf05035e` | `MUNJALAU` | `None` | 2006-07-19 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f01b4c4650043f9b` | `EMAMILTD` | `None` | 2006-08-03 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_f1dcf662994ef043` | `WABCO-TVS` | `None` | 2008-10-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 1 | `SYMBOL_REUSE_REVIEW` |
@@ -1311,6 +1311,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_063a4b287a57d01a` | `MIC` | `None` | 2007-05-30 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_06981060a40dd934` | `TTML` | `None` | 2005-01-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_06f577206a0d8c79` | `ITC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
+| `SEC_0949e48ff58bff82` | `BLISSGVS` | `None` | 2010-07-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_0963e0b3285f1874` | `MANINFRA` | `None` | 2010-03-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_096a934ee86e2acb` | `CENTRALBK` | `None` | 2007-08-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_098410636be0db93` | `BOC` | `None` | 2005-03-10 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -1329,7 +1330,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_0de60877f139f7a7` | `RELCAPITAL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_0e1e798b865d8bba` | `GAMMONIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_0efd7461806d4fa4` | `TAKE` | `None` | 2007-08-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_0fc95dfbee6998dd` | `KOTAKGOLD` | `None` | 2007-08-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_11e33692bc5ae654` | `CORPBANK` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_11f0dba4d99fb7fc` | `SUMEETINDS` | `None` | 2010-12-10 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_11f709b33afe761f` | `TEXMOPIPES` | `None` | 2010-03-10 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -1360,6 +1360,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_2153d97f0c00fc30` | `BHUSANSTL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_21c8596aea0076e9` | `JAIBALAJI` | `None` | 2007-08-31 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_21d77867a851cfd4` | `SBIN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
+| `SEC_2239827e1adceb55` | `AGCNET` | `None` | 2010-06-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_23ba3fa6bb9c5530` | `HINDCOPPER` | `None` | 2010-01-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_23f5f6dea67458b4` | `KTKBANK` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_24b4add2e1d03c99` | `ESSAROIL` | `None` | 2004-03-25 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -1398,8 +1399,8 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_394f0de9eb1ed7de` | `JISLJALEQS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_395ed89ced6d284c` | `CESC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_398b479a0a78db49` | `NESCO` | `None` | 2008-04-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
+| `SEC_39f51ab2326d3a47` | `KSBPUMPS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_3a19a82e5be1c3fa` | `GEINDSYS` | `None` | 2010-08-13 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_3ab8064e17a9dba9` | `RELGOLD` | `None` | 2007-11-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_3ab9889810201e4e` | `SUNILHITEC` | `None` | 2006-03-02 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_3bf69cd52384ece2` | `GESHIP` | `None` | 2006-11-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_3c726e614154aab0` | `INFOSYSTCH` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -1484,7 +1485,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_66e257230e1e8089` | `PTC` | `None` | 2004-04-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_682b5e6c4e360d38` | `TATAINVEST` | `None` | 2005-07-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_68a707209d007f6c` | `SUNTV` | `None` | 2006-04-24 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
-| `SEC_68d8dc87834c6f93` | `GOLDSHARE` | `None` | 2007-04-17 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_68ffe6fea35da1fc` | `IBPOW` | `None` | 2009-10-30 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_69745553f59b8d61` | `BALLARPUR` | `None` | 2008-03-31 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
 | `SEC_69e770b037ad7b33` | `DCHL` | `None` | 2004-12-22 | 2011-06-21 | 1 | 1 | 0 | 0 | 2 | 1 | 0 | 0 | 0 | `SYMBOL_REUSE_REVIEW` |
@@ -1799,20 +1799,20 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_7b58dd19b48e788d` | `INEABS` | `STYRENIX PERFORMANCE LTD` | 2011-06-22 | 2026-08-10 | 1 | 4 | 1 | 1 | 1 | 1 | 1 | 4 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_661bfd8e1c147c7b` | `PROZONECSC` | `PROZONE REALTY LIMITED` | 2012-09-27 | 2026-08-10 | 1 | 3 | 1 | 1 | 1 | 1 | 1 | 3 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_a234541760ddade7` | `IBIPL` | `RATTANINDIA ENT LIMITED` | 2012-08-13 | 2026-08-10 | 1 | 3 | 1 | 1 | 1 | 1 | 1 | 3 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
+| `SEC_28ded0cd606f9c53` | `HOTELRUGBY` | `None` | 2011-06-22 | 2023-12-18 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 97 | `ISIN_MULTIPLE_SYMBOLS,LONG_GAP_REVIEW` |
 | `SEC_0bd363aec770d718` | `WELENT` | `WELSPUN ENTERPRISES LTD.` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 58 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_9df7d3087de367aa` | `AXIS-IT&T` | `AXISCADES TECH LTD` | 2011-06-22 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 28 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_b8ba73537f2ffb25` | `PAISALO` | `None` | 2011-10-17 | 2022-06-30 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 9 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_616d9637e6603ff6` | `IVZINGOLD` | `INVESCO INDIA GOLD ETF` | 2011-06-22 | 2026-04-29 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
-| `SEC_61b33d7674b3b4d5` | `IDBIGOLD` | `LIC MF - LIC GOLD ETF` | 2011-11-17 | 2026-03-05 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_98ec8d60ec4b809d` | `HORIZONINF` | `None` | 2011-09-06 | 2021-11-18 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_9bde11ca71e7d894` | `BYKE` | `THE BYKE HOSPITALITY LTD` | 2011-12-30 | 2026-06-17 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_a01d1d443bd6871f` | `ORIENTREF` | `RHI MAGNESITA INDIA LTD` | 2012-03-23 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_b14f44ae308dcdfb` | `INDUSTOWER` | `INDUS TOWERS LIMITED` | 2012-12-28 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
-| `SEC_ca522a7a01180baa` | `AGCNET` | `None` | 2011-06-22 | 2022-05-16 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_da418a65e2828902` | `L&TFH` | `L&T FINANCE LIMITED` | 2011-08-12 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_f201bce448775f3d` | `GREENFIRE` | `None` | 2012-10-31 | 2020-12-17 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_f693f1d8fb3befa0` | `DALMIABEL` | `None` | 2011-06-22 | 2018-11-28 | 1 | 2 | 1 | 0 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
 | `SEC_f8bfa69aaa4e6e38` | `CINELINE` | `CINELINE INDIA LIMITED` | 2012-06-27 | 2026-08-10 | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 0 | `ISIN_MULTIPLE_SYMBOLS` |
+| `SEC_68ad05f53e58be97` | `IFBAGRO` | `IFB AGRO INDUSTRIES LTD` | 2011-06-22 | 2026-05-15 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 71 | `LONG_GAP_REVIEW` |
 | `SEC_7ac73405cd872961` | `VIJSHAN` | `None` | 2011-06-22 | 2018-12-21 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 71 | `LONG_GAP_REVIEW` |
 | `SEC_846f4f9d27a0d7ac` | `BROOKS` | `BROOKS LAB LIMITED` | 2011-09-05 | 2026-04-16 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 71 | `LONG_GAP_REVIEW` |
 | `SEC_4a7b090afd44b9fa` | `PGEL` | `PG ELECTROPLAST LTD` | 2011-09-26 | 2024-07-09 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 62 | `LONG_GAP_REVIEW` |
@@ -1824,6 +1824,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_0cebf4524055ccc6` | `PANAMAPET` | `None` | 2011-09-30 | 2014-09-19 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_30a431bd914f7e98` | `APLAPOLLO` | `None` | 2011-12-14 | 2020-12-15 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7f3a125e6e5f8bdd` | `TDPOWERSYS` | `None` | 2011-09-08 | 2022-10-31 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
+| `SEC_a4f28c0f3f649eac` | `BANSWRAS` | `None` | 2011-06-22 | 2022-09-08 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_be976143faf27c70` | `RELAXO` | `None` | 2011-06-22 | 2013-11-22 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_c45df49509bf12f3` | `VKSPL` | `None` | 2012-08-01 | 2012-11-30 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d29fc8c20efb8a67` | `SHAKTIPUMP` | `SHAKTI PUMPS (I) LTD` | 2011-10-25 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
@@ -1831,7 +1832,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_d3ae32ccd1b07329` | `KBIL` | `None` | 2011-06-22 | 2015-07-08 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_dd22c6871157d82a` | `VADILALIND` | `VADILAL INDUSTRIES LTD` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_0551792f5e76c164` | `VSSL` | `VARDHMAN SPC STEEL LTD` | 2012-05-31 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_0c218cfeafa428d6` | `MGOLD` | `None` | 2012-03-27 | 2015-03-25 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_113f7ff70442a9a6` | `CARERATING` | `CARE RATINGS LIMITED` | 2012-12-26 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_16f73a3a0a51ef1f` | `DBSTOCKBRO` | `DB (INT) STOCK BROKERS` | 2012-02-29 | 2026-07-09 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_213ac0465f035c04` | `ASTRAZEN` | `ASTRAZENECA PHARMA IND LT` | 2011-06-22 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -1843,7 +1843,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_37068fc8a28de5cc` | `ARVINDREM` | `None` | 2012-06-08 | 2015-09-24 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_3b04959d59ee3e42` | `ROSSELLIND` | `ROSSELL INDIA LIMITED` | 2012-09-25 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_3d41e9e0d38c34be` | `KANANIIND` | `KANANI INDUSTRIES LTD` | 2012-12-03 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_3d4f7227e8c4c789` | `IIFLNIFTY` | `None` | 2011-10-25 | 2015-07-22 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_425a07dda5696cc7` | `TARAJEWELS` | `None` | 2012-12-20 | 2018-08-16 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_508cdfb8c0c8d13a` | `BGLOBAL` | `None` | 2011-07-28 | 2014-01-10 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_50a876dd5a36a6df` | `MAYURUNIQ` | `None` | 2012-09-25 | 2013-09-25 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -1858,7 +1857,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_6ffea0534e4076b7` | `TBZ` | `TRIB BHIMJI ZAVERI LTD` | 2012-05-23 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7325dc041224b5a7` | `MTEDUCARE` | `None` | 2012-04-26 | 2022-12-23 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7cd2e3aa594514f5` | `GAYAPROJ` | `None` | 2011-08-22 | 2017-02-10 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_860ed53c4e355ade` | `BLISSGVS` | `BLISS GVS PHARMA LTD` | 2011-06-22 | 2026-07-02 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_9060711d29a246ef` | `APLLTD` | `ALEMBIC PHARMA LTD` | 2011-10-04 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_90be9fae30631ac8` | `TREEHOUSE` | `TREE HOUSE EDU LTD` | 2011-08-26 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_a1028cb15de0f57c` | `ADFFOODS` | `None` | 2011-06-22 | 2023-09-08 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -1880,102 +1878,42 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_e3dfceac95caf74f` | `ZUARI` | `ZUARI AGRO CHEMICALS LTD` | 2012-12-12 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_e41f8828428ba180` | `NAGAROIL` | `None` | 2012-03-28 | 2019-08-22 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_e7cfbdfb60c1a7e4` | `NBCC` | `None` | 2012-04-26 | 2016-06-02 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_ee6b9775082944a8` | `AXISGOLD` | `None` | 2011-06-22 | 2020-07-23 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f682e74b745d5c8c` | `DHANUKA` | `DHANUKA AGRITECH LTD` | 2011-06-29 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f8331b326c6ce489` | `JISLDVREQS` | `JAIN DVR EQUITY SHARES` | 2011-11-30 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_fea0507f7300195e` | `PCJEWELLER` | `PC JEWELLER LTD` | 2012-12-27 | 2024-10-07 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_cc5fa6401894ab57` | `PARASPETRO` | `None` | 2004-03-10 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1133 | `LONG_GAP_REVIEW` |
 | `SEC_6bcac538d0c349d2` | `NISSAN` | `None` | 2006-12-29 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 768 | `LONG_GAP_REVIEW` |
 | `SEC_a9fe34e9a67a1516` | `KITPLYIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 535 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_596b62a55e4bf221` | `SOFTTECHGR` | `None` | 2004-01-01 | 2011-06-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 397 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_c310a09e3dcd49ba` | `KMSUGAR` | `None` | 2007-05-31 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 338 | `LONG_GAP_REVIEW` |
 | `SEC_be209b1697ce76f3` | `GKW` | `None` | 2004-01-01 | 2009-06-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 319 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_64ca2b4430557cd2` | `POLARIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 315 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_3e7c470b284109ec` | `MOREPENHTL` | `None` | 2004-01-19 | 2006-11-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 285 | `LONG_GAP_REVIEW` |
 | `SEC_9f6747bf60c426c6` | `NEOCURTHER` | `None` | 2004-01-01 | 2008-11-10 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 285 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_60964d54bb0c7a7e` | `PEPL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 271 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_48bf308d5b2cf223` | `REGENCERAM` | `None` | 2004-01-01 | 2010-11-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 270 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_03706bfe8e38180f` | `VINDHYATEL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 266 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_7f417e972b9673dd` | `BPL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 265 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_a0f1ab8a0c42cbc5` | `INDUJENERT` | `None` | 2004-01-01 | 2007-04-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 265 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_7ba8d50afafe4dd4` | `CIMCOBIRLA` | `None` | 2004-01-01 | 2009-03-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 252 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_b6c22124854447ad` | `SMZSCHEM` | `None` | 2004-01-09 | 2008-09-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 252 | `LONG_GAP_REVIEW` |
-| `SEC_c4eacc1536823daf` | `DYNACONS` | `None` | 2004-01-01 | 2011-01-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 241 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_d45e0d17791ed0e2` | `HINDCOMPOS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 226 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_0a87e3762df117dd` | `MUKTAARTS` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW` |
 | `SEC_142a97ff6d532daa` | `NUCHEM` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_16c7a9fdc575e12d` | `LCCINFOTEC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_1f798338e20adff2` | `JAINSTUDIO` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_40f3ebd9c1ad5484` | `NOVAPETRO` | `None` | 2004-01-01 | 2009-10-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_4de67393672728d8` | `DUNCANSIND` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW` |
-| `SEC_5b313dc46e09bf4d` | `LLOYDFIN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_662930ea9fc63c22` | `JCTELEC` | `None` | 2004-01-01 | 2007-07-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_6891adc63b8c8803` | `NICCOCORP` | `None` | 2004-01-01 | 2006-09-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_a6d115033591271c` | `BPLENGG` | `None` | 2004-01-01 | 2007-12-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_c92f514e6ec0d50c` | `SOFTSOLINT` | `None` | 2004-01-01 | 2008-06-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_cb61412f76e8b6d4` | `VINTAGE` | `None` | 2004-01-01 | 2007-12-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_cb6d5be676832901` | `PAREKHPLAT` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_d7ae25e41a3bf509` | `ASHIMASYN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_f8c41bd212617e48` | `STEELTUBES` | `None` | 2004-03-09 | 2010-09-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW` |
-| `SEC_fef468b5037fb9c2` | `KOPDRUGS` | `None` | 2004-01-01 | 2011-06-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 221 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_42a0c2ad949561b3` | `ORIENTPRES` | `None` | 2004-01-01 | 2009-10-30 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 220 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_23f6a57bd1d49adb` | `CREATIVEYE` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 216 | `LONG_GAP_REVIEW` |
-| `SEC_91521c7ba7ca6405` | `PEACOCKIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 216 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_a0ea714673865bae` | `VINYLCHEM` | `None` | 2004-03-09 | 2008-02-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 216 | `LONG_GAP_REVIEW` |
-| `SEC_cba8471bdec8abe4` | `INDIAFOILS` | `None` | 2004-01-01 | 2008-09-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 216 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_e3ab570199623ea1` | `JENSONICOL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 216 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_76047dd76b9f7b70` | `INDLMETER` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 214 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_268a3e29bd594f11` | `DCMFINSERV` | `None` | 2004-01-01 | 2010-10-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_2cb1a91bf012137d` | `TNTELE` | `None` | 2004-01-01 | 2010-09-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_4833a6d5b3faf66c` | `NAGPURENG` | `None` | 2004-01-01 | 2008-02-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_4934d392929bc9b3` | `JIKINDS` | `None` | 2004-01-01 | 2007-02-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_68d742f964d9b63f` | `SNOWCEMIND` | `None` | 2004-01-01 | 2006-09-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_998f50b2ce429f80` | `MUKANDENGG` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_a79fb98a1bd883ef` | `WELLWININD` | `None` | 2004-01-01 | 2006-09-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_b0d23ae3b9991ab6` | `MOTOGENFIN` | `None` | 2004-03-05 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW` |
-| `SEC_b49594e5da118a35` | `GPELECT` | `None` | 2004-01-01 | 2008-11-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_b9a79aa12de33a0b` | `NORBTEAEXP` | `None` | 2004-03-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 211 | `LONG_GAP_REVIEW` |
-| `SEC_870dca1b1448f693` | `HINDSYNTEX` | `None` | 2004-01-01 | 2011-04-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 207 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_0941243dde5da92e` | `TOKYOPLAST` | `None` | 2004-01-06 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 202 | `LONG_GAP_REVIEW` |
 | `SEC_f7bf772b390f092c` | `UNIWESTBNK` | `None` | 2004-01-01 | 2006-09-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 202 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_a536d2962ac83d45` | `NSIL` | `None` | 2005-06-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 199 | `LONG_GAP_REVIEW` |
-| `SEC_54984eb7ba728205` | `UNIENTER` | `None` | 2004-01-23 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 197 | `LONG_GAP_REVIEW` |
 | `SEC_951a87d77b8cd68b` | `LOTTEINDIA` | `None` | 2005-04-08 | 2009-07-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 197 | `LONG_GAP_REVIEW` |
-| `SEC_c69aa4816009a414` | `PHILCORP` | `None` | 2004-01-01 | 2007-07-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 197 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_f984d83d249689f5` | `SAMBHAAV` | `None` | 2005-10-18 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 196 | `LONG_GAP_REVIEW` |
-| `SEC_6c210fd1a0dfba9e` | `SRGINFOTEC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 193 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_8c17180dcb080963` | `MOREPENLAB` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 193 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_fab6c5020b19cc3d` | `SRIADIKARI` | `None` | 2004-01-01 | 2007-10-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 193 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_83df60533a6d1f7c` | `GOLDTECH` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 188 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_b0e1d16252ced669` | `SHREERAMA` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 188 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_f85b92c253de0d44` | `GLFL` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 188 | `LONG_GAP_REVIEW` |
-| `SEC_da16f33db0c94e3f` | `EICHER` | `None` | 2004-11-01 | 2006-09-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 183 | `LONG_GAP_REVIEW` |
 | `SEC_2ee1c9b8b576a599` | `MORAREALTY` | `None` | 2004-12-06 | 2006-06-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 181 | `LONG_GAP_REVIEW` |
-| `SEC_46048d13d1b8334e` | `REMSONSIND` | `None` | 2004-01-01 | 2011-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 181 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_6793881baffb1e4d` | `UMITL` | `None` | 2004-01-01 | 2009-12-10 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 180 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_d953e813ea11cedc` | `ALLSEC` | `None` | 2005-05-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 180 | `LONG_GAP_REVIEW` |
-| `SEC_7122f24bf7072bc2` | `KEYCORPSER` | `None` | 2004-01-12 | 2011-06-10 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 176 | `LONG_GAP_REVIEW` |
 | `SEC_43e949023c74f2ae` | `KOTHARIPET` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 174 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_70331d54f2f60341` | `RAMSARUP` | `None` | 2007-07-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 153 | `LONG_GAP_REVIEW` |
 | `SEC_050db310f7b8403c` | `ATNINT` | `None` | 2004-01-01 | 2006-05-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 150 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_848ceece6dc4ec19` | `WEIZMANIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 150 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_b85590be17ca022e` | `NUCENT` | `None` | 2005-01-05 | 2011-06-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 150 | `LONG_GAP_REVIEW` |
 | `SEC_d0694b06e9b5cdff` | `GOLDTELE` | `None` | 2004-01-01 | 2008-02-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 150 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_705d818d7f484025` | `BLBLIMITED` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 147 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_27e22223a8048f2a` | `CHESLINTEX` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 145 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_69736b99fd949f15` | `SEARLEIND` | `None` | 2004-01-01 | 2006-12-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 145 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_f71572a9a0bbd643` | `CYBERTECH` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 145 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_1d39270b77a298dd` | `QUINTEGRA` | `None` | 2005-08-22 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 144 | `LONG_GAP_REVIEW` |
 | `SEC_669b2aa43e5cdbe1` | `IGARASHI` | `None` | 2005-04-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 144 | `LONG_GAP_REVIEW` |
-| `SEC_03fd5560cbe415b6` | `ZENITHEXPO` | `None` | 2004-01-01 | 2011-06-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 142 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_9e33246529c010f9` | `TAINWALCHM` | `None` | 2004-01-02 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 142 | `LONG_GAP_REVIEW` |
-| `SEC_f42e1c7de62b7afb` | `ASIL` | `None` | 2005-10-17 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 142 | `LONG_GAP_REVIEW` |
 | `SEC_94a2310ef85a7a27` | `SPLLTD` | `None` | 2004-01-01 | 2007-03-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 140 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_21f642c3258d3df9` | `BSL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 137 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_405c4a5e69398a55` | `TRIGYN` | `None` | 2005-07-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 137 | `LONG_GAP_REVIEW` |
-| `SEC_4e5a8b349f730b97` | `CINEVISTA` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 137 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_707fb24ac77bd43b` | `PAVCI` | `None` | 2004-03-12 | 2007-12-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 137 | `LONG_GAP_REVIEW` |
-| `SEC_ce532e4b94989400` | `MELSTAR` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 137 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_5a9bf91059c42cac` | `RKFORGE` | `None` | 2004-05-05 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 136 | `LONG_GAP_REVIEW` |
 | `SEC_b2b021f532dd6b3f` | `ARL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 135 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_0f0cd682acb99d4d` | `NORTHGATE` | `None` | 2007-04-03 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 134 | `LONG_GAP_REVIEW` |
@@ -1984,40 +1922,30 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_5f6924cc52b74135` | `TCIFINANCE` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 132 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_745bc88ff4f810ea` | `SOFTPRO` | `None` | 2004-01-01 | 2010-10-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 132 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_df9f3a6ee2790d48` | `LYKALABS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 132 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_e57a986be667cdac` | `SANDESH` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 128 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_7229ffe4e573331f` | `KHAITANLTD` | `None` | 2004-03-10 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 127 | `LONG_GAP_REVIEW` |
 | `SEC_b20ebe6ce3103ef1` | `SIL` | `None` | 2004-01-28 | 2010-11-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 126 | `LONG_GAP_REVIEW` |
 | `SEC_707ad6b047fdeb28` | `WILLAMAGOR` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 124 | `LONG_GAP_REVIEW` |
 | `SEC_793cf24debf15446` | `SHREYASHIP` | `None` | 2004-01-01 | 2006-03-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 124 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_80890f05d62b0421` | `SUBHASPROJ` | `None` | 2004-01-01 | 2010-05-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 124 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_87cdba67572b1627` | `UNIVCABLES` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 124 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_e233bc10bd99378a` | `MARDIACHEM` | `None` | 2004-01-01 | 2005-04-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 124 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_dfbf80e3890bde2b` | `MID-DAY` | `None` | 2004-01-01 | 2011-06-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 121 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_e3b57afd57dcf4a5` | `RAMANEWS` | `None` | 2006-09-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 120 | `LONG_GAP_REVIEW` |
 | `SEC_1a53c54ffe9c495f` | `GLOBALVECT` | `None` | 2006-10-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 119 | `LONG_GAP_REVIEW` |
 | `SEC_99ad3383a1b63e90` | `BROADCAST` | `None` | 2007-03-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 119 | `LONG_GAP_REVIEW` |
 | `SEC_bd285e4ddbd55a5a` | `AMBICAAGAR` | `None` | 2004-06-29 | 2010-09-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 118 | `LONG_GAP_REVIEW` |
-| `SEC_dd800639a2db8767` | `TVSELECT` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 118 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_e5450ce7db50940c` | `BHARATRAS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 117 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_2918069d127fe888` | `MANGALAM` | `None` | 2005-05-23 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 113 | `LONG_GAP_REVIEW` |
 | `SEC_6ad92bc3673807b7` | `ARHAMFISCL` | `None` | 2004-01-01 | 2006-04-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 112 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_bc5337744be7d4a4` | `MARKSANS` | `None` | 2005-11-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 112 | `LONG_GAP_REVIEW` |
 | `SEC_83e79520c46e6816` | `MEDIAVIDEO` | `None` | 2004-01-01 | 2007-10-01 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 111 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_e19ecbfe67241b42` | `SONASTEER` | `None` | 2004-01-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 109 | `LONG_GAP_REVIEW` |
 | `SEC_f85c02c57779dad7` | `SUTLEJTEX` | `None` | 2006-12-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 109 | `LONG_GAP_REVIEW` |
-| `SEC_11d340949af2bf30` | `PERLENGINF` | `None` | 2004-01-01 | 2005-10-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 108 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_ae74d9933a6fdd35` | `RPGCABLES` | `None` | 2006-06-12 | 2010-04-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 106 | `LONG_GAP_REVIEW` |
 | `SEC_75b42b4da51187b4` | `PTL` | `None` | 2007-01-29 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 103 | `LONG_GAP_REVIEW` |
-| `SEC_bfb7f9cb604a46b6` | `GUFICBIO` | `None` | 2004-10-19 | 2011-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 103 | `LONG_GAP_REVIEW` |
 | `SEC_dad8b6d33cf1b297` | `ONWARDTEC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 103 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_3faf0538cf55a6df` | `KOJAMFIN` | `None` | 2004-06-24 | 2007-09-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 101 | `LONG_GAP_REVIEW` |
 | `SEC_755bd4376be36081` | `OUDHSUG` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 99 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_913a126f808f8b77` | `UPERGANGES` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 99 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_a1396adda5d3d8de` | `COREEMBLG` | `None` | 2004-01-16 | 2009-08-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 99 | `LONG_GAP_REVIEW` |
 | `SEC_23c66fecd8bf5c0f` | `PENTSFWARE` | `None` | 2004-03-09 | 2006-09-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 98 | `LONG_GAP_REVIEW` |
 | `SEC_30634725e7d4e665` | `ANTGRAPHIC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 98 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_6bce70345f8d7f21` | `BLUECHIP` | `None` | 2004-01-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 98 | `LONG_GAP_REVIEW` |
-| `SEC_c349ec539a8f59da` | `PENTACOMMU` | `None` | 2004-01-01 | 2006-09-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 98 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_05e0e760d6a59e8e` | `CONSOFINVT` | `None` | 2005-03-29 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 94 | `LONG_GAP_REVIEW` |
 | `SEC_0fd429277d289765` | `FAME` | `None` | 2008-02-25 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 94 | `LONG_GAP_REVIEW` |
 | `SEC_7e504d547334ef03` | `RANEENGINE` | `None` | 2008-06-24 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 94 | `LONG_GAP_REVIEW` |
@@ -2033,7 +1961,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_99443dbc9b92402f` | `KHANDSE` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 93 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_b95212d24c218890` | `RAINCALCIN` | `None` | 2004-01-01 | 2007-12-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 93 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_6bb7a64d00f8309e` | `ASHCO` | `None` | 2007-10-22 | 2010-09-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 89 | `LONG_GAP_REVIEW` |
-| `SEC_330f45f09c269750` | `SRERAYHIST` | `None` | 2004-01-01 | 2006-08-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 88 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_34c64d7e64e8fb69` | `HOVS` | `None` | 2006-09-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 88 | `LONG_GAP_REVIEW` |
 | `SEC_3dc8c12891f40b02` | `BAGFILMS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 88 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_4f05c359d136dc7c` | `TIPSINDLTD` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 88 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -2053,7 +1980,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_c833ceb3d403c3a1` | `OISL` | `None` | 2008-08-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
 | `SEC_c9bccf07a9ab3466` | `PIONEEREMB` | `None` | 2006-05-16 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
 | `SEC_ce7cc9a1b998d6dd` | `PARACABLES` | `None` | 2007-01-03 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
-| `SEC_dc398773f8198588` | `PDUMJEAGRO` | `None` | 2004-01-02 | 2008-03-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
 | `SEC_dcb9ec8482ce4454` | `KEI` | `None` | 2006-03-23 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
 | `SEC_e77fc4f56e23cff4` | `VISHALEXPO` | `None` | 2004-05-28 | 2009-11-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
 | `SEC_f2351bd76112e73f` | `SPLIL` | `None` | 2005-07-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 87 | `LONG_GAP_REVIEW` |
@@ -2062,7 +1988,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_0f0892daea6ece6a` | `EASTSILK` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_1e5dbb611dbe4970` | `ZODJRDMKJ` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW` |
 | `SEC_2abc69b4e04cfaad` | `MAHINDUGIN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_4e4f3fc03411619e` | `AUTORIDFIN` | `None` | 2004-01-01 | 2005-04-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_51e031297363ece2` | `INDSWFTLTD` | `None` | 2004-10-18 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW` |
 | `SEC_55b0e3880caca6d0` | `ABSHEKINDS` | `None` | 2004-01-01 | 2011-05-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_640cba1dcb96d90a` | `ZODIACLOTH` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 86 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -2082,9 +2007,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_8d17fa004ef21434` | `PEARLGLOBL` | `None` | 2004-01-01 | 2009-08-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 78 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_b0ea75f969ae9d1c` | `AMTREXAPPL` | `None` | 2004-01-01 | 2006-04-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 78 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_c4e9dda65273e469` | `RUCHINFRA` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 78 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_ec76845013d593c8` | `TRAFALHSE` | `None` | 2004-01-01 | 2005-08-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 78 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_25d8600e189a9d17` | `GISOLUTION` | `None` | 2009-01-30 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 77 | `LONG_GAP_REVIEW` |
-| `SEC_f7f7a585a5064356` | `TIMESGTY` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 77 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_033bfc9a8c3450e5` | `BEPL` | `None` | 2005-03-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 76 | `LONG_GAP_REVIEW` |
 | `SEC_079aa2ac6651b118` | `NILKAMPLST` | `None` | 2004-01-01 | 2007-01-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 76 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_0947f43f83fd13d2` | `PONNIERODE` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 76 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
@@ -2145,12 +2068,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_f8193dc69e8efbcf` | `AARVEEDEN` | `None` | 2006-11-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 65 | `LONG_GAP_REVIEW` |
 | `SEC_fe6d47ab867a8175` | `IILTD` | `None` | 2007-05-30 | 2009-05-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 65 | `LONG_GAP_REVIEW` |
 | `SEC_559375437b0472ac` | `RADAAN` | `None` | 2004-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW` |
-| `SEC_68e4995e0098a429` | `BPLREFRIG` | `None` | 2004-01-01 | 2005-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_6f28985b645098bd` | `VXL` | `None` | 2004-01-01 | 2005-07-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_8aa325fe0339b257` | `LEADEDSYS` | `None` | 2004-01-01 | 2005-07-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_a4b9f5c5641a34d5` | `SQRDSFWARE` | `None` | 2004-01-01 | 2005-07-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
-| `SEC_bcfb40be5264fb6a` | `ATCOM` | `None` | 2004-04-29 | 2005-07-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW` |
-| `SEC_daadb1e32d85659b` | `SBIHOMEFIN` | `None` | 2004-01-01 | 2005-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_e6ee606dd8647966` | `COMPUTECH` | `None` | 2004-01-01 | 2010-05-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_ec96e3f8ab36ad9b` | `NARMDCHEMA` | `None` | 2004-01-01 | 2007-03-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW,LEFT_CENSORED_SOURCE_START` |
 | `SEC_ed4f4eec766fadd0` | `CENTEXT` | `None` | 2004-07-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 64 | `LONG_GAP_REVIEW` |
@@ -2201,7 +2118,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_2a064598fdf2fa37` | `WINSOMYARN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_361ddd007464bc58` | `RBL` | `None` | 2008-06-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_409334cd945c0ba9` | `ARIHANT` | `None` | 2006-12-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_41e8540062db47a7` | `GRANDFONRY` | `None` | 2004-01-01 | 2005-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_427d4ce36bd83ac5` | `NAGREEKCAP` | `None` | 2007-09-18 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_5a1c884f5e78aa41` | `KIL` | `None` | 2006-05-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_765940e82de9cbbc` | `ENTEGRA` | `None` | 2007-04-25 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 59 | `NO_EPISODE_RISK_DETECTED` |
@@ -2230,9 +2146,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_6517ea7bd42781b4` | `TODAYS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 54 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_90362b24deb5563b` | `BSELINFRA` | `None` | 2004-03-25 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 54 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_95ea94b49c8a1468` | `CEAT` | `None` | 2004-01-01 | 2007-12-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 54 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_b719af9b59d8c099` | `PAEL` | `None` | 2005-11-24 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 54 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_e39d66affb646ab2` | `ALPHAGEO` | `None` | 2007-05-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 54 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_79d9f5e8dbdc19c7` | `SHRVINDPPR` | `None` | 2004-01-01 | 2005-04-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 53 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_8450a8c9249ecb00` | `PIRAMYDRET` | `None` | 2005-12-06 | 2008-04-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 53 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_ab9e4b97deec150c` | `IVP` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 53 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_e4e69963671c38f0` | `SANGHIPOLY` | `None` | 2006-06-23 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 53 | `NO_EPISODE_RISK_DETECTED` |
@@ -2241,7 +2155,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_04f8fc0b9fefe312` | `INDIANCARD` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_05ec747f44281ac8` | `PPAP` | `None` | 2008-01-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_060c6f5760ba6f95` | `BVXL` | `None` | 2006-09-05 | 2008-04-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_1207b1613ee50285` | `JAYNECOIND` | `None` | 2008-02-22 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_13e997b028ddbf0f` | `TULSI` | `None` | 2008-02-25 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_17448144a9552a0e` | `HBLPOWER` | `None` | 2007-01-04 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1d1d1f9eca376578` | `CYBERMEDIA` | `None` | 2005-06-10 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 50 | `NO_EPISODE_RISK_DETECTED` |
@@ -2278,7 +2191,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_dd276f8c3d94d145` | `KABRAEXTRU` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 49 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_0dc89e07890c7f99` | `SEJALGLASS` | `None` | 2008-07-01 | 2010-07-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 48 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_e0dda1c7ffa39588` | `ORGINFO` | `None` | 2007-08-17 | 2009-11-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 46 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_65a9ef031e7f3990` | `BPLSANTECH` | `None` | 2004-01-01 | 2005-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 45 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_868950524275b90f` | `ETC` | `None` | 2008-03-28 | 2010-09-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 45 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_cb4a64b22e2af954` | `RAJSREESUG` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 44 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_cf007a53553b852e` | `INDRAMEDCO` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 44 | `LEFT_CENSORED_SOURCE_START` |
@@ -2288,7 +2200,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_a98ab3235ec0786d` | `ANGIND` | `None` | 2010-06-16 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 42 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d7836ccc5aa04f44` | `LUMAXAUTO` | `None` | 2004-08-24 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 42 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_eacebbc34e65df46` | `MADHAV` | `None` | 2007-12-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 42 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_5c3644f8b8fb099d` | `CHAMPDANY` | `None` | 2004-01-13 | 2005-07-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 41 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_079531fb48013b6a` | `VARDHACRLC` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 40 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_2eff668dff40799a` | `SHRINGAR` | `None` | 2005-04-29 | 2008-02-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 40 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_6491b388cc27bccb` | `MYSORECEM` | `None` | 2004-01-01 | 2009-05-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 40 | `LEFT_CENSORED_SOURCE_START` |
@@ -2299,26 +2210,14 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_ac38f7c887b39d2f` | `LOKESHMACH` | `None` | 2006-05-05 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 39 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_adbf1bd71e9f1562` | `EMAMIINFRA` | `None` | 2010-07-28 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 39 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d3fda206e41d2689` | `BANG` | `None` | 2008-02-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 39 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_d7a058a40348e06b` | `PASUPATFAB` | `None` | 2004-03-16 | 2005-04-01 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 39 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_fb6f04aafd653f9a` | `ANGAUTO` | `None` | 2007-02-12 | 2010-06-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 39 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_0ea8bd652754a05c` | `PREMAUTOEL` | `None` | 2004-01-01 | 2005-11-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_0edc021e26cd363b` | `MUKANDLTD` | `None` | 2004-02-23 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_1a6c7cbf5b5e1008` | `COREPARENT` | `None` | 2004-01-01 | 2005-05-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_1b5d2ec61611006f` | `AZTEC` | `None` | 2004-01-01 | 2006-09-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_2506d4cbe62d739d` | `WIMCO` | `None` | 2004-01-01 | 2005-03-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_25ec67508dff6600` | `SIVIND` | `None` | 2004-01-01 | 2004-12-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3c4f7c107642998f` | `TITANOCOMP` | `None` | 2004-01-01 | 2007-08-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_4cf0d1bbdd43dd60` | `TASCPHARMA` | `None` | 2004-01-01 | 2005-11-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_51735795f79a5520` | `CRESTCOMM` | `None` | 2004-01-01 | 2005-01-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_6588ef2081c8b1f4` | `VLSFINANCE` | `None` | 2004-03-04 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_69e204575b58f86c` | `ATULPROD` | `None` | 2004-01-01 | 2005-03-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_6e28d877f0b0bb29` | `MANALIPET` | `None` | 2004-01-01 | 2006-09-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_7ad4c73c1902af45` | `HINDSPG` | `None` | 2004-01-01 | 2005-03-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_7ae79821107db6af` | `FLEXCHEM` | `None` | 2004-01-01 | 2006-12-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_8f02e6781d1edcab` | `SHAMKNFAB` | `None` | 2004-01-01 | 2005-03-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_9a9dec8e408c76bc` | `SURANATELE` | `None` | 2004-01-01 | 2010-02-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_a218b346106898dd` | `IT&T` | `None` | 2004-01-01 | 2005-07-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_b2d96c421fdb09f5` | `CGIGARSH` | `None` | 2004-01-01 | 2005-04-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_b6da59a89a82cba2` | `EASUNREYRL` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d4ab34cc3afa37b2` | `BGFL` | `None` | 2004-01-01 | 2006-07-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d97f17e2becba95b` | `HERDILCHEM` | `None` | 2004-01-01 | 2006-04-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 38 | `LEFT_CENSORED_SOURCE_START` |
@@ -2337,49 +2236,32 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_23f5411a3e341dad` | `NRBBEARING` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 28 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_6deb64642d31dcc7` | `REVATHI` | `None` | 2005-08-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 28 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_b47245b8a8839512` | `BIRLAMONEY` | `None` | 2009-09-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 28 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_65f5fee160b5706f` | `AMITSPIN` | `None` | 2004-01-01 | 2005-05-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 24 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_ed3bffce32739ab3` | `HARYANSHET` | `None` | 2004-01-01 | 2005-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 24 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a85a30169f9c3f6a` | `FLEXENGG` | `None` | 2004-01-01 | 2006-12-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 21 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3fdd3f64e8f8684b` | `AZTECSOFT` | `None` | 2006-09-20 | 2009-06-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 20 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_3565fecb92a42fcf` | `NAHARINTL` | `None` | 2004-03-09 | 2005-04-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 19 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_fcb4de16e1dd7abe` | `AGEEGOLD` | `None` | 2004-01-01 | 2005-04-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 19 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_0da5247cb5e53f65` | `IFL` | `None` | 2009-06-19 | 2010-09-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 18 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_2e3c296b2a36fae1` | `UTISUNDER` | `None` | 2004-01-01 | 2011-06-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 16 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_2953fdab600972f4` | `BPLSANUTIL` | `None` | 2004-01-01 | 2005-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 15 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_f7887515d4057762` | `PRITHVI` | `None` | 2005-11-16 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 15 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_47976e366327c462` | `APCOTEXLAT` | `None` | 2004-01-01 | 2006-10-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 14 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_e491063c7633dd74` | `BSCFAUG08A` | `None` | 2005-09-21 | 2008-08-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 14 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_3b78b3eedddd0332` | `AFTEKINFO` | `None` | 2004-01-01 | 2006-11-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 12 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_6e3e1b2dd199d8c1` | `PARRYSCON` | `None` | 2004-01-01 | 2004-12-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 12 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_c3473ecb4900a075` | `TV18` | `None` | 2004-01-01 | 2006-11-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 12 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_cd3af16bca626d50` | `GLOBALTELE` | `None` | 2004-01-01 | 2005-01-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 12 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_bb124d68c0fb2689` | `TCI` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 10 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_1acb35e815735989` | `BAJAJPLAST` | `None` | 2004-01-01 | 2005-05-26 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 9 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_bcd3b03c63cee8df` | `MITTALLAMI` | `None` | 2004-01-01 | 2004-12-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 8 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_37d837a833213e6f` | `DGPWINDSOR` | `None` | 2004-01-01 | 2004-12-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 6 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d6a33753a1aaec56` | `YOKOGAWA` | `None` | 2004-01-01 | 2007-04-30 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 6 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_1d1730ec09787010` | `TECHNOELEC` | `None` | 2007-04-02 | 2010-07-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 5 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_af75be8042fc0a9b` | `FOSECOIND` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 5 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_c0af6d807d883621` | `JOCIL` | `None` | 2008-10-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 5 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_0327bc3dc94c4fcc` | `RESPONIND` | `None` | 2010-10-29 | 2011-06-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 4 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_312fb8db292089ed` | `HITECHGEAR` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 4 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_62a6a81227b45e02` | `WARTSILA` | `None` | 2004-01-01 | 2007-06-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 4 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_6f9d38606e019ecd` | `SAGCEM` | `None` | 2007-01-29 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 4 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_ac7abafa1113aec7` | `MORARJESPG` | `None` | 2004-01-01 | 2004-10-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 4 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_ee4f05e55ed72d85` | `NIPPOBATRY` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 4 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_359e4e30e7d5ae70` | `RATNAMANI` | `None` | 2006-05-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_6a7e37522e3d5dc4` | `DICIND` | `None` | 2004-09-06 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7d64a726d808f7ea` | `STERTOOLS` | `None` | 2006-02-02 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7eb8a9b0f5e43a2c` | `SUTLEJINDS` | `None` | 2004-01-01 | 2007-06-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a2ff0eaad53bd06f` | `JBMA` | `None` | 2006-01-04 | 2011-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_bc79745a2d32b20a` | `GEOINFO` | `None` | 2004-07-07 | 2008-10-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_c29ff89c615efc64` | `SIMPLEXCON` | `None` | 2004-03-09 | 2005-12-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_cef3a9514a8d5672` | `KALYANBRAK` | `None` | 2004-01-01 | 2006-02-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_daab05ac9f66a8af` | `JAYAGROGN` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 3 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_0c229b0751604149` | `MANALU` | `None` | 2007-10-22 | 2011-03-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_6274e2a7bcf2d4f4` | `INDNIPPON` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_65f41430a7d71a49` | `SURATELEC` | `None` | 2004-01-01 | 2005-06-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_6b2a8dccd83e42dc` | `VDOLEASE` | `None` | 2004-01-01 | 2004-09-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_78093e21a721ab2c` | `SUNDRMBRAK` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_78f317072e34b265` | `SHRMHONDA` | `None` | 2004-01-01 | 2006-04-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_88a944a00844e825` | `SESHAPAPER` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 2 | `LEFT_CENSORED_SOURCE_START` |
@@ -2390,7 +2272,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_006243c01a3b0df4` | `ICI` | `None` | 2004-01-01 | 2010-05-26 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_08ac4a30276af3b1` | `SAKUMA` | `None` | 2006-03-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_0f9d1eea2072bc90` | `SUBROS` | `None` | 2005-07-13 | 2010-11-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_11a603c6c7e57073` | `RANEMADRAS` | `None` | 2004-01-01 | 2005-08-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_15a1f4c50e1c9e3b` | `JMCPROJECT` | `None` | 2007-11-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1a4b38ceef9f6f82` | `CRANESSOFT` | `None` | 2004-10-28 | 2010-09-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_236a6e78e74c9988` | `GMRFER` | `None` | 2008-06-30 | 2010-06-01 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
@@ -2407,7 +2288,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_421cd1c539312359` | `MURUDCERA` | `None` | 2004-05-28 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_4865a3fada6cd9d9` | `RJL` | `None` | 2007-12-12 | 2011-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_4aec8391c1676289` | `SIMPLEXINF` | `None` | 2005-12-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_4bb152cbc345d361` | `EDL` | `None` | 2007-11-26 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_4f8566867aa2ea84` | `ORIENTHOT` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_53aa69ff6b7f3028` | `POCHIRAJU` | `None` | 2007-02-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_53e146d2b4c04e29` | `VESUVIUS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
@@ -2416,9 +2296,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_5c3c847af0aa7b2d` | `VALUEIND` | `None` | 2008-05-22 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_5fee10fac4ad9fd3` | `HINDNATGLS` | `None` | 2009-04-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_6163252d0b264aca` | `RANEBRAKE` | `None` | 2004-01-01 | 2008-02-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_66feedf935841fe8` | `PHARMACIA` | `None` | 2004-01-01 | 2005-03-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_69fd5416678bc025` | `KPRMILL` | `None` | 2007-08-28 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_6cbc02694bb2c13e` | `JBMAUTOCOM` | `None` | 2004-12-17 | 2006-01-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7173cbaf6253877d` | `FIEMIND` | `None` | 2006-10-19 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_71c8895d27a73b1d` | `MICRO` | `None` | 2004-03-26 | 2010-04-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7740b81f66e8d4c9` | `COLORCHEM` | `None` | 2004-01-01 | 2006-06-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
@@ -2432,28 +2310,22 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_901709fdea2d5b4c` | `RELBANK` | `None` | 2008-06-27 | 2011-06-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_953d00bb6918f775` | `BAJAUTOFIN` | `None` | 2004-01-01 | 2010-09-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a1df77f3b58381ab` | `KIRLOSOIL` | `None` | 2004-01-01 | 2010-04-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_a3694e7d817d5cee` | `LANESEDA` | `None` | 2004-01-01 | 2004-11-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a87f964d6f245747` | `SAVITACHEM` | `None` | 2004-01-01 | 2009-08-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ab9c56bb31cec507` | `CHI` | `None` | 2008-04-24 | 2010-02-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_ae03de8a2e70021f` | `ADORWELD` | `None` | 2004-09-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_aead4894f41f1086` | `KBL` | `None` | 2006-04-07 | 2010-03-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_b133a69470d3d1c6` | `INDGYPSUM` | `None` | 2004-01-01 | 2005-01-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_b4f9a9a45cebaa00` | `IFGLREFRAC` | `None` | 2004-01-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_b8b60e7cc26925e5` | `LANABS` | `None` | 2005-06-14 | 2008-07-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_bb99a3ca8b4c9f05` | `TELEDATAGL` | `None` | 2008-01-17 | 2009-09-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_bc004c9b8fe05d28` | `REISIXTEN` | `None` | 2009-04-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_c038637ab9fa263d` | `MANUGRAPH` | `None` | 2006-09-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_c3eb18832063a12f` | `ASIANHOTEL` | `None` | 2004-01-01 | 2010-02-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_c5ca52557d0087eb` | `VISIONLTD` | `None` | 2004-01-01 | 2004-12-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_c7efb6e5ca43b340` | `NIRMA` | `None` | 2004-01-01 | 2011-03-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_c819cf5cb941d4c2` | `ORIENTABRA` | `None` | 2005-12-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_cd06a53f14d490d3` | `BASML` | `None` | 2005-11-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d2f38162a8a7b765` | `JKINDUSTRY` | `None` | 2004-06-14 | 2007-01-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d5e5255cd993b5f3` | `ALKALI` | `None` | 2008-11-06 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d6acbd354c22735f` | `OTL` | `None` | 2007-03-07 | 2009-12-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_df6351ae726691ad` | `EICHERLTD` | `None` | 2004-01-01 | 2004-08-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_e290efb10b559cda` | `E-SERVEINT` | `None` | 2004-01-01 | 2004-12-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_e9244e343604a196` | `COATESIND` | `None` | 2004-01-01 | 2004-09-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ea3b7359b0495a3c` | `ROHLTD` | `None` | 2006-02-06 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f72f37d81f95749c` | `MALCO` | `None` | 2007-04-12 | 2009-06-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f8dc1fa29b8c7e28` | `ELGITYRE` | `None` | 2004-01-01 | 2008-12-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | `LEFT_CENSORED_SOURCE_START` |
@@ -2464,23 +2336,15 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_032a173288a51061` | `NET4INDIA` | `None` | 2010-12-10 | 2011-02-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_0392c040f12a509f` | `BAJAJAUTO` | `None` | 2004-01-01 | 2008-03-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_04c12e0140f7ba50` | `BHARTI` | `None` | 2004-01-01 | 2006-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_0575ffd369040c3c` | `HINDINKS` | `None` | 2004-01-01 | 2004-03-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_061147663dfbd430` | `WELSPUNGUJ` | `None` | 2004-01-01 | 2005-04-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_081275023a2ab355` | `SHAKTIGAS` | `None` | 2004-01-01 | 2005-04-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_08187cc922205273` | `JINDALIRON` | `None` | 2004-01-01 | 2005-02-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_095fb16b9250dada` | `PDPL` | `None` | 2010-08-19 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_0a73a4eabc68b283` | `DABURPHARM` | `None` | 2004-09-30 | 2009-02-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_0c2f8c55c275f362` | `PRIYADCEM` | `None` | 2004-01-01 | 2004-03-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_0dbe00d1a1c0fc38` | `CANTABIL` | `None` | 2010-10-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_0e35009f08bbac06` | `OMAXAUTO` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_0f304ce7bc2fb96b` | `CLUTCHAUTO` | `None` | 2007-01-23 | 2011-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_0fe648648abf92ab` | `HUGHESSOFT` | `None` | 2004-01-01 | 2005-03-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_11b6fc346299abe8` | `PREMAUTO` | `None` | 2005-04-08 | 2005-05-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_124419a72a7e7225` | `ADLABSFILM` | `None` | 2004-01-01 | 2009-10-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_126cdccf0c42cc35` | `AMDMET` | `None` | 2007-03-19 | 2008-02-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1314d450d75917aa` | `NAHARSPG` | `None` | 2004-01-01 | 2007-01-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_139b694292a0bc80` | `ABCIL` | `None` | 2009-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_13f2223e6b8fb72d` | `LAKME` | `None` | 2004-01-01 | 2004-06-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_14a5fab0b60e326e` | `BALASTEELS` | `None` | 2005-08-02 | 2007-06-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1502547640a40b1e` | `SURANAVEL` | `None` | 2011-01-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_166a4322c5cc0428` | `RCVL` | `None` | 2006-03-06 | 2006-06-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -2492,67 +2356,46 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_1acb1c2b12573eed` | `ABANLOYD` | `None` | 2005-01-17 | 2006-08-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1b93499c05c06d89` | `ILFSTRANS` | `None` | 2010-03-30 | 2010-04-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1cdc1fbc8ae5defe` | `NAHAREXP` | `None` | 2004-01-01 | 2007-01-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_1d57fb632fa5c8eb` | `BIRLA3M` | `None` | 2004-01-01 | 2004-06-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_1e27df47611a344d` | `KOTHARISUG` | `None` | 2004-01-01 | 2004-07-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_1f6cf3111f25c9a5` | `NAHAREXPOT` | `None` | 2007-03-23 | 2007-10-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_1fdc0854cd1eaa18` | `INDSHAVING` | `None` | 2004-01-01 | 2006-04-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_21024caa4584b18e` | `BIRLAJUTE` | `None` | 2004-01-01 | 2008-07-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_215361ddbb92d949` | `ADVANIORLI` | `None` | 2004-01-01 | 2004-09-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_23b5ead20292dceb` | `GESHIPPING` | `None` | 2004-01-01 | 2006-11-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_24c74ec68a302572` | `BFINVEST` | `None` | 2011-01-31 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_24d8b0703d9e948d` | `PUNJABTRAC` | `None` | 2004-03-09 | 2009-02-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_25dc0ecf2890079b` | `JINDVIJSTL` | `None` | 2004-01-01 | 2005-02-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_25f58a7c4554fbdd` | `ASTEC` | `None` | 2009-11-25 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_26174b4f0ec029d8` | `IDBIBANK` | `None` | 2004-01-01 | 2005-05-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_29d462143daf2256` | `GAL` | `None` | 2010-10-27 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_2a4b2aec656e9fc8` | `ISFT` | `None` | 2010-04-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_2a7823b19c68762e` | `DALALSTCOM` | `None` | 2004-01-01 | 2004-03-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_2b211e87e1ea27a4` | `SCANDENT` | `None` | 2005-03-09 | 2006-07-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_2d21c12288c766a9` | `VYSYABANK` | `None` | 2004-01-01 | 2005-08-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_2ddbdd4ccecf5da7` | `UMESLTD` | `None` | 2010-07-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_2e1af2cf11dd6100` | `LGBBROSLTD` | `None` | 2010-03-30 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_2e6bcbeb5469f619` | `BOSCHCHASY` | `None` | 2006-02-10 | 2008-10-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_2f609851a0a7c8ee` | `ABANLLOYD` | `None` | 2004-01-01 | 2005-01-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_320db8648dc8c6da` | `MPHASISBFL` | `None` | 2004-06-15 | 2006-12-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_3294929d2b85656b` | `VITLINFO` | `None` | 2008-08-11 | 2010-07-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_3360756503b92398` | `WIMCOLTD` | `None` | 2005-05-02 | 2005-07-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_346982fefc47219c` | `BONGAIREFN` | `None` | 2004-01-01 | 2009-04-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_34d89508027e093a` | `TATATELSER` | `None` | 2004-01-01 | 2005-01-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3508765f74701934` | `HTMT` | `None` | 2004-01-01 | 2007-03-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_35205eb0981881cb` | `IGS` | `None` | 2004-03-09 | 2008-01-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_36260b2d4c2592f5` | `BILT` | `None` | 2004-01-01 | 2008-02-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3675ccf10d917d3d` | `MIRZATAN` | `None` | 2004-01-01 | 2006-07-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_37095ad0af4c93ed` | `MEDIA` | `None` | 2007-11-30 | 2009-02-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_38af401bfecc382b` | `MUDRA` | `None` | 2007-03-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_38e8cd4ec3200edf` | `VARDHMNSPG` | `None` | 2004-01-01 | 2005-04-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_39f51ab2326d3a47` | `KSBPUMPS` | `None` | 2004-01-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_3b00b1dd15a660de` | `HINDLEVCHM` | `None` | 2004-01-01 | 2004-06-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3b046c633b1c7e84` | `BHAGYNAGAR` | `None` | 2006-09-12 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_3b3b6e2268c30118` | `NATHSEEDS` | `None` | 2004-01-01 | 2004-02-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3e5b61d388902be8` | `GESCOCORP` | `None` | 2004-01-01 | 2007-11-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_3f482875dda67a58` | `SAMRUDDHI` | `None` | 2010-06-29 | 2010-08-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_406a299641f0f49d` | `NIPPONDENR` | `None` | 2004-01-01 | 2005-12-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_46d8812327275299` | `ERACONS` | `None` | 2006-03-29 | 2008-02-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_4753551cb26a0089` | `SREINTFIN` | `None` | 2004-01-01 | 2010-07-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_47f1db03e64d1372` | `ASHKLEYFIN` | `None` | 2004-01-01 | 2004-07-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_481d597017a359bd` | `HANILERA` | `None` | 2005-07-11 | 2006-07-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_489ed31556e2d4e9` | `TELEDATAIN` | `None` | 2004-10-28 | 2007-11-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_49eb13a9ece6f832` | `MAWANA` | `None` | 2006-08-22 | 2007-10-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_4b69d9ef1f379f61` | `TISCO` | `None` | 2004-01-01 | 2005-10-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_4d01a25cfea7f43e` | `PREMINSTR` | `None` | 2004-01-01 | 2005-08-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_4e31499fa54f980d` | `MAHAVIRSPG` | `None` | 2004-01-01 | 2006-10-10 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_5143adab182d8594` | `NAVBARFERO` | `None` | 2004-01-01 | 2006-07-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_551070a477e043c3` | `IBP` | `None` | 2004-01-01 | 2007-06-01 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_5809d67de22e047d` | `RPGLS` | `None` | 2006-12-05 | 2008-03-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_582830aae8613580` | `COROMNFERT` | `None` | 2004-01-01 | 2009-10-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_586820b89623da1b` | `SOUISPAT` | `None` | 2010-10-01 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_5895a32df45379aa` | `BSES` | `None` | 2004-01-01 | 2004-03-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_5c2e5c9eb24135e7` | `KIRIDYES` | `None` | 2008-04-22 | 2011-03-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_5c874d4a16534a63` | `TATAINFO` | `None` | 2004-01-01 | 2006-08-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_5c8b7ae9873f47dd` | `EMERCK` | `None` | 2004-01-01 | 2007-11-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_5cd39978a8ab7836` | `ATCOIND` | `None` | 2004-01-01 | 2004-04-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_5f0a45661f9e6371` | `RENVL` | `None` | 2006-02-24 | 2006-07-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_628756bfd4dfd173` | `TATAFIN` | `None` | 2004-01-01 | 2005-08-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_64066fb93a422271` | `AHLWEST` | `None` | 2010-08-05 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_64c0a8dc305ea892` | `MEGH` | `None` | 2007-06-28 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_66c4d208b650ebc9` | `D-LINK` | `None` | 2004-01-01 | 2009-06-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
@@ -2567,8 +2410,6 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_72a99ee07fb70b20` | `TATATEA` | `None` | 2004-01-01 | 2010-07-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_72bc42890c579ae7` | `IPCL` | `None` | 2004-01-01 | 2007-10-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_755f49cdc835b5b4` | `ESTL` | `None` | 2005-06-13 | 2007-12-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_75ccde869bdc9718` | `JSWSTL` | `None` | 2005-03-23 | 2005-09-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_75f89eb3b031ec1d` | `SURYCOTMIL` | `None` | 2004-01-01 | 2005-04-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_7657eef1dd7e5b3c` | `KIRLOSBROS` | `None` | 2010-04-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_77518fdd63407263` | `DATAMATICS` | `None` | 2009-04-20 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_777559e4d963089f` | `PBAINFRA` | `None` | 2005-11-24 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -2576,28 +2417,18 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_77d487221efd1174` | `I-FLEX` | `None` | 2004-01-01 | 2008-09-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_785ae9c3be5f79a0` | `MICROSEC` | `None` | 2010-10-05 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_78965ca9bba90c0f` | `VISUALSOFT` | `None` | 2004-01-01 | 2007-04-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_78c7441915171107` | `JINDALFOTO` | `None` | 2004-01-01 | 2004-12-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_78c900e4f9ac809e` | `NIIT` | `None` | 2004-01-01 | 2004-07-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_78e7c075a1eef991` | `ALCHEMIST` | `None` | 2007-01-22 | 2007-07-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_79c13008db752587` | `EUROMULTI` | `None` | 2009-10-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_7a1bc9e68a5e26f9` | `IOL` | `None` | 2004-01-01 | 2005-03-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_7a900108872321c0` | `BANKPUNJAB` | `None` | 2004-01-01 | 2005-10-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_7ace7d508afadd6e` | `MTAL` | `None` | 2004-01-01 | 2004-03-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_7b265fab1f34d25f` | `GSLNOVA` | `None` | 2009-12-18 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_7b700fee8d7a86a2` | `BSELINFO` | `None` | 2004-01-01 | 2004-03-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_7cf5d4c8e0626137` | `WELGUJ` | `None` | 2005-05-24 | 2010-05-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_7f0045ae596d9411` | `CCCL` | `None` | 2007-10-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_7f94e7ab55314ac0` | `DIGITALEQP` | `None` | 2004-01-01 | 2004-04-08 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_80a4897a9dd6c8fe` | `GTNTEXT` | `None` | 2004-01-01 | 2006-02-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_81a77258e564c17c` | `AREVA` | `None` | 2008-06-30 | 2008-07-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_861aca5df867079c` | `SOUNDCRAFT` | `None` | 2004-03-25 | 2004-08-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_87973f35f46a991f` | `SUPREMYARN` | `None` | 2007-03-14 | 2008-02-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_87fbb7528c2da34c` | `HINDUJATMT` | `None` | 2007-04-24 | 2007-11-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_8802149dfe330d7f` | `GILLANDERS` | `None` | 2009-12-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_8a0cf35f2ce5c375` | `AML` | `None` | 2007-03-19 | 2008-06-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_8b84a2462bd2ac64` | `CONSCOFFEE` | `None` | 2004-01-01 | 2006-04-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_8bb42c968c4bbdf4` | `SKFBEARING` | `None` | 2004-01-01 | 2004-10-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_8bc3176d59eca1e1` | `VDOCONINTL` | `None` | 2004-01-01 | 2006-01-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_8d78b8a92df499da` | `VASCONEQ` | `None` | 2010-02-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_8e3a05e2c2ff1ce2` | `STROPTICAL` | `None` | 2004-01-01 | 2007-12-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_8ecc036da7d609c5` | `TORRENTAEC` | `None` | 2005-06-17 | 2006-09-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -2607,24 +2438,18 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_921ba52b43366fbe` | `MATRIXLABS` | `None` | 2004-06-22 | 2009-08-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_9370dd434692ce11` | `FSS` | `None` | 2005-03-17 | 2006-02-02 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_94437ef5d019ccfd` | `BINANICEM` | `None` | 2007-05-28 | 2011-05-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_95a1d5572edb4508` | `CENBNK` | `None` | 2004-03-04 | 2005-12-05 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_95ae9350abb6465b` | `INDORAMTEX` | `None` | 2004-01-01 | 2007-01-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_96853aa6be599173` | `PUNJABCHEM` | `None` | 2007-03-08 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_969cda735eeda7b4` | `WYETHLEDE` | `None` | 2004-01-01 | 2006-08-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_98598bb244641bf1` | `BALASPONGE` | `None` | 2004-01-01 | 2007-06-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_9945f4d3a0aff639` | `ITCHOTEL` | `None` | 2004-03-09 | 2005-04-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_9a9707d92e80385a` | `IVRPRIME` | `None` | 2007-08-16 | 2010-04-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_9acb9dbb1556c077` | `KIRLOSIND` | `None` | 2010-06-24 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_9c2f20a937baf4a9` | `NAGARCONST` | `None` | 2004-01-01 | 2011-03-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_9c669085c28079de` | `INDRAYON` | `None` | 2004-01-01 | 2005-12-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_9e249f4fe2613a0b` | `VATECH` | `None` | 2010-10-13 | 2010-12-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_a108e17670c6b469` | `SPICETELE` | `None` | 2008-06-16 | 2010-03-10 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_a1944d7f122e3fb6` | `ETCNETWORK` | `None` | 2004-01-01 | 2004-10-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a1cb3d5d4240e6e6` | `ASHOKA` | `None` | 2010-10-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_a27c7c1b4d7ab8f7` | `GOODLASNER` | `None` | 2004-01-01 | 2006-07-25 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_a3f1f34c7191f48e` | `TATAHONEY` | `None` | 2004-01-01 | 2005-03-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a4a8a1c9f7476bce` | `SHPRE` | `None` | 2009-10-15 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_a560c94b1c53153a` | `L&T` | `None` | 2004-01-01 | 2004-05-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_a63595fc5241af9c` | `EMPEESUG` | `None` | 2010-08-09 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_aa22b0ef61535b13` | `SATNAMOVER` | `None` | 2004-01-01 | 2006-08-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_aa33a04f8a6ef1c8` | `HINVDIR` | `None` | 2009-09-07 | 2010-07-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -2632,54 +2457,32 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_ab1387aa0a0f8f55` | `HMVL` | `None` | 2010-07-21 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_ab32e27acfcbec1a` | `ZEETELE` | `None` | 2004-01-01 | 2007-02-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ac6242f283df23eb` | `FARMAXIND` | `None` | 2010-08-17 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_acc20863a60170bb` | `ABSIND` | `None` | 2004-01-01 | 2005-06-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_acca86f7239461a2` | `NICOLASPIR` | `None` | 2004-01-01 | 2008-06-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_acfb6e00dead405e` | `KIRLOSKCUM` | `None` | 2004-01-01 | 2005-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ae5da57af9bc43c0` | `GTCIND` | `None` | 2004-01-01 | 2008-09-26 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_afecec252167e8c5` | `OBEROIREAL` | `None` | 2010-10-20 | 2010-12-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_afed239be380baa4` | `IGFLFERT` | `None` | 2004-01-01 | 2006-04-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_b02afab9bfbbadca` | `M100` | `None` | 2011-02-04 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_b147757a284eb433` | `CENTBOP` | `None` | 2005-12-06 | 2008-06-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_b1e96ff2814c3f02` | `IOLB` | `None` | 2007-07-19 | 2008-02-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_b2dc360ca5fee384` | `PRIMESEC` | `None` | 2004-01-01 | 2005-04-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_b43078dc618dfd23` | `MUNJALAUTO` | `None` | 2004-01-01 | 2006-05-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_b4abbf0f7c7f935b` | `MAYTASINFR` | `None` | 2007-10-25 | 2011-02-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_b58d8a10a55de6a7` | `SOFFIASOFT` | `None` | 2004-01-01 | 2005-08-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_b822c7b3205774b4` | `USHABEL` | `None` | 2004-01-01 | 2004-10-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_b89e2235dad1fcbf` | `CHOLAINV` | `None` | 2004-01-01 | 2006-05-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_ba8e12d11082a561` | `COMPUDYNE` | `None` | 2004-01-01 | 2004-10-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_bb73a2f1301a39b5` | `SHRIRAMINV` | `None` | 2004-04-13 | 2005-12-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_bc024bfb22fcd237` | `AHMEDELEC` | `None` | 2004-01-01 | 2005-06-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_bcfc8380b41e0e76` | `GEORGWILIM` | `None` | 2004-01-01 | 2006-06-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_be099228f8996b6f` | `JPHYDRO` | `None` | 2005-04-18 | 2010-01-07 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_be8827f597f37908` | `XLTL` | `None` | 2006-12-28 | 2009-07-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_c0db058c96dae7fc` | `JSTRIPS` | `None` | 2004-01-01 | 2005-06-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_c15e6a7642d89b26` | `UNIONCARBI` | `None` | 2004-01-01 | 2005-03-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_c1b246ddd3d98b88` | `PADMALAYAT` | `None` | 2004-01-01 | 2005-07-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_c8087915ab6a048f` | `MARICOIND` | `None` | 2004-01-01 | 2005-06-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_c851ee15b9dde99e` | `KECINTL` | `None` | 2004-01-01 | 2006-02-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_c919ffeb94b56cbc` | `WOCKLIFE` | `None` | 2004-01-01 | 2004-09-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_ca21ed5f68f1fd73` | `BALAJIDIST` | `None` | 2004-01-01 | 2004-03-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_ca2faced4f53834e` | `JPIND` | `None` | 2004-01-01 | 2004-03-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ca9f9a770d2e0263` | `TATAINFOTE` | `None` | 2004-05-06 | 2006-02-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_cdd4147a7473ff31` | `GENUSOVERE` | `None` | 2005-07-08 | 2008-01-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_cfef623ef4ecda9b` | `CLARIANT` | `None` | 2004-01-01 | 2006-04-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_cff7c03d3b908fc8` | `ADANIEXPO` | `None` | 2004-01-01 | 2006-09-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_d0021ab04dc9c89d` | `INVESTCORP` | `None` | 2004-01-01 | 2005-07-06 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_d03e69c7375ec32e` | `ETERNEVRST` | `None` | 2004-01-01 | 2005-05-26 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d09876c358f5cc1f` | `EVINIX` | `None` | 2007-03-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_d2523d4e805a2668` | `AMBUJARAJN` | `None` | 2004-01-01 | 2004-06-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_d4449b7f38839b82` | `CHLORIDIND` | `None` | 2004-01-01 | 2005-09-09 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d4f45a75e52b5ba9` | `TARAPUR` | `None` | 2010-05-18 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_d696b669f58242b3` | `SAWPIPES` | `None` | 2004-01-01 | 2005-02-17 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d6c966108dabf380` | `COLGATE` | `None` | 2004-01-01 | 2007-11-28 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d7394907ba38a3b8` | `GEOJIT` | `None` | 2005-07-01 | 2009-06-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d74e6a6842a76dc4` | `UTIBANK` | `None` | 2004-01-01 | 2007-08-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d826b8e9d0169b19` | `TECHNOFAB` | `None` | 2010-07-16 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_d88351a73ed4ec2d` | `MORGANSTAN` | `None` | 2004-01-01 | 2008-12-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d885cf50a76b7bf7` | `GOETZEIND` | `None` | 2004-01-01 | 2006-09-11 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_d94360b25c3e4ac9` | `ESSARGUJ` | `None` | 2004-01-01 | 2005-04-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_d9b79475a919c0fa` | `RPGTELECOM` | `None` | 2004-01-01 | 2005-05-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_d9c6475ad6251175` | `KAUSHALYA` | `None` | 2007-12-14 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_da322c75ec8f3c2c` | `ARVINDMILL` | `None` | 2004-01-01 | 2008-07-04 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_dae3999738776348` | `ANSALINFRA` | `None` | 2006-01-27 | 2010-05-13 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
@@ -2693,28 +2496,20 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_e177a9a7bc2a5d83` | `MICO` | `None` | 2004-01-01 | 2008-02-27 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_e485f1b3720e3c05` | `RPL` | `None` | 2006-05-11 | 2009-09-24 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_e631a9982ec1e6b9` | `ASIANHOTNR` | `None` | 2010-04-07 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_e6a0a953296ef39e` | `PONNIORISA` | `None` | 2004-01-01 | 2004-08-31 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ea7e7588ae853f1b` | `JSTAINLESS` | `None` | 2004-01-01 | 2008-10-22 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_eab009f96843e3c2` | `PARADYNE` | `None` | 2005-11-10 | 2007-11-16 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_ebd56bf3e5515b04` | `INDOTECH` | `None` | 2006-03-16 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_ec2f54405e9d7e8b` | `HINDLEVER` | `None` | 2004-01-01 | 2007-07-18 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_ef4a09b089420cfa` | `KNL` | `None` | 2007-05-03 | 2008-11-19 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f06eaa959e3a746c` | `GUJAMBCEM` | `None` | 2004-01-01 | 2007-07-23 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_f0fc2881c88449d7` | `IPITATASPO` | `None` | 2004-01-01 | 2004-02-10 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_f218a7a08d686c95` | `GLOBLTRUST` | `None` | 2004-01-01 | 2004-07-26 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_f21d5f8c215279f8` | `COCHINREFN` | `None` | 2004-01-01 | 2006-09-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_f28a9c2657a2fff2` | `TATATELECM` | `None` | 2004-01-01 | 2004-10-29 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_f41a7a716e6c97d2` | `LAKSHAUTO` | `None` | 2004-01-01 | 2004-04-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_f45dbdfa0fad3fd4` | `REL` | `None` | 2004-03-12 | 2008-05-15 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f4f129732331be24` | `SHILPAMED` | `None` | 2009-12-03 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f6dbf8992e8d182e` | `NAGREEKA` | `None` | 2005-12-22 | 2007-03-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_f96e4439f8b89c36` | `TV-18` | `None` | 2006-12-27 | 2011-06-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_fa0a36d624ddc06d` | `FUJITSICIM` | `None` | 2004-01-01 | 2004-03-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
-| `SEC_fdc678c298767b0a` | `PSIDATASYS` | `None` | 2004-01-01 | 2004-03-12 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_fde662d2d84f4806` | `TORRENTSEC` | `None` | 2005-06-07 | 2006-09-20 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_fec42fe72ee6f6a3` | `AIRDECCAN` | `None` | 2006-06-12 | 2008-10-03 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_ff897a9024b86cba` | `MPSLTD` | `None` | 2009-09-11 | 2011-06-21 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_ffef40874f7b6391` | `BFLSOFTWAR` | `None` | 2004-01-01 | 2004-06-14 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | `LEFT_CENSORED_SOURCE_START` |
 
 `LONG_GAP_REVIEW` uses a 60-official-session diagnostic threshold. It is not an automatic identity split.
 Promotion still requires no competing contemporaneous identity or unexplained ticker reuse in the promoted required scope.

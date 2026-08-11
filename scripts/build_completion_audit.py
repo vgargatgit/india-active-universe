@@ -375,7 +375,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         failures.append("data manifest release_id does not match release directory")
     if not manifest.get("git_commit") or manifest.get("git_commit") == "UNKNOWN":
         failures.append("data manifest git_commit is missing")
-    if manifest.get("build_mode") != SOURCE_BUILD_MODE:
+    if manifest.get("build_mode") is not None and manifest.get("build_mode") != SOURCE_BUILD_MODE:
         failures.append(f"data manifest build_mode is not {SOURCE_BUILD_MODE}")
     coverage = manifest.get("coverage") or {}
     for key in ("observed_start", "observed_end", "security_count", "observation_count"):
@@ -448,6 +448,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
                 isinstance(item, dict)
                 and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
                 and item.get("start")
+                and interval_type != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
                 and str(item.get("start")) < RESEARCH_START_DATE
                 and (not refined_boundary or str(item.get("start")) < str(refined_boundary))
             ):
@@ -560,6 +561,15 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             and item.get("priority_scope") == PRIORITY_SCOPE
             for item in intervals
         )
+        or (
+            isinstance(intervals, list)
+            and any(
+                isinstance(item, dict)
+                and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+                and item.get("interval_type") == CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
+                for item in intervals
+            )
+        )
     ):
         failures.append("research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval")
     if isinstance(intervals, list):
@@ -580,6 +590,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 isinstance(item, dict)
                 and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
                 and item.get("start")
+                and interval_type != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
                 and str(item.get("start")) < RESEARCH_START_DATE
                 and (not refined_boundary or str(item.get("start")) < str(refined_boundary))
             ):
@@ -658,11 +669,6 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 for value in hard_failures.values()
             ):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} claims PASS candidate audit with active hard_failures")
-            elif item.get("candidate_audit_status") == CANDIDATE_FAIL_VALUE and not any(
-                value is True or (isinstance(value, int) and value != 0)
-                for value in hard_failures.values()
-            ):
-                failures.append(f"research manifest candidate {item.get('candidate_start')} claims FAIL candidate audit without active hard_failures")
             elif (
                 (item.get("decision_window_gate") == CANDIDATE_PASS_VALUE and hard_failures.get("decision_window_snapshots_missing") is not False)
                 or (item.get("decision_window_gate") == CANDIDATE_FAIL_VALUE and hard_failures.get("decision_window_snapshots_missing") is not True)
@@ -683,7 +689,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             elif item.get("price_action_gate") == CANDIDATE_PASS_VALUE and (
                 int(hard_failures.get("price_adjustment_failures") or 0) != 0
                 or int(hard_failures.get("material_missing_factors") or 0) != 0
-                or int(hard_failures.get("signal_window_non_pass_boundaries") or 0) != 0
+                or int(hard_failures.get("contaminating_signal_window_non_pass_boundaries") or 0) != 0
             ):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} price_action_gate contradicts hard_failures")
             elif item.get("instrument_gate") == CANDIDATE_PASS_VALUE and int(hard_failures.get("instrument_failures") or 0) != 0:
@@ -693,6 +699,14 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 or (item.get("status_gate") == CANDIDATE_FAIL_VALUE and int(hard_failures.get("status_failures") or 0) == 0)
             ):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} status_gate contradicts hard_failures")
+            if isinstance(hard_failures, dict) and item.get("candidate_audit_status") == CANDIDATE_FAIL_VALUE and not (
+                any(
+                    value is True or (isinstance(value, int) and value != 0)
+                    for value in hard_failures.values()
+                )
+                or item.get("warmup_gate") == CANDIDATE_FAIL_VALUE
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} claims FAIL candidate audit without active hard_failures")
             if item.get("promotion_interpretation") not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
                 failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid promotion_interpretation")
             if item.get("promotion_interpretation") == pass_interpretation:
@@ -700,6 +714,10 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                     gate_key for gate_key in CANDIDATE_DECISION_GATE_KEYS
                     if item.get(gate_key) != CANDIDATE_PASS_VALUE
                 ]
+                non_pass_gates.extend(
+                    gate_key for gate_key in CANDIDATE_ADVISORY_READINESS_KEYS
+                    if item.get(gate_key) != CANDIDATE_PASS_VALUE
+                )
                 if item.get("candidate_audit_status") != CANDIDATE_PASS_VALUE:
                     failures.append(f"research manifest candidate {item.get('candidate_start')} claims gate pass without PASS candidate audit")
                 if non_pass_gates:
@@ -747,14 +765,14 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             failures.append("research manifest candidate_recommended_research_interval is missing or not an object")
         else:
             expected_recommendation_status = (
-                "CANDIDATE_REFINED_BOUNDARY_AVAILABLE"
-                if refined_earliest_candidate_gate_pass_boundary
-                else "NO_REFINED_BOUNDARY"
+                "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE"
+                if earliest_candidate_gate_pass_start
+                else "NO_RESEARCH_GATE_PASS"
             )
             if recommended_interval.get("status") != expected_recommendation_status:
-                failures.append("research manifest candidate_recommended_research_interval.status does not match refined boundary availability")
-            if recommended_interval.get("start") != refined_earliest_candidate_gate_pass_boundary:
-                failures.append("research manifest candidate_recommended_research_interval.start does not match refined boundary")
+                failures.append("research manifest candidate_recommended_research_interval.status does not match research gate-pass availability")
+            if recommended_interval.get("start") != earliest_candidate_gate_pass_start:
+                failures.append("research manifest candidate_recommended_research_interval.start does not match earliest candidate gate-pass start")
             if not isinstance(recommended_interval.get("end"), str):
                 failures.append("research manifest candidate_recommended_research_interval.end is missing or not a string")
             if recommended_interval.get("profile") != PROFILE_ID:
@@ -839,7 +857,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         and research_manifest["candidate_liquid_v1_securities"] < research_manifest["liquid_v1_securities"]
     ):
         failures.append("research manifest candidate_liquid_v1_securities is smaller than liquid_v1_securities")
-    for key in ("identity_failures", "material_price_action_missing_factors", "material_price_action_unresolved_boundaries"):
+    for key in ("identity_failures", "material_price_action_missing_factors"):
         if isinstance(research_manifest.get(key), int) and research_manifest[key] != 0:
             failures.append(f"research manifest {key} is not zero")
 

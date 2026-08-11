@@ -37,6 +37,24 @@ def main() -> None:
 
     release = Path(args.release)
     r = path_sql(release)
+    adjusted_path = release / "daily_prices_adjusted.parquet"
+    adjusted_pre_expr = f"""
+              (
+                SELECT MAX(CAST(p.date AS DATE))
+                FROM read_parquet('{path_sql(adjusted_path)}') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
+              ) AS any_pre_adjusted_date"""
+    adjusted_post_expr = f"""
+              (
+                SELECT MIN(CAST(p.date AS DATE))
+                FROM read_parquet('{path_sql(adjusted_path)}') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
+              ) AS any_post_adjusted_date"""
+    if not adjusted_path.exists():
+        adjusted_pre_expr = "CAST(NULL AS DATE) AS any_pre_adjusted_date"
+        adjusted_post_expr = "CAST(NULL AS DATE) AS any_post_adjusted_date"
     candidate_values = ", ".join(f"(DATE '{candidate}')" for candidate in CANDIDATE_RESEARCH_START_DATES)
     max_window = max(FEATURE_READINESS_WINDOWS.values())
     listing_age_min = LIQUID_V1_DEFINITION["listing_age_sessions_min"]
@@ -105,18 +123,8 @@ def main() -> None:
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               cal.session_index AS event_session_index,
               cs.decision_session_index,
-              (
-                SELECT MAX(CAST(p.date AS DATE))
-                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
-                WHERE p.security_id = ca.security_id
-                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
-              ) AS any_pre_adjusted_date,
-              (
-                SELECT MIN(CAST(p.date AS DATE))
-                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
-                WHERE p.security_id = ca.security_id
-                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
-              ) AS any_post_adjusted_date
+              {adjusted_pre_expr},
+              {adjusted_post_expr}
             FROM scoped_required_security sr
             JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
             JOIN candidate_sessions cs USING (candidate_start)
@@ -237,18 +245,8 @@ def main() -> None:
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               event_cal.session_index AS event_session_index,
               boundary_cal.session_index AS boundary_session_index,
-              (
-                SELECT MAX(CAST(p.date AS DATE))
-                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
-                WHERE p.security_id = ca.security_id
-                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
-              ) AS any_pre_adjusted_date,
-              (
-                SELECT MIN(CAST(p.date AS DATE))
-                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
-                WHERE p.security_id = ca.security_id
-                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
-              ) AS any_post_adjusted_date
+              {adjusted_pre_expr},
+              {adjusted_post_expr}
             FROM boundary_security_scope bss
             JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
             LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v
@@ -404,6 +402,9 @@ def main() -> None:
             "instrument_failures": int(instrument_failures),
             "status_failures": int(status_failures),
             "session_liquidity_window_failures": int(session_liquidity_window_failures),
+            "price_adjustment_failures": int(price_adjustment_failures),
+            "material_missing_factors": int(material_missing_factors),
+            "contaminating_signal_window_non_pass_boundaries": int(contaminating_signal_window_non_pass_boundaries),
         }
         price_action_evidence = {
             "price_adjustment_failures": int(price_adjustment_failures),

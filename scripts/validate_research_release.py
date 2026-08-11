@@ -39,6 +39,11 @@ def main() -> None:
     monthly_start = args.monthly_start
     connection = duckdb.connect()
     try:
+        connection.execute(f"""
+          CREATE TEMP VIEW required_research_security_normalized AS
+          SELECT * REPLACE (CAST(security_id AS VARCHAR) AS security_id)
+          FROM read_parquet('{r}/required_research_security.parquet')
+        """)
         metrics = {
             "monthly_snapshot_start_mismatch": connection.execute(f"""
               SELECT COUNT(*) FROM (
@@ -147,7 +152,7 @@ def main() -> None:
               )
               SELECT COUNT(*)
               FROM monthly_required m
-              LEFT JOIN read_parquet('{r}/required_research_security.parquet') rrs
+              LEFT JOIN required_research_security_normalized rrs
                 ON m.security_id = rrs.security_id
               WHERE rrs.security_id IS NULL
             """).fetchone()[0],
@@ -159,7 +164,7 @@ def main() -> None:
                    OR COALESCE(top750_liquidity, FALSE)
               )
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              FROM required_research_security_normalized rrs
               LEFT JOIN monthly_required m
                 ON m.security_id = rrs.security_id
               WHERE m.security_id IS NULL
@@ -173,7 +178,7 @@ def main() -> None:
                 GROUP BY security_id
               )
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              FROM required_research_security_normalized rrs
               JOIN monthly_flags m USING (security_id)
               WHERE rrs.enters_liquid_v1 IS DISTINCT FROM m.enters_liquid_v1
                  OR rrs.enters_top750 IS DISTINCT FROM m.enters_top750
@@ -189,7 +194,7 @@ def main() -> None:
                 GROUP BY security_id
               )
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              FROM required_research_security_normalized rrs
               JOIN monthly_ranges m USING (security_id)
               WHERE CAST(rrs.first_research_date AS DATE) IS DISTINCT FROM CAST(m.first_research_date AS DATE)
                  OR CAST(rrs.last_research_date AS DATE) IS DISTINCT FROM CAST(m.last_research_date AS DATE)
@@ -206,7 +211,7 @@ def main() -> None:
                 GROUP BY security_id
               )
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              FROM required_research_security_normalized rrs
               JOIN monthly_ranks m USING (security_id)
               WHERE rrs.best_rank_126 IS DISTINCT FROM m.best_rank_126
                  OR rrs.worst_rank_126 IS DISTINCT FROM m.worst_rank_126
@@ -223,7 +228,7 @@ def main() -> None:
                 GROUP BY security_id
               )
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              FROM required_research_security_normalized rrs
               JOIN monthly_liquidity m USING (security_id)
               WHERE rrs.max_median_traded_value_60 IS DISTINCT FROM m.max_median_traded_value_60
                  OR rrs.max_median_traded_value_126 IS DISTINCT FROM m.max_median_traded_value_126
@@ -231,7 +236,7 @@ def main() -> None:
             """).fetchone()[0],
             "required_artifact_identity_quality_failures": connection.execute(f"""
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet')
+              FROM required_research_security_normalized
               WHERE research_identity_quality NOT IN (
                 'OFFICIAL_EXCHANGE_IDENTITY',
                 'MULTI_SOURCE_VERIFIED',
@@ -242,14 +247,14 @@ def main() -> None:
             """).fetchone()[0],
             "required_artifact_price_adjustment_failures": connection.execute(f"""
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet')
+              FROM required_research_security_normalized
               WHERE price_adjustment_ok IS DISTINCT FROM TRUE
                  OR price_adjustment_quality IS NULL
                  OR price_adjustment_quality IN ('UNRESOLVED_CORPORATE_ACTION', 'RAW_ONLY_UNKNOWN')
             """).fetchone()[0],
             "required_artifact_status_failures": connection.execute(f"""
               SELECT COUNT(*)
-              FROM read_parquet('{r}/required_research_security.parquet')
+              FROM required_research_security_normalized
               WHERE active_trading_ok IS DISTINCT FROM TRUE
                  OR status_quality IS NULL
                  OR status_quality IN ('UNKNOWN_STATUS', 'UNRESOLVED')

@@ -28,6 +28,7 @@ from .profiles import (
     FEATURE_READINESS_WINDOWS,
     FEATURE_WARMUP_STATUS,
     LIQUID_V1_DEFINITION,
+    PRIORITY_SCOPE,
     PROFILE_ID,
     PROFILE_VERSION,
     RESEARCH_EXPLORATORY_STATUS,
@@ -80,6 +81,12 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness must be an object")
         if type(feature_readiness.get("feature_warmup_not_ready")) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness.feature_warmup_not_ready must be bool")
+        row = {
+            "pit_universe_gate_pass": audit_status == CANDIDATE_PASS_VALUE,
+            "research_candidate_gate_pass": False,
+            "price_action_evidence": {},
+            **row,
+        }
         if "feature_model_readiness_complete" in row and type(row["feature_model_readiness_complete"]) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].feature_model_readiness_complete must be bool")
         if "feature_model_readiness_complete" in row and row["feature_model_readiness_complete"] == feature_readiness["feature_warmup_not_ready"]:
@@ -88,6 +95,10 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             )
         if "pit_universe_gate_pass" in row and type(row["pit_universe_gate_pass"]) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].pit_universe_gate_pass must be bool")
+        if row.get("pit_universe_gate_pass") != (audit_status == CANDIDATE_PASS_VALUE):
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}].pit_universe_gate_pass contradicts candidate_audit_status"
+            )
         if "research_candidate_gate_pass" in row and type(row["research_candidate_gate_pass"]) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].research_candidate_gate_pass must be bool")
         price_action_evidence = row.get("price_action_evidence")
@@ -135,12 +146,25 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             field for field in CANDIDATE_DECISION_GATE_KEYS
             if row[field] != CANDIDATE_PASS_VALUE
         ]
+        gate_failures.extend(
+            field for field in CANDIDATE_ADVISORY_READINESS_KEYS
+            if row[field] != CANDIDATE_PASS_VALUE
+        )
         if promotion_interpretation == CANDIDATE_GATE_PASS_INTERPRETATION:
             if audit_status != CANDIDATE_PASS_VALUE or gate_failures or row.get("research_candidate_gate_pass") is not True:
                 raise ValueError(
                     f"candidate_promotion_decisions[{index}] has gate-pass interpretation without "
-                    f"PASS audit status, all PASS gates, and research_candidate_gate_pass"
+                    f"PASS audit status and all PASS gates; research_candidate_gate_pass is also required"
                 )
+        if (
+            audit_status == CANDIDATE_PASS_VALUE
+            and not gate_failures
+            and promotion_interpretation != CANDIDATE_GATE_PASS_INTERPRETATION
+        ):
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}] is gate-pass but has non-gate-pass interpretation: "
+                f"{promotion_interpretation}"
+            )
         if (
             audit_status == CANDIDATE_PASS_VALUE
             and not gate_failures
@@ -221,16 +245,19 @@ def _validate_candidate_interval_recommendations(
     *,
     required: bool,
 ) -> None:
-    expected_status = "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if refined_boundary else "NO_REFINED_BOUNDARY"
-    expected_start = refined_boundary.isoformat() if refined_boundary else None
+    research_gate_pass_start = manifest.get("earliest_candidate_gate_pass_start")
+    expected_research_status = "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE" if research_gate_pass_start else "NO_RESEARCH_GATE_PASS"
+    expected_research_start = _as_date(research_gate_pass_start).isoformat() if research_gate_pass_start else None
+    expected_pit_status = "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if refined_boundary else "NO_REFINED_BOUNDARY"
+    expected_pit_start = refined_boundary.isoformat() if refined_boundary else None
 
-    def validate_common(field: str, interval: Any) -> dict[str, Any]:
+    def validate_common(field: str, interval: Any, *, expected_status: str, expected_start: str | None) -> dict[str, Any]:
         if not isinstance(interval, dict):
             raise ValueError(f"{manifest_name} {field} is missing or not an object")
         if interval.get("status") != expected_status:
-            raise ValueError(f"{manifest_name} {field}.status does not match refined boundary availability")
+            raise ValueError(f"{manifest_name} {field}.status does not match candidate interval availability")
         if interval.get("start") != expected_start:
-            raise ValueError(f"{manifest_name} {field}.start does not match refined boundary")
+            raise ValueError(f"{manifest_name} {field}.start does not match candidate interval start")
         if not isinstance(interval.get("end"), str):
             raise ValueError(f"{manifest_name} {field}.end is missing or not a string")
         if interval.get("profile") != PROFILE_ID:
@@ -252,10 +279,14 @@ def _validate_candidate_interval_recommendations(
     validate_common(
         "candidate_recommended_research_interval",
         manifest.get("candidate_recommended_research_interval"),
+        expected_status=expected_research_status,
+        expected_start=expected_research_start,
     )
     pit_interval = validate_common(
         "candidate_recommended_pit_universe_interval",
         manifest.get("candidate_recommended_pit_universe_interval"),
+        expected_status=expected_pit_status,
+        expected_start=expected_pit_start,
     )
     if pit_interval.get("interval_type") != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE:
         raise ValueError(f"{manifest_name} candidate_recommended_pit_universe_interval.interval_type is not PIT_UNIVERSE")
@@ -291,6 +322,7 @@ def _validate_research_quality_intervals_after_warmup(
             isinstance(interval, dict)
             and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
             and interval.get("start")
+            and interval_type != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
             and _as_date(interval["start"]) < _as_date(RESEARCH_START_DATE)
             and (refined_boundary is None or _as_date(interval["start"]) < refined_boundary)
         ):
@@ -308,11 +340,11 @@ def _validate_research_quality_scalar_matches_interval(
         return
     if not isinstance(intervals, list) or not any(
         isinstance(interval, dict)
-        and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
-        and interval.get("start") == research_quality.get("start")
-        and interval.get("profile") == PROFILE_ID
-        and interval.get("profile_version") == PROFILE_VERSION
-        and interval.get("priority_scope") == PRIORITY_SCOPE
+            and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+            and interval.get("start") == research_quality.get("start")
+            and interval.get("profile", PROFILE_ID) == PROFILE_ID
+            and interval.get("profile_version", PROFILE_VERSION) == PROFILE_VERSION
+            and interval.get("priority_scope", PRIORITY_SCOPE) == PRIORITY_SCOPE
         for interval in intervals
     ):
         raise ValueError(f"{manifest_name} research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval")
@@ -477,6 +509,10 @@ class UniverseStore:
             raise ValueError(f"Unknown universe profile: {profile}")
         rows = [row for row in self.rows if row.get("date") == point and self._liquid_v1_eligible(row)]
         for row in rows:
+            if "LIQUID_V1_eligible" not in row and "liquid_v1_eligible" in row:
+                row["LIQUID_V1_eligible"] = row["liquid_v1_eligible"]
+            if "NSE_BROAD_LIQUID_PIT_V1_eligible" not in row and "nse_broad_liquid_pit_v1_eligible" in row:
+                row["NSE_BROAD_LIQUID_PIT_V1_eligible"] = row["nse_broad_liquid_pit_v1_eligible"]
             row.setdefault("profile_id", PROFILE_ID)
             row.setdefault("profile_version", profile)
             row.setdefault("as_of_date", point)
@@ -549,6 +585,10 @@ class ParquetUniverseStore(UniverseStore):
                 except Exception:
                     continue
         for row in rows:
+            if "LIQUID_V1_eligible" not in row and "liquid_v1_eligible" in row:
+                row["LIQUID_V1_eligible"] = row["liquid_v1_eligible"]
+            if "NSE_BROAD_LIQUID_PIT_V1_eligible" not in row and "nse_broad_liquid_pit_v1_eligible" in row:
+                row["NSE_BROAD_LIQUID_PIT_V1_eligible"] = row["nse_broad_liquid_pit_v1_eligible"]
             row.setdefault("profile_id", PROFILE_ID)
             row.setdefault("profile_version", profile)
             row.setdefault("as_of_date", point)
@@ -987,11 +1027,6 @@ class DataPlatform:
                     "data manifest candidate_promotion_decisions and "
                     "earliest_candidate_gate_pass_start must be provided together"
                 )
-            if has_data_refined_candidate_boundary and not has_data_candidate_decisions:
-                raise ValueError(
-                    "data manifest refined_earliest_candidate_gate_pass_boundary and "
-                    "candidate_promotion_decisions must be provided together"
-                )
             platform.candidate_promotion_decisions = _normalize_candidate_promotion_decisions(
                 manifest.get("candidate_promotion_decisions")
             )
@@ -1009,15 +1044,20 @@ class DataPlatform:
                 platform.candidate_promotion_decisions,
             )
             if has_data_refined_candidate_boundary:
-                platform._refined_earliest_candidate_gate_pass_boundary = _normalize_refined_earliest_candidate_gate_pass_boundary(
-                    manifest.get("refined_earliest_candidate_gate_pass_boundary"),
-                    platform.candidate_promotion_decisions,
-                )
+                if platform.candidate_promotion_decisions:
+                    platform._refined_earliest_candidate_gate_pass_boundary = _normalize_refined_earliest_candidate_gate_pass_boundary(
+                        manifest.get("refined_earliest_candidate_gate_pass_boundary"),
+                        platform.candidate_promotion_decisions,
+                    )
+                else:
+                    platform._refined_earliest_candidate_gate_pass_boundary = _as_date(
+                        manifest.get("refined_earliest_candidate_gate_pass_boundary")
+                    )
             _validate_candidate_interval_recommendations(
                 "data manifest",
                 manifest,
                 platform._refined_earliest_candidate_gate_pass_boundary,
-                required=has_data_refined_candidate_boundary,
+                required=has_data_refined_candidate_boundary and has_data_candidate_decisions,
             )
             _validate_research_quality_intervals_after_warmup(
                 "data manifest",

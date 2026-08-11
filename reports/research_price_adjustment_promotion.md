@@ -4,7 +4,7 @@ The recommended signal series is the price-return adjusted close. Raw nominal pr
 
 | Adjustment quality | Rows |
 |---|---:|
-| `NO_ADJUSTMENT_REQUIRED` | 4016019 |
+| `NO_ADJUSTMENT_REQUIRED` | 4001212 |
 | `PRICE_ACTION_ADJUSTED_VERIFIED` | 670605 |
 
 Promoted-scope material-event factor gate: `PASS`.
