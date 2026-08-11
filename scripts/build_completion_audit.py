@@ -636,6 +636,27 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append("research manifest refined_earliest_candidate_gate_pass_boundary is set without refined gate-pass candidate boundaries")
             elif refined_earliest_candidate_gate_pass_boundary != refined_gate_pass_boundaries[0]:
                 failures.append("research manifest refined_earliest_candidate_gate_pass_boundary is not the earliest refined gate-pass boundary")
+        recommended_interval = research_manifest.get("candidate_recommended_research_interval")
+        if not isinstance(recommended_interval, dict):
+            failures.append("research manifest candidate_recommended_research_interval is missing or not an object")
+        else:
+            expected_recommendation_status = (
+                "CANDIDATE_REFINED_BOUNDARY_AVAILABLE"
+                if refined_earliest_candidate_gate_pass_boundary
+                else "NO_REFINED_BOUNDARY"
+            )
+            if recommended_interval.get("status") != expected_recommendation_status:
+                failures.append("research manifest candidate_recommended_research_interval.status does not match refined boundary availability")
+            if recommended_interval.get("start") != refined_earliest_candidate_gate_pass_boundary:
+                failures.append("research manifest candidate_recommended_research_interval.start does not match refined boundary")
+            if not isinstance(recommended_interval.get("end"), str):
+                failures.append("research manifest candidate_recommended_research_interval.end is missing or not a string")
+            if recommended_interval.get("profile") != PROFILE_ID:
+                failures.append("research manifest candidate_recommended_research_interval.profile is not the published profile")
+            if recommended_interval.get("profile_version") != PROFILE_VERSION:
+                failures.append("research manifest candidate_recommended_research_interval.profile_version is not the published profile version")
+            if recommended_interval.get("promotion_status") != "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS":
+                failures.append("research manifest candidate_recommended_research_interval.promotion_status is not fail-closed")
 
     policy = research_manifest.get("known_policy") or {}
     expected_policy = {

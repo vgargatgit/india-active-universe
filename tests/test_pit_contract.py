@@ -1233,6 +1233,14 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         ],
         "earliest_candidate_gate_pass_start": None,
         "refined_earliest_candidate_gate_pass_boundary": None,
+        "candidate_recommended_research_interval": {
+            "status": "NO_REFINED_BOUNDARY",
+            "start": None,
+            "end": "2026-08-10",
+            "profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+        },
         "known_policy": {
             "signals": SIGNAL_POLICY,
             "execution": EXECUTION_POLICY,
@@ -1731,6 +1739,33 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
     failures = research_manifest_contract_failures(release, data_manifest, missing_refined_candidate_boundary)
     assert "research manifest refined_earliest_candidate_gate_pass_boundary is missing despite refined candidate row evidence" in failures
+
+    missing_recommended_interval = {
+        key: value for key, value in valid_manifest.items()
+        if key != "candidate_recommended_research_interval"
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_recommended_interval)
+    assert "research manifest candidate_recommended_research_interval is missing or not an object" in failures
+
+    promoted_recommended_interval = {
+        **valid_manifest,
+        "candidate_recommended_research_interval": {
+            **valid_manifest["candidate_recommended_research_interval"],
+            "promotion_status": "PROMOTED",
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, promoted_recommended_interval)
+    assert "research manifest candidate_recommended_research_interval.promotion_status is not fail-closed" in failures
+
+    mismatched_recommended_interval = {
+        **valid_manifest,
+        "candidate_recommended_research_interval": {
+            **valid_manifest["candidate_recommended_research_interval"],
+            "start": "2007-01-31",
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, mismatched_recommended_interval)
+    assert "research manifest candidate_recommended_research_interval.start does not match refined boundary" in failures
 
     missing_partition_hash = {key: value for key, value in valid_manifest.items() if key != "partitioned_artifacts_manifest_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_partition_hash)
