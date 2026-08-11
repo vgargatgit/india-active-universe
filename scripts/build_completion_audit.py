@@ -467,8 +467,21 @@ def main() -> None:
     """, [str(release / "liquidity_features.parquet")]).fetchone()[0]
     boundary_path = release / "corporate_action_boundary_validation.parquet"
     boundary_quality = {}
+    unresolved_required_boundaries = 0
     if boundary_path.exists():
         boundary_quality = dict(con.execute("SELECT validation_status, count(*) FROM read_parquet(?) GROUP BY 1", [str(boundary_path)]).fetchall())
+        unresolved_required_boundaries = con.execute("""
+            SELECT COUNT(DISTINCT v.event_id)
+            FROM read_parquet(?) v
+            JOIN read_parquet(?) q USING (security_id)
+            WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
+              AND v.validation_status IN (
+                'WARNING_LARGE_BOUNDARY_MOVE',
+                'INVALID_PRE_EVENT_PRICE',
+                'NO_BOUNDARY_OBSERVATIONS',
+                'NO_LOCAL_BOUNDARY_OBSERVATION'
+              )
+        """, [str(boundary_path), str(release / "required_research_security.parquet")]).fetchone()[0]
 
     rows = [
         f"# Release completion audit: `{manifest['release_id']}`",
@@ -489,6 +502,7 @@ def main() -> None:
         f"- Adjusted-price contract missing columns: `{missing_adjusted_contract}`.",
         f"- Liquidity feature rows with non-official session window: {liquidity_window_failures:,}.",
         f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
+        f"- Unresolved required material price-action boundaries: {unresolved_required_boundaries:,}.",
         f"- RAW integrity validation: `{json.dumps(raw_summary, sort_keys=True)}`.",
         f"- Source coverage validation: `{json.dumps(source_summary, sort_keys=True)}`.",
         f"- Research invariant validation: `{json.dumps(invariant_summary, sort_keys=True)}`.",
@@ -517,6 +531,8 @@ def main() -> None:
         failures.append(f"adjusted-price artifact is missing contract columns: {missing_adjusted_contract}")
     if liquidity_window_failures:
         failures.append(f"liquidity features are not all official-session windows: {liquidity_window_failures}")
+    if unresolved_required_boundaries:
+        failures.append(f"unresolved material price-action boundaries remain in required research scope: {unresolved_required_boundaries}")
     if test_summary["tests"] <= 0 or test_summary["failures"] or test_summary["errors"]:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:

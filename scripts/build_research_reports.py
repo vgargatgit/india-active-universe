@@ -111,6 +111,18 @@ def main() -> None:
           WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
           GROUP BY 1 ORDER BY 1
         """).fetchall()
+        unresolved_boundary_count = scalar(connection, f"""
+          SELECT COUNT(DISTINCT v.event_id)
+          FROM read_parquet('{r}/corporate_action_boundary_validation.parquet') v
+          JOIN read_parquet('{r}/required_research_security.parquet') q USING (security_id)
+          WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
+            AND v.validation_status IN (
+              'WARNING_LARGE_BOUNDARY_MOVE',
+              'INVALID_PRE_EVENT_PRICE',
+              'NO_BOUNDARY_OBSERVATIONS',
+              'NO_LOCAL_BOUNDARY_OBSERVATION'
+            )
+        """)
         status_overlap = scalar(connection, f"""
           SELECT COUNT(*) FROM (
             SELECT security_id, status_start,
@@ -216,7 +228,7 @@ def main() -> None:
 
     identity_failure_count = int(counts[5])
     missing_factor_count = sum(int(row[2]) for row in event_rows)
-    gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(status_overlap) == 0
+    gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(unresolved_boundary_count) == 0 and int(status_overlap) == 0
     quality = "RESEARCH_HIGH_CONFIDENCE" if gate_pass else "RESEARCH_EXPLORATORY"
     research_start = "2013-01-01"
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
@@ -248,7 +260,7 @@ The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
     write(reports / "research_identity_promotion.md", "\n".join(identity_text))
     event_text = ["# Research universe corporate-action audit", "", "Material price actions are `SPLIT`, `REVERSE_SPLIT`, and `BONUS`.", "", "| Event type | Events | Missing factors |", "|---|---:|---:|"]
     event_text.extend(f"| `{kind}` | {events} | {missing} |" for kind, events, missing in event_rows)
-    event_text.extend(["", f"Material events with missing price/share factors: `{missing_factor_count}`.", f"Promotion gate: `{'PASS' if missing_factor_count == 0 else 'FAIL'}`.", "", "## Boundary validation in the required scope", "", "| Boundary status | Distinct events |", "|---|---:|"])
+    event_text.extend(["", f"Material events with missing price/share factors: `{missing_factor_count}`.", f"Unresolved material boundary events: `{unresolved_boundary_count}`.", f"Promotion gate: `{'PASS' if missing_factor_count == 0 and int(unresolved_boundary_count) == 0 else 'FAIL'}`.", "", "## Boundary validation in the required scope", "", "| Boundary status | Distinct events |", "|---|---:|"])
     event_text.extend(f"| `{status}` | {number} |" for status, number in boundary_rows)
     event_text.extend(["", "## Material event details", "", "| Security | Symbol | Event date | Type | Price factor | Share factor | Pre close | Post close | Raw boundary return | Adjusted boundary return | Holder value ratio | Validation |", "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|"])
     event_text.extend(f"| `{sid}` | `{symbol}` | `{event_date}` | `{event_type}` | {price_factor} | {share_factor} | {pre_close} | {post_close} | {raw_return} | {adjusted_return} | {holder_ratio} | `{status}` |" for sid, symbol, event_date, event_type, price_factor, share_factor, pre_close, post_close, raw_return, adjusted_return, holder_ratio, status in event_detail_rows)
@@ -340,6 +352,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "liquid_v1_securities": int(counts[3]),
         "identity_failures": int(required_scope_failure_count),
         "material_price_action_missing_factors": missing_factor_count,
+        "material_price_action_unresolved_boundaries": int(unresolved_boundary_count),
         "boundary_validation": dict(boundary_rows),
         "status_interval_overlaps": int(status_overlap),
         "research_invariant_validation_sha256": sha256(validation_path) if validation_path.exists() else None,
