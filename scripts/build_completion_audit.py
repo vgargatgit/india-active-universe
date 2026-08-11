@@ -43,6 +43,7 @@ from india_active_universe.profiles import (
     SECURITY_MASTER_ARTIFACT,
     SIGNAL_POLICY,
     SOURCE_BUILD_MODE,
+    SOURCE_OBSERVED_START_DATE,
     SOURCE_MANIFEST_ARTIFACT,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
@@ -179,10 +180,18 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
     for key in ("observed_start", "observed_end", "security_count", "observation_count"):
         if coverage.get(key) is None:
             failures.append(f"data manifest coverage.{key} is missing")
+    if coverage.get("observed_start") != SOURCE_OBSERVED_START_DATE:
+        failures.append(f"data manifest coverage.observed_start is not {SOURCE_OBSERVED_START_DATE}")
     source_coverage = manifest.get("source_coverage") or {}
     for key in ("source_verified_start", "source_verified_end", "verification_basis"):
         if not source_coverage.get(key):
             failures.append(f"data manifest source_coverage.{key} is missing")
+    if source_coverage.get("source_verified_start") != SOURCE_OBSERVED_START_DATE:
+        failures.append(f"data manifest source_coverage.source_verified_start is not {SOURCE_OBSERVED_START_DATE}")
+    if source_coverage.get("source_verified_start") != coverage.get("observed_start"):
+        failures.append("data manifest source_coverage.source_verified_start does not match coverage.observed_start")
+    if source_coverage.get("source_verified_end") != coverage.get("observed_end"):
+        failures.append("data manifest source_coverage.source_verified_end does not match coverage.observed_end")
     research_coverage = manifest.get("research_coverage") or {}
     expected_research = {
         "research_verified_start": RESEARCH_START_DATE,
@@ -252,6 +261,8 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key in ("observed_start", "observed_end", "research_start", "research_end"):
         if not coverage.get(key):
             failures.append(f"source_coverage.{key} is missing")
+    if coverage.get("observed_start") != SOURCE_OBSERVED_START_DATE:
+        failures.append(f"source_coverage.observed_start is not {SOURCE_OBSERVED_START_DATE}")
     if coverage.get("research_start") != quality.get("start"):
         failures.append("source_coverage.research_start does not match research_quality.start")
     if coverage.get("research_end") != quality.get("end"):
