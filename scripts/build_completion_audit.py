@@ -19,6 +19,7 @@ from india_active_universe.profiles import (
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
+    PARTITIONED_RELEASE_ARTIFACTS,
     PRIORITY_SCOPE,
     PROFILE_ID,
     PROFILE_VERSION,
@@ -40,12 +41,7 @@ from india_active_universe.profiles import (
 
 REQUIRED = list(REQUIRED_RELEASE_ARTIFACTS)
 
-REQUIRED_PARTITIONED_ARTIFACTS = {
-    "daily_prices_raw.parquet",
-    "daily_prices_adjusted.parquet",
-    "liquidity_features.parquet",
-    "active_universe_daily.parquet",
-}
+REQUIRED_PARTITIONED_ARTIFACTS = set(PARTITIONED_RELEASE_ARTIFACTS)
 
 
 def sha256(path: Path) -> str:

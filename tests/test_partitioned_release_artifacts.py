@@ -11,6 +11,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from scripts.build_completion_audit import junit_summary, partition_summary, raw_integrity_summary, source_coverage_summary
+from india_active_universe.profiles import PARTITIONED_RELEASE_ARTIFACTS
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ def test_partitioned_release_artifacts_preserve_rows(tmp_path: Path):
             {"date": "2021-01-01", "security_id": "A", "raw_close": 30.0},
         ]
     )
-    for name in ("daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "liquidity_features.parquet", "active_universe_daily.parquet"):
+    for name in PARTITIONED_RELEASE_ARTIFACTS:
         pq.write_table(table, release / name)
 
     env = os.environ.copy()
@@ -65,9 +66,9 @@ def test_partition_summary_requires_all_large_release_artifacts(tmp_path: Path):
                 "layout": "YEAR_PARTITIONED_SIDECAR_V1",
                 "status": "PASS",
                 "artifacts": [
-                    {"source_artifact": "daily_prices_raw.parquet", "status": "PASS", "file_count": 1},
-                    {"source_artifact": "daily_prices_adjusted.parquet", "status": "PASS", "file_count": 1},
-                    {"source_artifact": "liquidity_features.parquet", "status": "PASS", "file_count": 1},
+                    {"source_artifact": PARTITIONED_RELEASE_ARTIFACTS[0], "status": "PASS", "file_count": 1},
+                    {"source_artifact": PARTITIONED_RELEASE_ARTIFACTS[1], "status": "PASS", "file_count": 1},
+                    {"source_artifact": PARTITIONED_RELEASE_ARTIFACTS[2], "status": "PASS", "file_count": 1},
                 ],
             }
         ),
@@ -76,7 +77,7 @@ def test_partition_summary_requires_all_large_release_artifacts(tmp_path: Path):
 
     summary = partition_summary(manifest)
 
-    assert summary["missing_required_artifacts"] == ["active_universe_daily.parquet"]
+    assert summary["missing_required_artifacts"] == [PARTITIONED_RELEASE_ARTIFACTS[3]]
 
 
 def test_junit_summary_detects_handoff_test_without_package_prefix(tmp_path: Path):

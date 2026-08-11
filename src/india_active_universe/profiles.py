@@ -40,6 +40,12 @@ LIQUID_V1_DEFINITION = {
 }
 
 TOP_LIQUIDITY_RANKING_METRIC = "median_traded_value_126"
+PARTITIONED_RELEASE_ARTIFACTS = (
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    "daily_prices_adjusted.parquet",
+    LIQUIDITY_ARTIFACT,
+    "active_universe_daily.parquet",
+)
 RESEARCH_MANIFEST_ARTIFACTS = (
     "research_universe_monthly.parquet",
     "required_research_security.parquet",

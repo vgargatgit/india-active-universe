@@ -10,13 +10,9 @@ from pathlib import Path
 
 import duckdb
 
+from india_active_universe.profiles import PARTITIONED_RELEASE_ARTIFACTS
 
-DEFAULT_ARTIFACTS = (
-    "daily_prices_raw.parquet",
-    "daily_prices_adjusted.parquet",
-    "liquidity_features.parquet",
-    "active_universe_daily.parquet",
-)
+DEFAULT_ARTIFACTS = PARTITIONED_RELEASE_ARTIFACTS
 
 
 def sha256(path: Path) -> str:
