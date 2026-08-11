@@ -182,7 +182,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
             failures.append(f"data manifest parser_versions.{key} is missing")
     artifacts = manifest.get("artifacts") or {}
     for name in REQUIRED:
-        if name == "data_release_manifest.json":
+        if name in {"data_release_manifest.json", "research_release_manifest.json"}:
             continue
         if f"release/{name}" not in artifacts:
             failures.append(f"data manifest artifact hash missing for release/{name}")

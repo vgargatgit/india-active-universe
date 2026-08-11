@@ -412,7 +412,7 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
         "parser_versions": {"nse_bhavcopy": "nse-bhavcopy-v2", "canonicalization": "identity-v1"},
-        "artifacts": {f"release/{name}": "0" * 64 for name in REQUIRED if name != "data_release_manifest.json"},
+        "artifacts": {f"release/{name}": "0" * 64 for name in REQUIRED if name not in {"data_release_manifest.json", "research_release_manifest.json"}},
     }
 
     assert data_manifest_contract_failures(release, manifest) == []
