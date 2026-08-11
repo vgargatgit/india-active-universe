@@ -13,7 +13,7 @@
 - Suspended intervals: 0.
 - Status interval overlaps: 0.
 - Adjusted-price quality counts: `{"TOTAL_RETURN_PARTIAL": 7545021}`.
-- Corporate-action boundary validation: `{"NO_POST_EVENT_OBSERVATION": 350, "NO_PRE_EVENT_OBSERVATION": 341, "PASS": 520, "WARNING_LARGE_BOUNDARY_MOVE": 66}`.
+- Corporate-action boundary validation: `{"NO_POST_EVENT_OBSERVATION": 349, "NO_PRE_EVENT_OBSERVATION": 341, "PASS": 535, "WARNING_LARGE_BOUNDARY_MOVE": 50}`.
 
 ## Required artifact checks
 
