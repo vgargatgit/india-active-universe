@@ -14,7 +14,10 @@ import duckdb
 
 from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
+    ADJUSTED_PRICE_ARTIFACT,
     COMPONENT_QUALITY,
+    CORPORATE_ACTIONS_ARTIFACT,
+    CORPORATE_ACTION_BOUNDARY_ARTIFACT,
     DATASET_QUALITY_TIER,
     DATA_RELEASE_MANIFEST_ARTIFACT,
     EXECUTION_POLICY,
@@ -28,6 +31,7 @@ from india_active_universe.profiles import (
     PARTITIONED_ARTIFACTS_MANIFEST,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    REQUIRED_RESEARCH_SECURITY_ARTIFACT,
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
@@ -35,10 +39,13 @@ from india_active_universe.profiles import (
     REQUIRED_RELEASE_ARTIFACTS,
     REQUIRED_RESEARCH_REPORTS,
     REQUIRED_QUALITY_THRESHOLD,
+    SECURITY_MASTER_ARTIFACT,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
+    TERMINAL_EVENTS_ARTIFACT,
     TOP_LIQUIDITY_RANKING_METRIC,
+    TRADING_STATUS_INTERVALS_ARTIFACT,
 )
 
 
@@ -471,7 +478,7 @@ def main() -> None:
         sql = "SELECT count(*) FROM read_parquet(?)" + (f" WHERE {where}" if where else "")
         return con.execute(sql, [str(release / name)]).fetchone()[0]
 
-    status_path = release / "trading_status_intervals.parquet"
+    status_path = release / TRADING_STATUS_INTERVALS_ARTIFACT
     overlap_count = None
     suspended_count = None
     if status_path.exists():
@@ -483,11 +490,11 @@ def main() -> None:
             WHERE prior_end IS NOT NULL AND status_start <= prior_end""",
             [str(status_path)],
         ).fetchone()[0]
-        suspended_count = count("trading_status_intervals.parquet", "trading_status = 'SUSPENDED'")
+        suspended_count = count(TRADING_STATUS_INTERVALS_ARTIFACT, "trading_status = 'SUSPENDED'")
 
     quality = {}
     missing_adjusted_contract = []
-    adjusted = release / "daily_prices_adjusted.parquet"
+    adjusted = release / ADJUSTED_PRICE_ARTIFACT
     if adjusted.exists():
         quality = dict(con.execute("SELECT total_return_quality, count(*) FROM read_parquet(?) GROUP BY 1", [str(adjusted)]).fetchall())
         adjusted_columns = {row[0] for row in con.execute("DESCRIBE SELECT * FROM read_parquet(?)", [str(adjusted)]).fetchall()}
@@ -496,7 +503,7 @@ def main() -> None:
         SELECT COUNT(*) FROM read_parquet(?)
         WHERE liquidity_window_definition IS DISTINCT FROM 'OFFICIAL_NSE_SESSION_WINDOW'
     """, [str(release / "liquidity_features.parquet")]).fetchone()[0]
-    boundary_path = release / "corporate_action_boundary_validation.parquet"
+    boundary_path = release / CORPORATE_ACTION_BOUNDARY_ARTIFACT
     boundary_quality = {}
     unresolved_required_boundaries = 0
     if boundary_path.exists():
@@ -512,7 +519,7 @@ def main() -> None:
                 'NO_BOUNDARY_OBSERVATIONS',
                 'NO_LOCAL_BOUNDARY_OBSERVATION'
               )
-        """, [str(boundary_path), str(release / "required_research_security.parquet"), RESEARCH_START_DATE]).fetchone()[0]
+        """, [str(boundary_path), str(release / REQUIRED_RESEARCH_SECURITY_ARTIFACT), RESEARCH_START_DATE]).fetchone()[0]
 
     rows = [
         f"# Release completion audit: `{manifest['release_id']}`",
@@ -521,12 +528,12 @@ def main() -> None:
         "",
         f"- Coverage: `{manifest.get('coverage', {}).get('observed_start')}` through `{manifest.get('coverage', {}).get('observed_end')}`.",
         f"- Official daily observations: {count('daily_prices_raw.parquet'):,}.",
-        f"- Canonical security-master rows: {count('security_master.parquet'):,}.",
+        f"- Canonical security-master rows: {count(SECURITY_MASTER_ARTIFACT):,}.",
         f"- Issuers: {count('issuer_master.parquet'):,}.",
         f"- Listing episodes: {count('listing_episodes.parquet'):,}.",
-        f"- Corporate-action rows: {count('corporate_actions.parquet'):,}.",
-        f"- Terminal-event rows: {count('terminal_events.parquet'):,}.",
-        f"- Status intervals: {count('trading_status_intervals.parquet') if status_path.exists() else 'not published':,}." if status_path.exists() else "- Status intervals: not published.",
+        f"- Corporate-action rows: {count(CORPORATE_ACTIONS_ARTIFACT):,}.",
+        f"- Terminal-event rows: {count(TERMINAL_EVENTS_ARTIFACT):,}.",
+        f"- Status intervals: {count(TRADING_STATUS_INTERVALS_ARTIFACT) if status_path.exists() else 'not published':,}." if status_path.exists() else "- Status intervals: not published.",
         f"- Suspended intervals: {suspended_count:,}." if suspended_count is not None else "- Suspended intervals: not measured.",
         f"- Status interval overlaps: {overlap_count:,}." if overlap_count is not None else "- Status interval overlaps: not measured.",
         f"- Adjusted-price quality counts: `{json.dumps(quality, sort_keys=True)}`.",

@@ -11,10 +11,18 @@ import sys
 from pathlib import Path
 
 from india_active_universe.profiles import (
+    ADJUSTED_PRICE_ARTIFACT,
+    CORPORATE_ACTION_BOUNDARY_ARTIFACT,
+    CORPORATE_ACTIONS_ARTIFACT,
     LIQUIDITY_ARTIFACT,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RESEARCH_START_DATE,
+    SECURITY_MASTER_ARTIFACT,
     SOURCE_MANIFEST_ARTIFACT,
+    SUSPENSION_EVENTS_ARTIFACT,
+    TERMINAL_EVENTS_ARTIFACT,
+    TRADING_CALENDAR_ARTIFACT,
+    TRADING_STATUS_INTERVALS_ARTIFACT,
 )
 
 
@@ -74,16 +82,16 @@ def main() -> None:
     liquidity_features = release / LIQUIDITY_ARTIFACT
     commands.extend([
         [sys.executable, str(root / "scripts/publish_parquet.py"), "--data", str(work), "--release", str(release)],
-        [sys.executable, str(root / "scripts/build_trading_calendar.py"), "--prices", str(raw_prices), "--out", str(release / "trading_calendar.parquet")],
-        [sys.executable, str(root / "scripts/rebuild_liquidity_features_duckdb.py"), "--prices", str(raw_prices), "--calendar", str(release / "trading_calendar.parquet"), "--out", str(liquidity_features)],
+        [sys.executable, str(root / "scripts/build_trading_calendar.py"), "--prices", str(raw_prices), "--out", str(release / TRADING_CALENDAR_ARTIFACT)],
+        [sys.executable, str(root / "scripts/rebuild_liquidity_features_duckdb.py"), "--prices", str(raw_prices), "--calendar", str(release / TRADING_CALENDAR_ARTIFACT), "--out", str(liquidity_features)],
         [sys.executable, str(root / "scripts/publish_identity_artifacts.py"), "--master", str(work / "canonical/security_master.jsonl"), "--release", str(release)],
         [sys.executable, str(root / "scripts/normalize_corporate_actions.py"), "--raw", str(corporate_actions), "--master", str(work / "canonical/security_master.jsonl"), "--out", str(work / "canonical/corporate_actions.jsonl")],
-        [sys.executable, str(root / "scripts/publish_corporate_actions.py"), "--input", str(work / "canonical/corporate_actions.jsonl"), "--out", str(work / "derived/corporate_actions.parquet")],
-        [sys.executable, str(root / "scripts/publish_extensions.py"), "--data", str(work), "--release", str(release), "--corporate-actions", str(work / "derived/corporate_actions.parquet"), "--terminal-events", str(terminal)],
-        [sys.executable, str(root / "scripts/apply_corporate_action_adjustments.py"), "--prices", str(work / "canonical/daily_prices_raw.jsonl"), "--events", str(work / "canonical/corporate_actions.jsonl"), "--out", str(release / "daily_prices_adjusted.parquet")],
-        [sys.executable, str(root / "scripts/validate_corporate_action_boundaries.py"), "--events", str(release / "corporate_actions.parquet"), "--prices", str(raw_prices), "--calendar", str(release / "trading_calendar.parquet"), "--out", str(release / "corporate_action_boundary_validation.parquet")],
-        [sys.executable, str(root / "scripts/build_status_intervals.py"), "--master", str(work / "canonical/security_master.jsonl"), "--terminal-events", str(release / "terminal_events.parquet"), "--out", str(release / "trading_status_intervals.parquet")],
-        [sys.executable, str(root / "scripts/build_identity_history_artifacts.py"), "--master", str(release / "security_master.parquet"), "--out-dir", str(release)],
+        [sys.executable, str(root / "scripts/publish_corporate_actions.py"), "--input", str(work / "canonical/corporate_actions.jsonl"), "--out", str(work / "derived" / CORPORATE_ACTIONS_ARTIFACT)],
+        [sys.executable, str(root / "scripts/publish_extensions.py"), "--data", str(work), "--release", str(release), "--corporate-actions", str(work / "derived" / CORPORATE_ACTIONS_ARTIFACT), "--terminal-events", str(terminal)],
+        [sys.executable, str(root / "scripts/apply_corporate_action_adjustments.py"), "--prices", str(work / "canonical/daily_prices_raw.jsonl"), "--events", str(work / "canonical/corporate_actions.jsonl"), "--out", str(release / ADJUSTED_PRICE_ARTIFACT)],
+        [sys.executable, str(root / "scripts/validate_corporate_action_boundaries.py"), "--events", str(release / CORPORATE_ACTIONS_ARTIFACT), "--prices", str(raw_prices), "--calendar", str(release / TRADING_CALENDAR_ARTIFACT), "--out", str(release / CORPORATE_ACTION_BOUNDARY_ARTIFACT)],
+        [sys.executable, str(root / "scripts/build_status_intervals.py"), "--master", str(work / "canonical/security_master.jsonl"), "--terminal-events", str(release / TERMINAL_EVENTS_ARTIFACT), "--out", str(release / TRADING_STATUS_INTERVALS_ARTIFACT)],
+        [sys.executable, str(root / "scripts/build_identity_history_artifacts.py"), "--master", str(release / SECURITY_MASTER_ARTIFACT), "--out-dir", str(release)],
         [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", RESEARCH_START_DATE],
         [sys.executable, str(root / "scripts/build_partitioned_release_artifacts.py"), "--release", str(release)],
         [sys.executable, str(root / "scripts/report_universe.py"), "--root", str(work), "--release-id", args.release_id, "--release-dir", str(release), "--reports-dir", str(root / "reports"), "--config", str(root / "config/default.yaml")],
@@ -103,11 +111,11 @@ def main() -> None:
     commands.insert(status_index, [
         sys.executable, str(root / "scripts/build_verified_suspension_status.py"),
         "--events", str(suspension_events),
-        "--master", str(release / "security_master.parquet"),
-        "--base-intervals", str(release / "trading_status_intervals.parquet"),
+        "--master", str(release / SECURITY_MASTER_ARTIFACT),
+        "--base-intervals", str(release / TRADING_STATUS_INTERVALS_ARTIFACT),
         "--prices", str(raw_prices),
-        "--events-out", str(release / "suspension_events_resolved.parquet"),
-        "--intervals-out", str(release / "trading_status_intervals.parquet"),
+        "--events-out", str(release / SUSPENSION_EVENTS_ARTIFACT),
+        "--intervals-out", str(release / TRADING_STATUS_INTERVALS_ARTIFACT),
     ])
     if args.dry_run:
         for command in commands:

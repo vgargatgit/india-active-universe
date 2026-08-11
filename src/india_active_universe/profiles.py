@@ -12,7 +12,18 @@ EXECUTION_POLICY = "raw nominal OHLC"
 TERMINAL_VALUE_POLICY = "explicit recovery scenarios; no invented canonical value"
 RECOMMENDED_SIGNAL_PRICE_SERIES = "price_return_adjusted_close"
 RAW_EXECUTION_PRICE_ARTIFACT = "daily_prices_raw.parquet"
+ADJUSTED_PRICE_ARTIFACT = "daily_prices_adjusted.parquet"
 LIQUIDITY_ARTIFACT = "liquidity_features.parquet"
+ACTIVE_UNIVERSE_ARTIFACT = "active_universe_daily.parquet"
+SECURITY_MASTER_ARTIFACT = "security_master.parquet"
+CORPORATE_ACTIONS_ARTIFACT = "corporate_actions.parquet"
+CORPORATE_ACTION_BOUNDARY_ARTIFACT = "corporate_action_boundary_validation.parquet"
+TRADING_CALENDAR_ARTIFACT = "trading_calendar.parquet"
+TRADING_STATUS_INTERVALS_ARTIFACT = "trading_status_intervals.parquet"
+SUSPENSION_EVENTS_ARTIFACT = "suspension_events_resolved.parquet"
+TERMINAL_EVENTS_ARTIFACT = "terminal_events.parquet"
+RESEARCH_UNIVERSE_MONTHLY_ARTIFACT = "research_universe_monthly.parquet"
+REQUIRED_RESEARCH_SECURITY_ARTIFACT = "required_research_security.parquet"
 DATA_RELEASE_MANIFEST_ARTIFACT = "data_release_manifest.json"
 RESEARCH_RELEASE_MANIFEST_ARTIFACT = "research_release_manifest.json"
 PARTITIONED_ARTIFACTS_MANIFEST = "partitioned_artifacts_manifest.json"
@@ -48,44 +59,44 @@ LIQUID_V1_DEFINITION = {
 TOP_LIQUIDITY_RANKING_METRIC = "median_traded_value_126"
 PARTITIONED_RELEASE_ARTIFACTS = (
     RAW_EXECUTION_PRICE_ARTIFACT,
-    "daily_prices_adjusted.parquet",
+    ADJUSTED_PRICE_ARTIFACT,
     LIQUIDITY_ARTIFACT,
-    "active_universe_daily.parquet",
+    ACTIVE_UNIVERSE_ARTIFACT,
 )
 RESEARCH_MANIFEST_ARTIFACTS = (
-    "research_universe_monthly.parquet",
-    "required_research_security.parquet",
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
+    REQUIRED_RESEARCH_SECURITY_ARTIFACT,
     LIQUIDITY_ARTIFACT,
     RAW_EXECUTION_PRICE_ARTIFACT,
-    "daily_prices_adjusted.parquet",
-    "corporate_actions.parquet",
-    "corporate_action_boundary_validation.parquet",
-    "trading_status_intervals.parquet",
-    "suspension_events_resolved.parquet",
+    ADJUSTED_PRICE_ARTIFACT,
+    CORPORATE_ACTIONS_ARTIFACT,
+    CORPORATE_ACTION_BOUNDARY_ARTIFACT,
+    TRADING_STATUS_INTERVALS_ARTIFACT,
+    SUSPENSION_EVENTS_ARTIFACT,
     "unresolved_observed_trading.parquet",
 )
 REQUIRED_RELEASE_ARTIFACTS = (
-    "security_master.parquet",
+    SECURITY_MASTER_ARTIFACT,
     "symbol_history.parquet",
     "issuer_master.parquet",
     "listing_episodes.parquet",
     RAW_EXECUTION_PRICE_ARTIFACT,
-    "daily_prices_adjusted.parquet",
-    "corporate_actions.parquet",
+    ADJUSTED_PRICE_ARTIFACT,
+    CORPORATE_ACTIONS_ARTIFACT,
     "trading_status.parquet",
-    "trading_status_intervals.parquet",
-    "suspension_events_resolved.parquet",
-    "active_universe_daily.parquet",
+    TRADING_STATUS_INTERVALS_ARTIFACT,
+    SUSPENSION_EVENTS_ARTIFACT,
+    ACTIVE_UNIVERSE_ARTIFACT,
     "unresolved_observed_trading.parquet",
     LIQUIDITY_ARTIFACT,
-    "terminal_events.parquet",
+    TERMINAL_EVENTS_ARTIFACT,
     DATA_RELEASE_MANIFEST_ARTIFACT,
-    "trading_calendar.parquet",
+    TRADING_CALENDAR_ARTIFACT,
     "company_name_history.parquet",
     "isin_history.parquet",
-    "corporate_action_boundary_validation.parquet",
-    "research_universe_monthly.parquet",
-    "required_research_security.parquet",
+    CORPORATE_ACTION_BOUNDARY_ARTIFACT,
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
+    REQUIRED_RESEARCH_SECURITY_ARTIFACT,
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     PARTITIONED_ARTIFACTS_MANIFEST,
 )
