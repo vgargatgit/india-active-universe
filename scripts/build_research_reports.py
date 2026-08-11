@@ -87,6 +87,20 @@ def published_research_quality_bounds(
     return published_rhc_intervals[0]["start"], published_rhc_intervals[0].get("end") or fallback_end
 
 
+def published_research_monthly_snapshot_start(
+    published_start: str,
+    *,
+    fallback_start: str,
+    fallback_monthly_start: str,
+) -> str:
+    """Return the first monthly snapshot covered by the scalar research interval."""
+    if published_start == fallback_start:
+        return fallback_monthly_start
+    if published_start == CURRENT_PROVEN_RESEARCH_START_DATE:
+        return RESEARCH_MONTHLY_SNAPSHOT_START
+    return published_start
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -128,6 +142,11 @@ def main() -> None:
         research_quality_intervals,
         fallback_start=research_start,
         fallback_end=str(observed_coverage.get("observed_end")),
+    )
+    published_research_monthly_start = published_research_monthly_snapshot_start(
+        published_research_start,
+        fallback_start=research_start,
+        fallback_monthly_start=research_monthly_start,
     )
     connection = duckdb.connect()
     try:
@@ -1841,7 +1860,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
     manifest = {
         "release_id": release.name,
         "git_sha": git_sha,
-        "research_quality": {"status": quality, "start": published_research_start, "end": published_research_end, "monthly_snapshot_start": research_monthly_start, "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE},
+        "research_quality": {"status": quality, "start": published_research_start, "end": published_research_end, "monthly_snapshot_start": published_research_monthly_start, "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE},
         "source_coverage": {
             "observed_start": observed_coverage.get("observed_start"),
             "observed_end": observed_coverage.get("observed_end"),

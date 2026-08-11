@@ -1514,7 +1514,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
             "start": RESEARCH_START_DATE,
             "end": "2026-08-10",
-            "monthly_snapshot_start": CANDIDATE_MONTHLY_SNAPSHOT_START,
+            "monthly_snapshot_start": "2013-01-31",
             "universe_profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
             "priority_scope": PRIORITY_SCOPE,
@@ -1693,6 +1693,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         },
     }
     assert research_manifest_contract_failures(release, candidate_data_coverage, valid_manifest) == []
+
+    scalar_monthly_before_scalar_start = {
+        **valid_manifest,
+        "research_quality": {
+            **valid_manifest["research_quality"],
+            "monthly_snapshot_start": "2012-12-31",
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, scalar_monthly_before_scalar_start)
+    assert "research_quality.monthly_snapshot_start is earlier than research_quality.start" in failures
 
     scalar_before_data_coverage = {
         **data_manifest,

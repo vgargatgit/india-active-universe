@@ -4,7 +4,8 @@ from india_active_universe.profiles import (
     PROFILE_VERSION,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
 )
-from scripts.build_research_reports import published_research_quality_bounds
+from india_active_universe.profiles import CURRENT_PROVEN_RESEARCH_START_DATE, RESEARCH_MONTHLY_SNAPSHOT_START
+from scripts.build_research_reports import published_research_monthly_snapshot_start, published_research_quality_bounds
 
 
 def test_published_research_quality_bounds_uses_earliest_backed_rhc_interval():
@@ -59,3 +60,21 @@ def test_published_research_quality_bounds_ignores_unscoped_candidate_evidence()
         fallback_start="2006-01-31",
         fallback_end="2026-08-10",
     ) == ("2006-01-31", "2026-08-10")
+
+
+def test_published_research_monthly_snapshot_start_follows_backed_scalar_interval():
+    assert published_research_monthly_snapshot_start(
+        "2007-04-30",
+        fallback_start="2006-01-31",
+        fallback_monthly_start="2006-01-31",
+    ) == "2007-04-30"
+    assert published_research_monthly_snapshot_start(
+        CURRENT_PROVEN_RESEARCH_START_DATE,
+        fallback_start="2006-01-31",
+        fallback_monthly_start="2006-01-31",
+    ) == RESEARCH_MONTHLY_SNAPSHOT_START
+    assert published_research_monthly_snapshot_start(
+        "2006-01-31",
+        fallback_start="2006-01-31",
+        fallback_monthly_start="2006-01-31",
+    ) == "2006-01-31"

@@ -495,9 +495,10 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         failures.append("research_quality.start is earlier than data manifest research_coverage.research_verified_start")
     if not quality.get("end"):
         failures.append("research_quality.end is missing")
-    expected_monthly_start = data_research_coverage.get("monthly_snapshot_start") or RESEARCH_MONTHLY_SNAPSHOT_START
-    if quality.get("monthly_snapshot_start") != expected_monthly_start:
-        failures.append(f"research_quality.monthly_snapshot_start is not {expected_monthly_start}")
+    if not quality.get("monthly_snapshot_start"):
+        failures.append("research_quality.monthly_snapshot_start is missing")
+    elif quality.get("start") and str(quality.get("monthly_snapshot_start")) < str(quality.get("start")):
+        failures.append("research_quality.monthly_snapshot_start is earlier than research_quality.start")
 
     coverage = research_manifest.get("source_coverage") or {}
     for key in ("observed_start", "observed_end", "research_start", "research_end"):
