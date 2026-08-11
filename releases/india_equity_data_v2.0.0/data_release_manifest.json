@@ -7,9 +7,9 @@
     "derived/liquidity_features.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "release/active_universe_daily.parquet": "afac2dd344ce674f0fabae9655443330d81a30accf671a000beac5dcb14988ed",
     "release/company_name_history.parquet": "142aff702ebe48cebc4059f6190e0b6d7f22a836c2873cb9a8a17e328a56008d",
-    "release/corporate_action_boundary_validation.parquet": "6a974282a00d5ad74f83dbb53af3df55fbebac7f01a559aec744e08100ef2f31",
-    "release/corporate_actions.parquet": "e1d6811b9eb85fe6a81f685bdcb985b8e5971c704417ad01aacb1df6a3650017",
-    "release/daily_prices_adjusted.parquet": "6fb3a103f99b76f485efdb5aacd826b89b831e80678e0c75e62f042dd702a076",
+    "release/corporate_action_boundary_validation.parquet": "c51db37018d546b5b6046d55e65a0bb7d19ebcb03d8ab8eb2cbf6a51ce055b6c",
+    "release/corporate_actions.parquet": "2e1d5a966e178b7909da18252a785bc64fcc1ee5a88dcbd70cb8e9d45d0086b9",
+    "release/daily_prices_adjusted.parquet": "002c5f8e6ed5d4b80844c4f71272ce6bec69024e1ce025c79f8dac6524120c71",
     "release/daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
     "release/isin_history.parquet": "64a5ad9e21e201c07b7903a8bb918d230cba1282bcc67676c386540e46e63143",
     "release/issuer_master.parquet": "9926d1489a589b23d776888ddc4cd100908c44fa80900c2f4881647016ba861a",
@@ -40,7 +40,7 @@
     "security_count": 5745
   },
   "definition": "ACTIVE_V1",
-  "git_commit": "40199b02be0b6c9f3b506d44e34b041bd4a934ef",
+  "git_commit": "b0f9efc2fb4f0e7f9596901b2f99ecac2bcf905e",
   "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
   "parser_versions": {
     "canonicalization": "identity-v1",

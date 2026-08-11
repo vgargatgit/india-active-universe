@@ -1,8 +1,8 @@
 {
   "artifacts": {
-    "corporate_action_boundary_validation.parquet": "6a974282a00d5ad74f83dbb53af3df55fbebac7f01a559aec744e08100ef2f31",
-    "corporate_actions.parquet": "e1d6811b9eb85fe6a81f685bdcb985b8e5971c704417ad01aacb1df6a3650017",
-    "daily_prices_adjusted.parquet": "6fb3a103f99b76f485efdb5aacd826b89b831e80678e0c75e62f042dd702a076",
+    "corporate_action_boundary_validation.parquet": "c51db37018d546b5b6046d55e65a0bb7d19ebcb03d8ab8eb2cbf6a51ce055b6c",
+    "corporate_actions.parquet": "2e1d5a966e178b7909da18252a785bc64fcc1ee5a88dcbd70cb8e9d45d0086b9",
+    "daily_prices_adjusted.parquet": "002c5f8e6ed5d4b80844c4f71272ce6bec69024e1ce025c79f8dac6524120c71",
     "daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
     "liquidity_features.parquet": "a3bc114a41b46a6abdedc22b4956a72a6c13927ab2b8e7ef4547ee14c9a679a4",
     "required_research_security.parquet": "0a088e1870d333c52c77d356ba951c055a5499a64b31d14d7e74a284867d8e64",
@@ -10,13 +10,14 @@
     "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
   },
   "boundary_validation": {
+    "NO_LOCAL_BOUNDARY_OBSERVATION": 24,
     "NO_POST_EVENT_OBSERVATION": 240,
     "NO_PRE_EVENT_OBSERVATION": 26,
-    "PASS": 437,
-    "WARNING_LARGE_BOUNDARY_MOVE": 45
+    "PASS": 432,
+    "WARNING_LARGE_BOUNDARY_MOVE": 26
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "40199b02be0b6c9f3b506d44e34b041bd4a934ef",
+  "git_sha": "b0f9efc2fb4f0e7f9596901b2f99ecac2bcf905e",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -33,7 +34,7 @@
     "research_identity_promotion.md": "1075816b73feb2a0e46844f6a65995f7fa81d767962aa01e93783f54fa65ae95",
     "research_price_adjustment_promotion.md": "3fa8b318dc2be20727072da0608cc547e8570398efa7a5a866cc4b9c049a7380",
     "research_scale.md": "bea072ee0ce46bcd32d1b667897cf3f4d98e1ebcbb512b10c1c8fede533392e7",
-    "research_universe_corporate_action_audit.md": "e9e7898d1aa66efe44e7873090f432bb2a4d7a145eccc2bb7d9bd64aaba74ad0",
+    "research_universe_corporate_action_audit.md": "87ec2f184b8760d76b57d743b380b52300faf466882c44d16b2cb0e4fb32a75b",
     "research_universe_coverage.md": "ae1d6b978d99f2dda4c45ce1cd0ccc5b819f21bf05563bebd746b75816a3e539",
     "research_universe_stability.md": "b7d0be2d0b470d1f480b8e5571e21ec1f3289186877bafb8bc06fda3bdcf5756",
     "session_correct_liquidity_audit.md": "b79a4ec60304a00fdf16e8ecf8f4028edde28f2ade78bbe6399fe9c1fd8d0337",
@@ -58,5 +59,5 @@
     "research_start": "2013-01-01"
   },
   "status_interval_overlaps": 0,
-  "test_result_sha256": "5b44b4683315a3b39417e7086b290d210bea07e4f3e709bd79284ae36910c8ca"
+  "test_result_sha256": "c4d4969df51288bc6d3c861bb1a82e083c5b11e6167537c5d4a1cc754239b824"
 }
