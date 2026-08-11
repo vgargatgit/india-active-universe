@@ -17,6 +17,7 @@ REQUIRED = [
     "security_master.parquet", "symbol_history.parquet", "issuer_master.parquet",
     "listing_episodes.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet",
     "corporate_actions.parquet", "trading_status.parquet", "trading_status_intervals.parquet", "suspension_events_resolved.parquet", "active_universe_daily.parquet",
+    "unresolved_observed_trading.parquet",
     "liquidity_features.parquet", "terminal_events.parquet", "data_release_manifest.json",
     "trading_calendar.parquet",
     "company_name_history.parquet", "isin_history.parquet", "corporate_action_boundary_validation.parquet",

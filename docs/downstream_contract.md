@@ -1,6 +1,6 @@
 # Downstream contract
 
-Consumers must pin a release ID and manifest hash, then read published artifacts only: `security_master`, `symbol_history`, `company_name_history`, `isin_history`, `issuer_master`, `listing_episodes`, `daily_prices_raw`, `daily_prices_adjusted`, `corporate_actions`, `trading_calendar`, `trading_status`, `trading_status_intervals`, `active_universe_daily`, `liquidity_features`, `research_universe_monthly`, `required_research_security`, and `terminal_events`.
+Consumers must pin a release ID and manifest hash, then read published artifacts only: `security_master`, `symbol_history`, `company_name_history`, `isin_history`, `issuer_master`, `listing_episodes`, `daily_prices_raw`, `daily_prices_adjusted`, `corporate_actions`, `trading_calendar`, `trading_status`, `trading_status_intervals`, `active_universe_daily`, `liquidity_features`, `research_universe_monthly`, `required_research_security`, `unresolved_observed_trading`, and `terminal_events`.
 
 `required_research_security` is the Phase 2 quality boundary. It contains securities that enter monthly `LIQUID_V1` or monthly Top-750 liquidity scope and carries date range, rank, liquidity, identity, adjustment, instrument, and status evidence. Downstream consumers can use it to identify which securities must stay inside the high-confidence review boundary without scanning every monthly snapshot.
 
