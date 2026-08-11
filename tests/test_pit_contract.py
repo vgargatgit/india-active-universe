@@ -26,6 +26,8 @@ from india_active_universe.profiles import (
     RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
+    SOURCE_BUILD_MODE,
+    SOURCE_MANIFEST_ARTIFACT,
     TARGET_RELEASE_ID,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
@@ -239,6 +241,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     data_manifest = {
         "release_id": release.name,
         "git_commit": "abc123",
+        "build_mode": SOURCE_BUILD_MODE,
         "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
     }
     valid_manifest = {
@@ -450,7 +453,10 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "definition": ACTIVE_DEFINITION,
         "quality_tier": DATASET_QUALITY_TIER,
         "parser_versions": PARSER_VERSIONS,
-        "artifacts": {f"release/{name}": "0" * 64 for name in REQUIRED if name not in {"data_release_manifest.json", "research_release_manifest.json"}},
+        "artifacts": {
+            **{f"release/{name}": "0" * 64 for name in REQUIRED if name not in {"data_release_manifest.json", "research_release_manifest.json"}},
+            f"release/{SOURCE_MANIFEST_ARTIFACT}": "0" * 64,
+        },
     }
 
     assert data_manifest_contract_failures(release, manifest) == []
