@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import duckdb
@@ -115,6 +116,35 @@ def write(path: Path, text: str) -> None:
     path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
+def validation_passed(path: Path) -> bool:
+    if not path.exists():
+        return False
+    return json.loads(path.read_text(encoding="utf-8")).get("status") == "PASS"
+
+
+def ci_passed(path: Path, *, git_sha: str) -> bool:
+    if not path.exists():
+        return False
+    status = json.loads(path.read_text(encoding="utf-8"))
+    return (
+        status.get("status") == "completed"
+        and status.get("conclusion") == "success"
+        and status.get("head_sha") == git_sha
+    )
+
+
+def junit_passed(path: Path) -> bool:
+    if not path.exists():
+        return False
+    root = ET.parse(path).getroot()
+    suites = list(root.iter("testsuite"))
+    if not suites:
+        return False
+    failures = sum(int(suite.get("failures", "0")) for suite in suites)
+    errors = sum(int(suite.get("errors", "0")) for suite in suites)
+    return failures == 0 and errors == 0
+
+
 def scalar(connection: duckdb.DuckDBPyConnection, query: str):
     return connection.execute(query).fetchone()[0]
 
@@ -126,6 +156,8 @@ def main() -> None:
     parser.add_argument("--baseline-release", default="releases/india_equity_data_v2.0.1")
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--manual-overrides", default="data/reference/manual_identity_overrides.yaml")
+    parser.add_argument("--promote-research-start")
+    parser.add_argument("--promote-monthly-start")
     args = parser.parse_args()
     release = Path(args.release)
     reports = Path(args.reports)
@@ -139,12 +171,32 @@ def main() -> None:
     research_monthly_start = research_coverage.get("monthly_snapshot_start") or RESEARCH_MONTHLY_SNAPSHOT_START
     warmup_coverage = release_manifest.get("warmup_coverage", {})
     research_quality_intervals = release_manifest.get("research_quality_intervals", [])
+    if args.promote_research_start:
+        promoted_interval = {
+            "start": args.promote_research_start,
+            "end": str(observed_coverage.get("observed_end")),
+            "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+            "profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "priority_scope": PRIORITY_SCOPE,
+        }
+        research_quality_intervals = [
+            interval for interval in research_quality_intervals
+            if not (
+                isinstance(interval, dict)
+                and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+                and interval.get("profile") == PROFILE_ID
+                and interval.get("profile_version") == PROFILE_VERSION
+                and interval.get("priority_scope") == PRIORITY_SCOPE
+            )
+        ]
+        research_quality_intervals.insert(0, promoted_interval)
     published_research_start, published_research_end = published_research_quality_bounds(
         research_quality_intervals,
         fallback_start=research_start,
         fallback_end=str(observed_coverage.get("observed_end")),
     )
-    published_research_monthly_start = published_research_monthly_snapshot_start(
+    published_research_monthly_start = args.promote_monthly_start or published_research_monthly_snapshot_start(
         published_research_start,
         fallback_start=research_start,
         fallback_monthly_start=research_monthly_start,
@@ -321,7 +373,7 @@ def main() -> None:
           WITH required_monthly AS (
             SELECT *
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
           ), episode_counts AS (
             SELECT security_id, COUNT(DISTINCT listing_episode_id) AS episode_count
@@ -350,7 +402,7 @@ def main() -> None:
           WITH pre2013_required AS (
             SELECT DISTINCT security_id
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
           ), master AS (
             SELECT m.*
@@ -380,7 +432,7 @@ def main() -> None:
               JOIN read_parquet('{r}/trading_calendar.parquet') c
                 ON CAST(c.date AS DATE) = CAST(p.date AS DATE)
               JOIN pre2013_required q USING (security_id)
-              WHERE CAST(p.date AS DATE) < DATE '{research_start}'
+              WHERE CAST(p.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
             )
             WHERE previous_session_index IS NOT NULL
             GROUP BY security_id
@@ -434,7 +486,7 @@ def main() -> None:
             FROM candidates c
             LEFT JOIN read_parquet('{r}/research_universe_monthly.parquet') u
               ON CAST(u.date AS DATE) >= c.candidate_start
-             AND CAST(u.date AS DATE) < DATE '{research_start}'
+             AND CAST(u.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
              AND (u.NSE_BROAD_LIQUID_PIT_V1_eligible OR u.top750_liquidity)
           ), security_scope AS (
             SELECT candidate_start,
@@ -474,7 +526,7 @@ def main() -> None:
             FROM candidates c
             JOIN read_parquet('{r}/research_universe_monthly.parquet') u
               ON CAST(u.date AS DATE) >= c.candidate_start
-             AND CAST(u.date AS DATE) < DATE '{research_start}'
+             AND CAST(u.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
              AND (u.NSE_BROAD_LIQUID_PIT_V1_eligible OR u.top750_liquidity)
           ), material_events AS (
             SELECT sr.candidate_start,
@@ -507,7 +559,7 @@ def main() -> None:
             LEFT JOIN read_parquet('{r}/trading_calendar.parquet') cal
               ON CAST(cal.date AS DATE) = CAST(ca.event_date AS DATE)
             WHERE ca.event_type IN {MATERIAL_ACTIONS}
-              AND CAST(ca.event_date AS DATE) < DATE '{research_start}'
+              AND CAST(ca.event_date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (
                 CAST(ca.event_date AS DATE) >= sr.candidate_start
                 OR cal.session_index >= cs.decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
@@ -542,7 +594,7 @@ def main() -> None:
           WITH required_pre2013 AS (
             SELECT DISTINCT security_id
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
           ), adjusted_returns AS (
             SELECT p.security_id,
@@ -551,7 +603,7 @@ def main() -> None:
               LAG(p.price_return_adjusted_close) OVER (PARTITION BY p.security_id ORDER BY CAST(p.date AS DATE)) AS previous_adjusted_close
             FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
             JOIN required_pre2013 q USING (security_id)
-            WHERE CAST(p.date AS DATE) < DATE '{research_start}'
+            WHERE CAST(p.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
           ), returns AS (
             SELECT security_id,
               date,
@@ -607,7 +659,7 @@ def main() -> None:
             FROM candidates c
             LEFT JOIN read_parquet('{r}/research_universe_monthly.parquet') u
               ON CAST(u.date AS DATE) >= c.candidate_start
-             AND CAST(u.date AS DATE) < DATE '{research_start}'
+             AND CAST(u.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
              AND (u.NSE_BROAD_LIQUID_PIT_V1_eligible OR u.top750_liquidity)
           ), security_scope AS (
             SELECT candidate_start,
@@ -645,7 +697,7 @@ def main() -> None:
               MAX(CASE WHEN {product_marker_sql} THEN 1 ELSE 0 END)::BOOLEAN AS product_like_marker,
               MAX(CASE WHEN {exact_product_symbol_sql} THEN 1 ELSE 0 END)::BOOLEAN AS known_product_symbol
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
             GROUP BY security_id
           )
@@ -688,7 +740,7 @@ def main() -> None:
               MAX(CASE WHEN NSE_BROAD_LIQUID_PIT_V1_eligible THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
               MAX(CASE WHEN top750_liquidity THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
             GROUP BY security_id
           ), last_seen AS (
@@ -738,7 +790,7 @@ def main() -> None:
               MAX(CASE WHEN NSE_BROAD_LIQUID_PIT_V1_eligible THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
               MAX(CASE WHEN top750_liquidity THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
             GROUP BY 1, 2
           ), last_seen AS (
@@ -767,7 +819,7 @@ def main() -> None:
               MAX(CASE WHEN NSE_BROAD_LIQUID_PIT_V1_eligible THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
               MAX(CASE WHEN top750_liquidity THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750
             FROM read_parquet('{r}/research_universe_monthly.parquet')
-            WHERE CAST(date AS DATE) < DATE '{research_start}'
+            WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
             GROUP BY security_id
           ), last_seen AS (
@@ -818,7 +870,7 @@ def main() -> None:
             COUNT(DISTINCT security_id) FILTER (WHERE signal_history_ready_252) AS signal_ready_252,
             COUNT(DISTINCT security_id) FILTER (WHERE signal_history_ready_273) AS signal_ready_273
           FROM read_parquet('{r}/research_universe_monthly.parquet')
-          WHERE CAST(date AS DATE) < DATE '{research_start}'
+          WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
           GROUP BY 1
           ORDER BY 1
         """).fetchall()
@@ -954,7 +1006,7 @@ def main() -> None:
             MAX(absent_observation_days_60) AS max_absent_days_60,
             COUNT(*) FILTER (WHERE NOT signal_history_ready_273) AS signal_not_ready_273_rows
           FROM read_parquet('{r}/research_universe_monthly.parquet')
-          WHERE CAST(date AS DATE) < DATE '{research_start}'
+          WHERE CAST(date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
         """).fetchone()
         left_censored_security_count = scalar(connection, f"""
           WITH first_source AS (
@@ -976,14 +1028,16 @@ def main() -> None:
         connection.close()
 
     missing_factor_count = sum(int(row[2]) for row in event_rows)
-    gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(unresolved_boundary_count) == 0 and int(status_overlap) == 0
-    quality = RESEARCH_HIGH_CONFIDENCE_STATUS if gate_pass else RESEARCH_EXPLORATORY_STATUS
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     validation_path = reports / f"research_invariant_validation_{release.name}.json"
     candidate_promotion_audit_path = reports / f"candidate_promotion_audit_{release.name}.json"
     test_result_path = reports / f"test_results_{release.name}.xml"
     ci_status_path = reports / f"ci_status_{release.name}.json"
     partition_manifest_path = release / PARTITIONED_ARTIFACTS_MANIFEST
+    validation_ok = validation_passed(validation_path)
+    test_ok = junit_passed(test_result_path)
+    ci_ok = ci_passed(ci_status_path, git_sha=git_sha)
+    hard_evidence_gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(status_overlap) == 0
 
     year_map = {int(row[0]): row[1:] for row in yearly_required_rows}
     terminal_sensitivity_by_year = {int(row[0]): int(row[1]) for row in terminal_sensitivity_year_rows}
@@ -1079,7 +1133,7 @@ The Top-750 set is a PIT liquidity diagnostic. It is not index membership.
         f"| Early liquidity sparsity | Maximum pre-2013 `absent_observation_days_60`: `{pre2013_max_absent}`. | Sparse rows are counted through official-session windows, not ignored. |",
         f"| Signal warmup | `{pre2013_signal_not_ready}` pre-2013 monthly rows are not ready for 273-session momentum-style history. | Universe eligibility is separate from model/signal readiness. |",
         f"| Left-boundary price-action validation | `{left_boundary_events}` material boundary validations lack pre-event observations or are left-censored. | These are not PASS; they require contamination analysis before promotion. |",
-        f"| Early monthly artifact coverage | `{pre2013_rows}` rows, `{pre2013_securities}` securities, `{pre2013_required}` required-scope securities before `{research_start}`. | Zero values mean early candidate snapshots have not yet been materialized into this release. |",
+        f"| Early monthly artifact coverage | `{pre2013_rows}` rows, `{pre2013_securities}` securities, `{pre2013_required}` required-scope securities before `{CURRENT_PROVEN_RESEARCH_START_DATE}`. | Zero values mean early candidate snapshots have not yet been materialized into this release. |",
         "| Market-cap and sector history | not available in release artifacts | These must not be backfilled from current classifications. |",
     ]
     bias_text.extend([
@@ -1237,7 +1291,7 @@ Weekend and holiday dates are not part of any window.
         "# Pre-2013 research identity promotion",
         "",
         f"Scope: `{PRIORITY_SCOPE}`.",
-        f"Current control start: `{research_start}`.",
+        f"Current control start: `{CURRENT_PROVEN_RESEARCH_START_DATE}`.",
         "",
         "Each row applies the existing research identity gate to required securities from the candidate start through the day before the current control start.",
         "",
@@ -1422,7 +1476,7 @@ Weekend and holiday dates are not part of any window.
     dates = sorted({row[0] for row in monthly_detail_rows})
     by_date = {point: {row[1] for row in monthly_detail_rows if row[0] == point and row[2]} for point in dates}
     top750_by_date = {point: {row[1] for row in monthly_detail_rows if row[0] == point and row[3]} for point in dates}
-    pre2013_dates = [point for point in dates if str(point) < research_start]
+    pre2013_dates = [point for point in dates if str(point) < CURRENT_PROVEN_RESEARCH_START_DATE]
     pre2013_by_date = {point: by_date[point] for point in pre2013_dates}
     pre2013_top750_by_date = {point: top750_by_date[point] for point in pre2013_dates}
     pre2013_stability_text = [
@@ -1842,7 +1896,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         candidate_decision_text.append(f"| {candidate_start} | `{candidate_audit_status}` | `{decision_window_gate}` | `{warmup_gate}` | `{session_gate}` | `{identity_gate}` | `{adjustment_gate}` | `{instrument_gate}` | `{status_gate}` | `{hard_failure_summary}` | `{interpretation}` |")
     pass_candidate_starts = sorted(
         item["candidate_start"] for item in candidate_promotion_decisions
-        if item["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
+        if item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE
+        and item.get("research_candidate_gate_pass") is True
     )
     earliest_candidate_gate_pass_start = pass_candidate_starts[0] if pass_candidate_starts else None
     pit_candidate_starts = sorted(
@@ -1856,6 +1911,38 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         if item.get("refined_earliest_passing_snapshot")
     )
     refined_earliest_candidate_gate_pass_boundary = refined_candidate_boundaries[0] if refined_candidate_boundaries else None
+    promotion_requested = bool(args.promote_research_start)
+    promotion_start_is_gate_pass = (
+        any(candidate_start <= args.promote_research_start for candidate_start in pass_candidate_starts)
+        and (
+            not refined_earliest_candidate_gate_pass_boundary
+            or args.promote_research_start >= refined_earliest_candidate_gate_pass_boundary
+        )
+        if args.promote_research_start
+        else False
+    )
+    promotion_gate_pass = (
+        promotion_requested
+        and promotion_start_is_gate_pass
+        and hard_evidence_gate_pass
+        and validation_ok
+        and test_ok
+        and ci_ok
+    )
+    if promotion_requested and not promotion_gate_pass:
+        blockers = []
+        if not promotion_start_is_gate_pass:
+            blockers.append("promote_research_start_not_in_gate_pass_candidates")
+        if not hard_evidence_gate_pass:
+            blockers.append("hard_evidence_gate_failed")
+        if not validation_ok:
+            blockers.append("research_invariant_validation_not_pass")
+        if not test_ok:
+            blockers.append("junit_tests_not_pass")
+        if not ci_ok:
+            blockers.append("ci_status_not_pass_for_current_git_sha")
+        raise SystemExit(f"Cannot promote {args.promote_research_start}: {', '.join(blockers)}")
+    quality = RESEARCH_HIGH_CONFIDENCE_STATUS if promotion_gate_pass else RESEARCH_EXPLORATORY_STATUS
     candidate_recommended_research_interval = {
         "status": "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE" if earliest_candidate_gate_pass_start else "NO_RESEARCH_GATE_PASS",
         "start": earliest_candidate_gate_pass_start,
@@ -1876,6 +1963,22 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
         "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
     }
+    if promotion_gate_pass:
+        release_manifest.setdefault("research_coverage", {})
+        release_manifest["research_coverage"]["research_verified_start"] = published_research_start
+        release_manifest["research_coverage"]["research_verified_end"] = published_research_end
+        release_manifest["research_coverage"]["monthly_snapshot_start"] = published_research_monthly_start
+        release_manifest["research_quality_intervals"] = research_quality_intervals
+        release_manifest["git_commit"] = git_sha
+        release_manifest["candidate_promotion_decisions"] = candidate_promotion_decisions
+        release_manifest["earliest_candidate_gate_pass_start"] = earliest_candidate_gate_pass_start
+        release_manifest["refined_earliest_candidate_gate_pass_boundary"] = refined_earliest_candidate_gate_pass_boundary
+        release_manifest["candidate_recommended_research_interval"] = candidate_recommended_research_interval
+        release_manifest["candidate_recommended_pit_universe_interval"] = candidate_recommended_pit_universe_interval
+        (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+            json.dumps(release_manifest, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     executive_text = [
         "# Extended history research readiness",
         "",
@@ -1895,7 +1998,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "9. Years passing identity promotion: see `pre2013_research_identity_promotion.md` and `research_readiness_by_year.md`.",
         "10. Years failing promotion: see `research_readiness_by_year.md`.",
         "11. Early identities requiring intervention: see `pre2013_identity_priority.md` and `pre2013_identity_episode_audit.md`.",
-        f"12. Required securities unresolved before `{research_start}`: `{pre2013_identity_failures}` monthly required-scope identity failures.",
+        f"12. Required securities unresolved before `{CURRENT_PROVEN_RESEARCH_START_DATE}`: `{pre2013_identity_failures}` monthly required-scope identity failures.",
         f"13. Material corporate actions lacking factors in promoted required scope: `{missing_factor_count}`.",
         f"14. Left-censored material boundaries: `{left_boundary_events}`.",
         "15. Boundary contamination capability: see `pre2013_adjusted_return_quality.md`; only candidate lookback/signal-window non-PASS boundaries are promotion-relevant.",

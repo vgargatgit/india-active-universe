@@ -4,7 +4,7 @@ Profile: `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 
 Coverage: `2006-01-31` through `2026-08-10`.
 
-Promoted-scope required research securities: `2670` total (`2346` LIQUID_V1 names and `2270` Top-750 names).
+Promoted-scope required research securities: `4269` total (`3321` LIQUID_V1 names and `3879` Top-750 names).
 
 Candidate-plus-promoted support artifact securities: `4269`.
 

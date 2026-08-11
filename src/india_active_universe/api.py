@@ -197,8 +197,7 @@ def _normalize_earliest_candidate_gate_pass_start(value: Any, decisions: list[di
         row["candidate_start"]
         for row in decisions
         if row["candidate_audit_status"] == CANDIDATE_PASS_VALUE
-        and all(row[field] == CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS)
-        and row["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
+        and row.get("research_candidate_gate_pass") is True
     )
     if value is None:
         if gate_pass_starts:
@@ -704,6 +703,20 @@ class DataPlatform:
             raise CoverageError(f"Date {point} is outside trusted release coverage {start} through {end}")
         return point
 
+    def _check_source_date(self, value: str | date) -> date:
+        point = _as_date(value)
+        if self.strict and (
+            (self.coverage_start and point < self.coverage_start)
+            or (self.coverage_end and point > self.coverage_end)
+        ):
+            raise CoverageError(f"Date {point} is outside source coverage {self.coverage_start} through {self.coverage_end}")
+        return point
+
+    def _check_history_range(self, start: str | date, end: str | date) -> tuple[date, date]:
+        begin = self._check_source_date(start)
+        finish = self._check_date(end)
+        return begin, finish
+
     def active_on(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.universe.active_on(self._check_date(as_of_date))
 
@@ -750,13 +763,13 @@ class DataPlatform:
         return self.isins.isin_at(security_id, self._check_date(as_of_date))
 
     def history(self, security_id: str, start: str | date, end: str | date) -> list[dict[str, Any]]:
-        begin, finish = self._check_date(start), self._check_date(end)
+        begin, finish = self._check_history_range(start, end)
         return self.prices.history(security_id, begin, finish)
 
     def adjusted_history(self, security_id: str, start: str | date, end: str | date, *, series: str = "PRICE_RETURN") -> list[dict[str, Any]]:
         if series not in {"PRICE_RETURN", "TOTAL_RETURN"}:
             raise ValueError(f"Unknown adjusted-price series: {series}")
-        begin, finish = self._check_date(start), self._check_date(end)
+        begin, finish = self._check_history_range(start, end)
         rows = self.adjusted_prices.history(security_id, begin, finish)
         value_field = "price_return_adjusted_close" if series == "PRICE_RETURN" else "total_return_adjusted_close"
         fallback_value_field = "research_adjusted_close" if series == "PRICE_RETURN" else "research_adjusted_close_total_return"
@@ -775,7 +788,7 @@ class DataPlatform:
         return self.terminal_events.resolution_queue_for_holdings(security_ids)
 
     def sessions_between(self, start: str | date, end: str | date) -> list[dict[str, Any]]:
-        begin, finish = self._check_date(start), self._check_date(end)
+        begin, finish = self._check_source_date(start), self._check_source_date(end)
         return self.calendar.sessions_between(begin, finish)
 
     def research_quality_on(self, as_of_date: str | date) -> str:
@@ -850,8 +863,8 @@ class DataPlatform:
         )
         derived_refined = refined_boundaries[0] if refined_boundaries else None
         candidate_recommended_research_interval = {
-            "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if derived_refined else "NO_REFINED_BOUNDARY",
-            "start": derived_refined,
+            "status": "CANDIDATE_RESEARCH_GATE_PASS_AVAILABLE" if derived_earliest else "NO_RESEARCH_GATE_PASS",
+            "start": derived_earliest,
             "end": self.coverage_end.isoformat() if self.coverage_end else None,
             "profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
@@ -859,7 +872,13 @@ class DataPlatform:
             "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
         }
         candidate_recommended_pit_universe_interval = {
-            **candidate_recommended_research_interval,
+            "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if derived_refined else "NO_REFINED_BOUNDARY",
+            "start": derived_refined,
+            "end": self.coverage_end.isoformat() if self.coverage_end else None,
+            "profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
+            "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
             "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
             "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
         }

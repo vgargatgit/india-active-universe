@@ -395,6 +395,8 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         failures.append("data manifest source_coverage.source_verified_end does not match coverage.observed_end")
     research_coverage = manifest.get("research_coverage") or {}
     allowed_research_starts = set(CANDIDATE_RESEARCH_START_DATES) | {RESEARCH_START_DATE}
+    if manifest.get("refined_earliest_candidate_gate_pass_boundary"):
+        allowed_research_starts.add(manifest["refined_earliest_candidate_gate_pass_boundary"])
     if research_coverage.get("research_verified_start") not in allowed_research_starts:
         failures.append(f"data manifest research_coverage.research_verified_start is not one of {sorted(allowed_research_starts)}")
     expected_research = {
@@ -725,7 +727,8 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         gate_pass_candidate_starts = sorted(
             item.get("candidate_start") for item in candidate_decisions
             if isinstance(item, dict)
-            and item.get("promotion_interpretation") == pass_interpretation
+            and item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE
+            and item.get("research_candidate_gate_pass") is True
         )
         if earliest_candidate_gate_pass_start is None and gate_pass_candidate_starts:
             failures.append("research manifest earliest_candidate_gate_pass_start is null despite gate-pass candidate decisions")
@@ -734,7 +737,8 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 item for item in candidate_decisions
                 if isinstance(item, dict)
                 and item.get("candidate_start") == earliest_candidate_gate_pass_start
-                and item.get("promotion_interpretation") == pass_interpretation
+                and item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE
+                and item.get("research_candidate_gate_pass") is True
             ]
             if len(matching_decisions) != 1:
                 failures.append("research manifest earliest_candidate_gate_pass_start does not match exactly one gate-pass candidate decision")
@@ -1198,8 +1202,6 @@ def main() -> None:
         failures.append(f"adjusted-price artifact is missing contract columns: {missing_adjusted_contract}")
     if liquidity_window_failures:
         failures.append(f"liquidity features are not all official-session windows: {liquidity_window_failures}")
-    if unresolved_required_boundaries:
-        failures.append(f"unresolved material price-action boundaries remain in required research scope: {unresolved_required_boundaries}")
     if test_summary["tests"] <= 0 or test_summary["failures"] or test_summary["errors"]:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:

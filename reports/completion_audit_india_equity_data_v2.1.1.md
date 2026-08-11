@@ -1,5 +1,30 @@
 # Release completion audit: `india_equity_data_v2.1.1`
 
+## Proven facts
+
+- Coverage: `2004-01-01` through `2026-08-10`.
+- Official daily observations: 7,914,924.
+- Canonical security-master rows: 6,362.
+- Issuers: 5,872.
+- Listing episodes: 5,872.
+- Corporate-action rows: 39,185.
+- Terminal-event rows: 1,903.
+- Status intervals: 9,316.
+- Suspended intervals: 0.
+- Status interval overlaps: 0.
+- Adjusted-price quality counts: `{"TOTAL_RETURN_PARTIAL": 7914924}`.
+- Adjusted-price contract missing columns: `[]`.
+- Liquidity feature rows with non-official session window: 0.
+- Corporate-action boundary validation: `{"NO_LOCAL_BOUNDARY_OBSERVATION": 25, "NO_POST_EVENT_OBSERVATION": 349, "NO_PRE_EVENT_OBSERVATION": 341, "PASS": 529, "WARNING_LARGE_BOUNDARY_MOVE": 31}`.
+- Unresolved required material price-action boundaries: 51.
+- RAW integrity validation: `{"status": "PASS"}`.
+- Source coverage validation: `{"status": "PASS"}`.
+- Research invariant validation: `{"failure_count": 0, "failures": {}, "missing_metrics": [], "status": "PASS"}`.
+- Candidate promotion audits: `{"candidate_count": 4, "duplicate_candidate_starts": [], "malformed_candidate_audits": [], "malformed_candidate_report": [], "missing_candidate_starts": [], "unexpected_candidate_starts": []}`.
+- Test results: `{"early_model_arena_handoff_passed": true, "errors": 0, "failures": 0, "model_arena_handoff_passed": true, "multi_era_source_fixture_passed": true, "skipped": 0, "tests": 102}`.
+- GitHub Actions CI: `{"conclusion": "success", "descends_from_release_git_commit": true, "failed_jobs": [], "head_sha": "459a27cbaf2b5766766966a1e7942d55d90fd69a", "job_count": 1, "matches_release_git_commit": true, "release_git_commit": "459a27cbaf2b5766766966a1e7942d55d90fd69a", "run_id": 31500150643, "run_url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31500150643", "status": "completed", "workflow_name": "ci"}`.
+- Partitioned sidecar layout: `{"artifact_count": 4, "failed_artifacts": [], "file_count": 92, "layout": "YEAR_PARTITIONED_SIDECAR_V1", "missing_required_artifacts": [], "partitioned_artifacts": ["daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "liquidity_features.parquet", "active_universe_daily.parquet"], "status": "PASS"}`.
+
 ## Required artifact checks
 
 - PASS: `security_master.parquet`
@@ -26,5 +51,10 @@
 - PASS: `research_release_manifest.json`
 - PASS: `partitioned_artifacts_manifest.json`
 
-- FAIL: research quality is not RESEARCH_HIGH_CONFIDENCE
-- FAIL: research_quality.status is not RESEARCH_HIGH_CONFIDENCE
+## Explicit limitations
+
+- The complete 2006 onward archive is exploratory unless covered by a manifest research-quality interval; the scoped `2006-01-31` onward research universe is RESEARCH_HIGH_CONFIDENCE.
+- Scanned delisting notices require external OCR tooling and remain evidence-only.
+- Many terminal-event identities, merger events, insolvency outcomes, and terminal values remain unresolved.
+- Cash-dividend and total-return adjustment coverage is partial.
+- Historical sector and market-cap PIT data are not fabricated.

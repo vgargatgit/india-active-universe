@@ -25,7 +25,7 @@ It is generated from release artifacts and companion audit reports. It does not 
 18. Survivorship protection: see `pre2013_survivorship_evidence.md` and `survivorship_audit.md`.
 19. 2013+ v2.0.1 regression status: `REVIEW_REQUIRED`.
 20. RESEARCH_HIGH_CONFIDENCE intervals:
-- `2013-01-01` through `2026-08-10`: `RESEARCH_HIGH_CONFIDENCE` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
+- `2006-01-31` through `2026-08-10`: `RESEARCH_HIGH_CONFIDENCE` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 - `2004-01-01` through `2005-03-14`: `SOURCE_ONLY` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 21. RESEARCH_EXPLORATORY intervals: any interval marked `RESEARCH_EXPLORATORY` in `research_quality_intervals`, plus candidate intervals whose gates are not all pass.
 22. SOURCE_ONLY interval: source observations before the first promoted research interval remain `SOURCE_ONLY` or warmup-only evidence.

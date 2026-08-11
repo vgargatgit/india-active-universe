@@ -814,6 +814,7 @@ def test_candidate_promotion_loader_rejects_gate_pass_interpretation_contradicti
         "instrument_gate": "PASS",
         "status_gate": "PASS",
         "hard_failures": no_failures,
+        "research_candidate_gate_pass": True,
         "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
     }
 
@@ -859,6 +860,7 @@ def test_candidate_promotion_loader_validates_earliest_candidate_gate_pass_start
         "instrument_gate": "PASS",
         "status_gate": "PASS",
         "hard_failures": no_failures,
+        "research_candidate_gate_pass": True,
         "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
     }
     earlier_gate_pass = {**gate_pass, "candidate_start": "2011-01-01"}
@@ -2237,14 +2239,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "instrument_gate": "PASS",
 
         "status_gate": "PASS",
-        "hard_failures": {
-            **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
-            "not_materialized": False,
-            "candidate_start_snapshot_missing": False,
-            "decision_window_snapshots_missing": False,
-        },
-        "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
-    }
+            "hard_failures": {
+                **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+                "not_materialized": False,
+                "candidate_start_snapshot_missing": False,
+                "decision_window_snapshots_missing": False,
+            },
+            "pit_universe_gate_pass": True,
+            "research_candidate_gate_pass": True,
+            "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+        }
     non_earliest_gate_pass = {
         **valid_manifest,
             "candidate_promotion_decisions": [
