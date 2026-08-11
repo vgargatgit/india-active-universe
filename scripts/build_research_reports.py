@@ -63,6 +63,30 @@ def path_sql(path: Path) -> str:
     return str(path.resolve()).replace("'", "''")
 
 
+def published_research_quality_bounds(
+    research_quality_intervals: list[dict],
+    *,
+    fallback_start: str,
+    fallback_end: str | None,
+) -> tuple[str, str | None]:
+    """Return the scalar research bounds backed by published RHC interval evidence."""
+    published_rhc_intervals = sorted(
+        (
+            interval for interval in research_quality_intervals
+            if isinstance(interval, dict)
+            and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+            and interval.get("profile") == PROFILE_ID
+            and interval.get("profile_version") == PROFILE_VERSION
+            and interval.get("priority_scope") == PRIORITY_SCOPE
+            and interval.get("start")
+        ),
+        key=lambda interval: interval["start"],
+    )
+    if not published_rhc_intervals:
+        return fallback_start, fallback_end
+    return published_rhc_intervals[0]["start"], published_rhc_intervals[0].get("end") or fallback_end
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -100,6 +124,11 @@ def main() -> None:
     research_monthly_start = research_coverage.get("monthly_snapshot_start") or RESEARCH_MONTHLY_SNAPSHOT_START
     warmup_coverage = release_manifest.get("warmup_coverage", {})
     research_quality_intervals = release_manifest.get("research_quality_intervals", [])
+    published_research_start, published_research_end = published_research_quality_bounds(
+        research_quality_intervals,
+        fallback_start=research_start,
+        fallback_end=str(observed_coverage.get("observed_end")),
+    )
     connection = duckdb.connect()
     try:
         counts = connection.execute(f"""
@@ -1812,12 +1841,12 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
     manifest = {
         "release_id": release.name,
         "git_sha": git_sha,
-        "research_quality": {"status": quality, "start": research_start, "end": str(coverage[1]), "monthly_snapshot_start": research_monthly_start, "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE},
+        "research_quality": {"status": quality, "start": published_research_start, "end": published_research_end, "monthly_snapshot_start": research_monthly_start, "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE},
         "source_coverage": {
             "observed_start": observed_coverage.get("observed_start"),
             "observed_end": observed_coverage.get("observed_end"),
-            "research_start": research_start,
-            "research_end": str(coverage[1]),
+            "research_start": published_research_start,
+            "research_end": published_research_end,
         },
         "warmup_coverage": {
             "feature_readiness_windows": warmup_coverage.get("feature_readiness_windows", FEATURE_READINESS_WINDOWS),
