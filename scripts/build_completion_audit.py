@@ -168,6 +168,39 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for name in required_artifacts:
         if name not in artifacts:
             failures.append(f"research manifest artifact hash missing for {name}")
+    monthly_contract = {
+        "date",
+        "security_id",
+        "listing_episode_id",
+        "symbol_at_date",
+        "instrument_type",
+        "identity_quality",
+        "price",
+        "history_sessions",
+        "positive_volume_days_60",
+        "median_traded_value_60",
+        "median_traded_value_126",
+        "liquidity_rank_126",
+        "liquidity_percentile",
+        "LIQUID_V1_eligible",
+        "NSE_BROAD_LIQUID_PIT_V1_eligible",
+        "top500_liquidity",
+        "top750_liquidity",
+        "top1000_liquidity",
+        "research_identity_ok",
+        "price_adjustment_quality",
+        "price_adjustment_ok",
+        "status_quality",
+        "profile_id",
+        "profile_version",
+        "as_of_date",
+        "eligibility_result",
+        "eligibility_reason_codes",
+    }
+    published_monthly_contract = set(research_manifest.get("research_universe_monthly_contract") or [])
+    missing_monthly_contract = sorted(monthly_contract - published_monthly_contract)
+    if missing_monthly_contract:
+        failures.append(f"research manifest research_universe_monthly_contract misses {missing_monthly_contract}")
     required_security_contract = {
         "security_id",
         "first_research_date",

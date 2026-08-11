@@ -240,6 +240,35 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "research_universe_monthly_contract": [
+            "date",
+            "security_id",
+            "listing_episode_id",
+            "symbol_at_date",
+            "instrument_type",
+            "identity_quality",
+            "price",
+            "history_sessions",
+            "positive_volume_days_60",
+            "median_traded_value_60",
+            "median_traded_value_126",
+            "liquidity_rank_126",
+            "liquidity_percentile",
+            "LIQUID_V1_eligible",
+            "NSE_BROAD_LIQUID_PIT_V1_eligible",
+            "top500_liquidity",
+            "top750_liquidity",
+            "top1000_liquidity",
+            "research_identity_ok",
+            "price_adjustment_quality",
+            "price_adjustment_ok",
+            "status_quality",
+            "profile_id",
+            "profile_version",
+            "as_of_date",
+            "eligibility_result",
+            "eligibility_reason_codes",
+        ],
         "required_research_security_contract": [
             "security_id",
             "first_research_date",
@@ -305,6 +334,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
     failures = research_manifest_contract_failures(release, data_manifest, missing_required_security_field)
     assert any("required_research_security_contract" in failure and "price_adjustment_ok" in failure for failure in failures)
+
+    missing_monthly_field = {
+        **valid_manifest,
+        "research_universe_monthly_contract": [
+            field for field in valid_manifest["research_universe_monthly_contract"]
+            if field != "LIQUID_V1_eligible"
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_monthly_field)
+    assert any("research_universe_monthly_contract" in failure and "LIQUID_V1_eligible" in failure for failure in failures)
 
 
 def test_raw_and_adjusted_history_are_separate():
