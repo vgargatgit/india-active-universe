@@ -10,24 +10,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from india_active_universe.profiles import REQUIRED_RELEASE_ARTIFACTS, TARGET_RELEASE_ID
 
-REQUIRED = (
-    "security_master.parquet",
-    "symbol_history.parquet",
-    "issuer_master.parquet",
-    "listing_episodes.parquet",
-    "daily_prices_raw.parquet",
-    "daily_prices_adjusted.parquet",
-    "corporate_actions.parquet",
-    "trading_status.parquet",
-    "trading_status_intervals.parquet",
-    "active_universe_daily.parquet",
-    "liquidity_features.parquet",
-    "terminal_events.parquet",
-    "trading_calendar.parquet",
-    "company_name_history.parquet",
-    "isin_history.parquet",
-)
+REQUIRED = tuple(name for name in REQUIRED_RELEASE_ARTIFACTS if name.endswith(".parquet"))
 
 
 def sha256(path: Path) -> str:
@@ -76,6 +61,8 @@ def main() -> None:
     root = Path(args.root).resolve()
     source = (root / args.source_release).resolve()
     target = (root / "releases" / args.release_id).resolve()
+    if args.release_id == TARGET_RELEASE_ID:
+        raise SystemExit(f"{TARGET_RELEASE_ID} must be built from source with build_source_release.py, not cached promotion")
     manifest_path = source / "data_release_manifest.json"
     if not manifest_path.is_file():
         raise SystemExit(f"Parent release manifest does not exist: {manifest_path}")
