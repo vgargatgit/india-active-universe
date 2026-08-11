@@ -114,6 +114,12 @@ def main() -> None:
         platform = DataPlatform.from_release(root / "releases" / args.release_id, strict=False)
         if args.candidate_start:
             output = {
+                "release_id": args.release_id,
+                "quality_tier": platform.quality_tier,
+                "coverage_start": platform.coverage_start.isoformat() if platform.coverage_start else None,
+                "coverage_end": platform.coverage_end.isoformat() if platform.coverage_end else None,
+                "verified_start": platform.verified_start.isoformat() if platform.verified_start else None,
+                "verified_end": platform.verified_end.isoformat() if platform.verified_end else None,
                 "candidate_start": args.candidate_start,
                 "candidate_decision": platform.candidate_promotion_decision(args.candidate_start),
                 "candidate_gate_pass_ready": platform.candidate_gate_pass_ready(args.candidate_start),
@@ -121,7 +127,15 @@ def main() -> None:
                 "candidate_research_ready": platform.candidate_research_ready(args.candidate_start),
             }
         else:
-            output = platform.candidate_promotion_summary()
+            output = {
+                "release_id": args.release_id,
+                "quality_tier": platform.quality_tier,
+                "coverage_start": platform.coverage_start.isoformat() if platform.coverage_start else None,
+                "coverage_end": platform.coverage_end.isoformat() if platform.coverage_end else None,
+                "verified_start": platform.verified_start.isoformat() if platform.verified_start else None,
+                "verified_end": platform.verified_end.isoformat() if platform.verified_end else None,
+                "candidate_promotion_summary": platform.candidate_promotion_summary(),
+            }
         print(json.dumps(output, indent=2, sort_keys=True))
     elif args.command == "publish-release":
         if not args.release_id:

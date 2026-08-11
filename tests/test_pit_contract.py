@@ -405,6 +405,12 @@ def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, caps
     from india_active_universe import api
 
     class FakePlatform:
+        quality_tier = "DATASET_EXPLORATORY"
+        coverage_start = date(2006, 1, 2)
+        coverage_end = date(2026, 8, 10)
+        verified_start = date(2013, 1, 1)
+        verified_end = date(2026, 8, 10)
+
         @classmethod
         def from_release(cls, release, *, strict=False):
             assert str(release).endswith("releases/india_equity_data_test")
@@ -441,6 +447,10 @@ def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, caps
     cli.main()
 
     output = json.loads(capsys.readouterr().out)
+    assert output["release_id"] == "india_equity_data_test"
+    assert output["quality_tier"] == "DATASET_EXPLORATORY"
+    assert output["coverage_start"] == "2006-01-02"
+    assert output["verified_start"] == "2013-01-01"
     assert output["candidate_start"] == "2006-01-01"
     assert output["candidate_decision"]["candidate_audit_status"] == "FAIL"
     assert output["candidate_gate_pass_ready"] is False
@@ -485,8 +495,12 @@ def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
     cli.main()
 
     output = json.loads(capsys.readouterr().out)
-    assert tuple(output.keys()) == CANDIDATE_PROMOTION_SUMMARY_FIELDS
-    assert output["candidate_gate_pass_start_dates"] == []
+    assert output["release_id"] == "india_equity_data_test"
+    assert output["quality_tier"] == "DATASET_EXPLORATORY"
+    assert output["coverage_start"] == "2006-01-02"
+    assert output["verified_start"] == "2013-01-01"
+    assert tuple(output["candidate_promotion_summary"].keys()) == CANDIDATE_PROMOTION_SUMMARY_FIELDS
+    assert output["candidate_promotion_summary"]["candidate_gate_pass_start_dates"] == []
 
 
 def test_candidate_promotion_loader_rejects_duplicate_candidate_starts():
