@@ -532,6 +532,15 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         if isinstance(item, dict)
     ):
         failures.append("research manifest research_quality_intervals has no scoped RESEARCH_HIGH_CONFIDENCE interval")
+    if quality.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS and quality.get("start") and not (
+        isinstance(intervals, list) and any(
+            isinstance(item, dict)
+            and item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+            and item.get("start") == quality.get("start")
+            for item in intervals
+        )
+    ):
+        failures.append("research_quality.start is not backed by a matching RESEARCH_HIGH_CONFIDENCE interval")
     if isinstance(intervals, list):
         earliest_fully_warmed = warmup.get("earliest_fully_warmed_date")
         refined_boundary = research_manifest.get("refined_earliest_candidate_gate_pass_boundary")

@@ -291,6 +291,22 @@ def _validate_research_quality_intervals_after_warmup(
             )
 
 
+def _validate_research_quality_scalar_matches_interval(
+    manifest_name: str,
+    research_quality: dict[str, Any],
+    intervals: Any,
+) -> None:
+    if research_quality.get("status") != RESEARCH_HIGH_CONFIDENCE_STATUS or not research_quality.get("start"):
+        return
+    if not isinstance(intervals, list) or not any(
+        isinstance(interval, dict)
+        and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+        and interval.get("start") == research_quality.get("start")
+        for interval in intervals
+    ):
+        raise ValueError(f"{manifest_name} research_quality.start is not backed by a matching RESEARCH_HIGH_CONFIDENCE interval")
+
+
 class SecurityMaster:
     """Date-sensitive identity lookup over a published security master."""
 
@@ -1009,6 +1025,11 @@ class DataPlatform:
                 platform.quality_tier = research_quality["status"]
             platform.warmup_coverage = research_manifest.get("warmup_coverage") or platform.warmup_coverage
             platform.research_quality_intervals = research_manifest.get("research_quality_intervals") or platform.research_quality_intervals
+            _validate_research_quality_scalar_matches_interval(
+                "research manifest",
+                research_quality,
+                platform.research_quality_intervals,
+            )
             has_research_candidate_decisions = "candidate_promotion_decisions" in research_manifest
             has_research_earliest_candidate = "earliest_candidate_gate_pass_start" in research_manifest
             has_research_refined_candidate_boundary = "refined_earliest_candidate_gate_pass_boundary" in research_manifest
