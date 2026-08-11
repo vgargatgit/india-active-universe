@@ -6,6 +6,7 @@ from typing import Any, Iterable
 
 from .profiles import (
     CANDIDATE_AUDIT_STATUS_VALUES,
+    CANDIDATE_ADVISORY_READINESS_KEYS,
     CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
     CANDIDATE_DECISION_GATE_KEYS,
     CANDIDATE_DECISION_GATE_VALUES,
@@ -66,6 +67,15 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             gate_value = row[field]
             if gate_value not in CANDIDATE_DECISION_GATE_VALUES:
                 raise ValueError(f"candidate_promotion_decisions[{index}].{field} is invalid: {gate_value}")
+        for field in CANDIDATE_ADVISORY_READINESS_KEYS:
+            gate_value = row[field]
+            if gate_value not in CANDIDATE_DECISION_GATE_VALUES:
+                raise ValueError(f"candidate_promotion_decisions[{index}].{field} is invalid: {gate_value}")
+        feature_readiness = row["feature_readiness"]
+        if not isinstance(feature_readiness, dict):
+            raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness must be an object")
+        if type(feature_readiness.get("feature_warmup_not_ready")) is not bool:
+            raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness.feature_warmup_not_ready must be bool")
         promotion_interpretation = row["promotion_interpretation"]
         if promotion_interpretation not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
             raise ValueError(
@@ -157,6 +167,30 @@ def _normalize_earliest_candidate_gate_pass_start(value: Any, decisions: list[di
         raise ValueError(
             f"earliest_candidate_gate_pass_start must be earliest gate-pass candidate: "
             f"{gate_pass_starts[0]}"
+        )
+    return _as_date(point)
+
+
+def _normalize_refined_earliest_candidate_gate_pass_boundary(value: Any, decisions: list[dict[str, Any]]) -> date | None:
+    refined_boundaries = sorted(
+        _as_date(row["refined_earliest_passing_snapshot"]).isoformat()
+        for row in decisions
+        if row["candidate_audit_status"] == CANDIDATE_PASS_VALUE
+        and all(row[field] == CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS)
+        and row["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
+        and row.get("refined_earliest_passing_snapshot")
+    )
+    if value is None:
+        if refined_boundaries:
+            raise ValueError("refined_earliest_candidate_gate_pass_boundary is null despite refined gate-pass candidate boundaries")
+        return None
+    point = _as_date(value).isoformat()
+    if not refined_boundaries:
+        raise ValueError("refined_earliest_candidate_gate_pass_boundary is set without refined gate-pass candidate boundaries")
+    if point != refined_boundaries[0]:
+        raise ValueError(
+            "refined_earliest_candidate_gate_pass_boundary must be earliest refined gate-pass boundary: "
+            f"{refined_boundaries[0]}"
         )
     return _as_date(point)
 
@@ -487,6 +521,7 @@ class DataPlatform:
         self.research_quality_intervals: list[dict[str, Any]] = []
         self.candidate_promotion_decisions: list[dict[str, Any]] = []
         self.earliest_candidate_gate_pass_start: date | None = None
+        self._refined_earliest_candidate_gate_pass_boundary: date | None = None
         self.security_master = SecurityMaster()
         self.company_names = CompanyNameHistoryStore()
         self.isins = IsinHistoryStore()
@@ -628,6 +663,20 @@ class DataPlatform:
             else None
         )
         derived_earliest = gate_pass_start_dates[0] if gate_pass_start_dates else None
+        refined_boundaries = sorted(
+            str(row["refined_earliest_passing_snapshot"])
+            for row in self.candidate_promotion_decisions
+            if row.get("candidate_audit_status") == CANDIDATE_PASS_VALUE
+            and all(row.get(field) == CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS)
+            and row.get("promotion_interpretation") == CANDIDATE_GATE_PASS_INTERPRETATION
+            and row.get("refined_earliest_passing_snapshot")
+        )
+        recorded_refined = (
+            self._refined_earliest_candidate_gate_pass_boundary.isoformat()
+            if self._refined_earliest_candidate_gate_pass_boundary
+            else None
+        )
+        derived_refined = refined_boundaries[0] if refined_boundaries else None
         return {
             "recorded_earliest_candidate_gate_pass_start": recorded_earliest,
             "earliest_candidate_gate_pass_start": derived_earliest,
@@ -637,6 +686,9 @@ class DataPlatform:
                 value.isoformat()
                 for value in self.candidate_research_ready_start_dates()
             ],
+            "recorded_refined_earliest_candidate_gate_pass_boundary": recorded_refined,
+            "refined_earliest_candidate_gate_pass_boundary": derived_refined,
+            "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary": recorded_refined == derived_refined,
             "candidate_promotion_decisions": self.candidate_promotion_status(),
         }
 
@@ -648,6 +700,7 @@ class DataPlatform:
             "candidate_decision_required_fields": CANDIDATE_DECISION_REQUIRED_FIELDS,
             "candidate_promotion_summary_fields": CANDIDATE_PROMOTION_SUMMARY_FIELDS,
             "candidate_decision_gate_keys": CANDIDATE_DECISION_GATE_KEYS,
+            "candidate_advisory_readiness_keys": CANDIDATE_ADVISORY_READINESS_KEYS,
             "candidate_hard_failure_keys": CANDIDATE_HARD_FAILURE_KEYS,
             "candidate_boolean_hard_failure_keys": CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
             "candidate_numeric_hard_failure_keys": CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
@@ -673,6 +726,10 @@ class DataPlatform:
     def earliest_candidate_gate_pass_date(self) -> date | None:
         """Return the earliest candidate start whose candidate gates pass, if any."""
         return self.earliest_candidate_gate_pass_start
+
+    def refined_earliest_candidate_gate_pass_boundary(self) -> date | None:
+        """Return the earliest monthly/session boundary whose candidate universe gates pass."""
+        return self._refined_earliest_candidate_gate_pass_boundary
 
     def candidate_gate_pass_start_dates(self) -> list[date]:
         """Return configured candidate starts whose candidate promotion gates pass."""
@@ -775,6 +832,11 @@ class DataPlatform:
                 manifest.get("earliest_candidate_gate_pass_start"),
                 platform.candidate_promotion_decisions,
             )
+            if "refined_earliest_candidate_gate_pass_boundary" in manifest:
+                platform._refined_earliest_candidate_gate_pass_boundary = _normalize_refined_earliest_candidate_gate_pass_boundary(
+                    manifest.get("refined_earliest_candidate_gate_pass_boundary"),
+                    platform.candidate_promotion_decisions,
+                )
         research_manifest_path = base / RESEARCH_RELEASE_MANIFEST_ARTIFACT
         if research_manifest_path.exists():
             import json
@@ -801,6 +863,11 @@ class DataPlatform:
                     research_manifest.get("earliest_candidate_gate_pass_start"),
                     platform.candidate_promotion_decisions,
                 )
+                if "refined_earliest_candidate_gate_pass_boundary" in research_manifest:
+                    platform._refined_earliest_candidate_gate_pass_boundary = _normalize_refined_earliest_candidate_gate_pass_boundary(
+                        research_manifest.get("refined_earliest_candidate_gate_pass_boundary"),
+                        platform.candidate_promotion_decisions,
+                    )
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)

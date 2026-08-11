@@ -23,7 +23,7 @@ The candidate promotion evidence records:
 - `candidate_research_ready_start_dates()`: the API helper that returns configured starts with both candidate gate-pass evidence and `RESEARCH_HIGH_CONFIDENCE`.
 - `candidate_research_ready(candidate_start)`: the API helper that requires both candidate gate-pass evidence and `RESEARCH_HIGH_CONFIDENCE` at the candidate date.
 - Candidate audit metadata: profile, profile version, priority scope, control start, required prior sessions, and the configured candidate start dates.
-- Gate results for warm-up, session-liquidity, identity, price-action, instrument, and status checks.
+- Gate results for session-liquidity, identity, price-action, instrument, and status checks. Warm-up is reported as advisory feature-readiness evidence. It is not a first-class PIT universe promotion gate.
 - `decision_window_gate`, backed by monthly snapshots after the first source-backed candidate decision session.
 - Explicit hard-failure counts for each configured gate.
 
@@ -45,11 +45,11 @@ Candidate manifest fields are atomic. In each manifest layer, `candidate_promoti
 
 If candidate evidence is missing, malformed, stale, contradictory, or not generated for every configured candidate start, the release audit fails closed. This prevents an accidental claim that the bounded liquid universe is research-ready from 2006.
 
-Candidate gates must agree with the hard-failure map. For example, `decision_window_gate`, `warmup_gate`, `session_liquidity_gate`, `identity_gate`, `price_action_gate`, `instrument_gate`, and `status_gate` cannot publish `PASS` when the corresponding hard-failure evidence says source-backed decision-window snapshots, warm-up history, official-session liquidity windows, identity quality, price-action coverage, ordinary-equity classification, or trading-status evidence are not ready.
+Candidate gates must agree with the hard-failure map. For example, `decision_window_gate`, `session_liquidity_gate`, `identity_gate`, `price_action_gate`, `instrument_gate`, and `status_gate` cannot publish `PASS` when the corresponding hard-failure evidence says source-backed decision-window snapshots, official-session liquidity windows, identity quality, price-action coverage, ordinary-equity classification, or trading-status evidence are not ready. `warmup_gate` must agree with `feature_readiness`, but it does not block PIT universe interval promotion.
 
 Likewise, `candidate_audit_status` must match the hard-failure map: it cannot publish `PASS` while any hard-failure value is active, and it cannot publish `FAIL` when no hard-failure value is active.
 
-`earliest_candidate_gate_pass_start` must be consistent with the candidate rows. If it is `null`, no candidate row can have `CANDIDATE_GATE_PASS_INTERPRETATION`. If it is set, it must be a configured start and the earliest row whose audit status and every first-class gate are `PASS`.
+`earliest_candidate_gate_pass_start` must be consistent with the candidate rows. If it is `null`, no candidate row can have `CANDIDATE_GATE_PASS_INTERPRETATION`. If it is set, it must be a configured start and the earliest row whose audit status and every first-class gate are `PASS`. New Phase 3 manifests also emit `refined_earliest_candidate_gate_pass_boundary`, the earliest monthly/session boundary inside passing coarse candidates.
 
 The manifest candidate decision rows must also match the generated candidate promotion audit artifact. For each configured candidate start, `candidate_audit_status` and `hard_failures` in `research_release_manifest.json` must equal the corresponding row in `candidate_promotion_audit_<release>.json`. Boolean hard-failure fields must remain booleans, and count fields must remain integers. The field set is published in the profile constants as `CANDIDATE_HARD_FAILURE_KEYS`.
 

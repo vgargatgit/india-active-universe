@@ -16,6 +16,7 @@ from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     ADJUSTED_PRICE_ARTIFACT,
     CANDIDATE_AUDIT_STATUS_VALUES,
+    CANDIDATE_ADVISORY_READINESS_KEYS,
     CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
     CANDIDATE_DECISION_GATE_KEYS,
     CANDIDATE_DECISION_REQUIRED_FIELDS,
@@ -203,6 +204,7 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             malformed_candidate_audits.append(None)
             continue
         hard_failures = item.get("hard_failures")
+        feature_readiness = item.get("feature_readiness")
         hard_failure_keys = set(hard_failures or {}) if isinstance(hard_failures, dict) else set()
         required_rows = item.get("required_rows")
         fully_warmed_required_rows = item.get("fully_warmed_required_rows")
@@ -223,6 +225,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or item.get("required_prior_sessions_for_full_readiness") != max(FEATURE_READINESS_WINDOWS.values())
             or item.get("status") not in {"PASS", "FAIL"}
             or not isinstance(hard_failures, dict)
+            or not isinstance(feature_readiness, dict)
+            or type(feature_readiness.get("feature_warmup_not_ready")) is not bool
             or hard_failure_keys != EXPECTED_CANDIDATE_HARD_FAILURE_KEYS
             or bool(candidate_hard_failure_type_failures(hard_failures))
             or not isinstance(required_rows, int)
@@ -231,7 +235,6 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or fully_warmed_required_rows > required_rows
             or (item.get("status") == CANDIDATE_PASS_VALUE and bool(active_hard_failures))
             or (item.get("status") == CANDIDATE_FAIL_VALUE and not active_hard_failures)
-            or (item.get("status") == CANDIDATE_PASS_VALUE and fully_warmed_required_rows != required_rows)
             or (item.get("status") == CANDIDATE_PASS_VALUE and monthly_snapshots_after_decision <= 0)
             or (monthly_snapshots_after_decision <= 0 and hard_failures.get("decision_window_snapshots_missing") is False)
             or (monthly_snapshots_after_decision > 0 and hard_failures.get("decision_window_snapshots_missing") is True)
@@ -486,6 +489,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         earliest_candidate_gate_pass_start = research_manifest.get("earliest_candidate_gate_pass_start")
         if "earliest_candidate_gate_pass_start" not in research_manifest:
             failures.append("research manifest earliest_candidate_gate_pass_start is missing")
+        refined_earliest_candidate_gate_pass_boundary = research_manifest.get("refined_earliest_candidate_gate_pass_boundary")
         candidate_decision_start_values = [
             item.get("candidate_start") for item in candidate_decisions
             if isinstance(item, dict)
@@ -520,6 +524,14 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             for gate_key in CANDIDATE_DECISION_GATE_KEYS:
                 if item.get(gate_key) not in CANDIDATE_DECISION_GATE_VALUES:
                     failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid {gate_key}")
+            for readiness_key in CANDIDATE_ADVISORY_READINESS_KEYS:
+                if item.get(readiness_key) not in CANDIDATE_DECISION_GATE_VALUES:
+                    failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid advisory {readiness_key}")
+            feature_readiness = item.get("feature_readiness")
+            if not isinstance(feature_readiness, dict):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} feature_readiness is not an object")
+            elif type(feature_readiness.get("feature_warmup_not_ready")) is not bool:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} feature_readiness.feature_warmup_not_ready is not bool")
             hard_failures = item.get("hard_failures")
             if not isinstance(hard_failures, dict):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures is not an object")
@@ -542,17 +554,11 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 or (item.get("decision_window_gate") == CANDIDATE_FAIL_VALUE and hard_failures.get("decision_window_snapshots_missing") is not True)
             ):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} decision_window_gate contradicts hard_failures")
-            elif (
-                (item.get("warmup_gate") == CANDIDATE_PASS_VALUE and (
-                    hard_failures.get("warmup_not_ready") is not False
-                    or hard_failures.get("decision_window_snapshots_missing") is not False
-                ))
-                or (item.get("warmup_gate") == CANDIDATE_FAIL_VALUE and (
-                    hard_failures.get("warmup_not_ready") is False
-                    and hard_failures.get("decision_window_snapshots_missing") is False
-                ))
+            elif isinstance(feature_readiness, dict) and (
+                (item.get("warmup_gate") == CANDIDATE_PASS_VALUE and feature_readiness.get("feature_warmup_not_ready") is not False)
+                or (item.get("warmup_gate") == CANDIDATE_FAIL_VALUE and feature_readiness.get("feature_warmup_not_ready") is False)
             ):
-                failures.append(f"research manifest candidate {item.get('candidate_start')} warmup_gate contradicts hard_failures")
+                failures.append(f"research manifest candidate {item.get('candidate_start')} warmup_gate contradicts feature_readiness")
             elif (
                 (item.get("session_liquidity_gate") == CANDIDATE_PASS_VALUE and int(hard_failures.get("session_liquidity_window_failures") or 0) != 0)
                 or (item.get("session_liquidity_gate") == CANDIDATE_FAIL_VALUE and int(hard_failures.get("session_liquidity_window_failures") or 0) == 0)
@@ -602,6 +608,19 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append("research manifest earliest_candidate_gate_pass_start does not match exactly one gate-pass candidate decision")
             elif gate_pass_candidate_starts and earliest_candidate_gate_pass_start != gate_pass_candidate_starts[0]:
                 failures.append("research manifest earliest_candidate_gate_pass_start is not the earliest gate-pass candidate")
+        refined_gate_pass_boundaries = sorted(
+            item.get("refined_earliest_passing_snapshot") for item in candidate_decisions
+            if isinstance(item, dict)
+            and item.get("promotion_interpretation") == pass_interpretation
+            and item.get("refined_earliest_passing_snapshot")
+        )
+        if refined_earliest_candidate_gate_pass_boundary is None and refined_gate_pass_boundaries:
+            failures.append("research manifest refined_earliest_candidate_gate_pass_boundary is null despite refined gate-pass candidate boundaries")
+        if refined_earliest_candidate_gate_pass_boundary is not None:
+            if not refined_gate_pass_boundaries:
+                failures.append("research manifest refined_earliest_candidate_gate_pass_boundary is set without refined gate-pass candidate boundaries")
+            elif refined_earliest_candidate_gate_pass_boundary != refined_gate_pass_boundaries[0]:
+                failures.append("research manifest refined_earliest_candidate_gate_pass_boundary is not the earliest refined gate-pass boundary")
 
     policy = research_manifest.get("known_policy") or {}
     expected_policy = {

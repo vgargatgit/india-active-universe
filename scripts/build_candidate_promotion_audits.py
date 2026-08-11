@@ -161,11 +161,48 @@ def main() -> None:
               ON lf.security_id = rs.security_id
              AND CAST(lf.date AS DATE) = CAST(rs.date AS DATE)
             GROUP BY rs.candidate_start
+          ), monthly_gate_counts AS (
+            SELECT rs.candidate_start,
+              CAST(rs.date AS DATE) AS snapshot_date,
+              COUNT(*) AS required_rows,
+              COUNT(*) FILTER (WHERE research_identity_ok IS DISTINCT FROM TRUE) AS identity_failures,
+              COUNT(*) FILTER (WHERE price_adjustment_ok IS DISTINCT FROM TRUE) AS price_adjustment_failures,
+              COUNT(*) FILTER (
+                WHERE instrument_type IS DISTINCT FROM 'ORDINARY_EQUITY'
+                   OR instrument_type_quality IS NULL
+                   OR instrument_type_quality = 'UNRESOLVED'
+              ) AS instrument_failures,
+              COUNT(*) FILTER (
+                WHERE status_quality IN ('UNKNOWN_STATUS', 'UNRESOLVED')
+                   OR status_quality IS NULL
+              ) AS status_failures,
+              COUNT(*) FILTER (
+                WHERE lf.liquidity_window_definition IS DISTINCT FROM 'OFFICIAL_NSE_SESSION_WINDOW'
+              ) AS session_liquidity_window_failures
+            FROM required_scope rs
+            LEFT JOIN read_parquet('{r}/liquidity_features.parquet') lf
+              ON lf.security_id = rs.security_id
+             AND CAST(lf.date AS DATE) = CAST(rs.date AS DATE)
+            GROUP BY rs.candidate_start, CAST(rs.date AS DATE)
+          ), refined_boundaries AS (
+            SELECT mgc.candidate_start,
+              MIN(mgc.snapshot_date) AS refined_earliest_passing_snapshot
+            FROM monthly_gate_counts mgc
+            JOIN candidate_sessions cs USING (candidate_start)
+            WHERE mgc.snapshot_date >= cs.first_decision_session
+              AND mgc.required_rows > 0
+              AND mgc.identity_failures = 0
+              AND mgc.price_adjustment_failures = 0
+              AND mgc.instrument_failures = 0
+              AND mgc.status_failures = 0
+              AND mgc.session_liquidity_window_failures = 0
+            GROUP BY mgc.candidate_start
           )
           SELECT c.candidate_start,
             cs.first_decision_session,
             ces.first_expected_snapshot,
             mc.first_materialized_snapshot,
+            rb.refined_earliest_passing_snapshot,
             COALESCE(mc.monthly_rows, 0) AS monthly_rows,
             COALESCE(mc.monthly_snapshots, 0) AS monthly_snapshots,
             COALESCE(mc.monthly_snapshots_after_decision, 0) AS monthly_snapshots_after_decision,
@@ -190,6 +227,7 @@ def main() -> None:
           LEFT JOIN required_counts rc USING (candidate_start)
           LEFT JOIN material_counts mat USING (candidate_start)
           LEFT JOIN liquidity_window_counts lw USING (candidate_start)
+          LEFT JOIN refined_boundaries rb USING (candidate_start)
           ORDER BY c.candidate_start DESC
         """).fetchall()
     finally:
@@ -202,6 +240,7 @@ def main() -> None:
             first_decision_session,
             first_expected_snapshot,
             first_materialized_snapshot,
+            refined_earliest_passing_snapshot,
             monthly_rows,
             monthly_snapshots,
             monthly_snapshots_after_decision,
@@ -224,7 +263,6 @@ def main() -> None:
             "not_materialized": required_securities == 0 or monthly_snapshots == 0,
             "candidate_start_snapshot_missing": first_expected_snapshot is None or first_materialized_snapshot != first_expected_snapshot,
             "decision_window_snapshots_missing": first_decision_session is None or monthly_snapshots_after_decision == 0,
-            "warmup_not_ready": first_decision_session is None or required_rows == 0 or fully_warmed_required_rows < required_rows,
             "identity_failures": int(identity_failures),
             "price_adjustment_failures": int(price_adjustment_failures),
             "instrument_failures": int(instrument_failures),
@@ -233,11 +271,19 @@ def main() -> None:
             "signal_window_non_pass_boundaries": int(signal_window_non_pass_boundaries),
             "session_liquidity_window_failures": int(session_liquidity_window_failures),
         }
+        feature_readiness = {
+            "feature_warmup_not_ready": first_decision_session is None or required_rows == 0 or fully_warmed_required_rows < required_rows,
+            "required_prior_sessions_for_full_readiness": max_window,
+            "fully_warmed_required_rows": int(fully_warmed_required_rows),
+            "required_rows": int(required_rows),
+            "signal_ready_252_rows": int(signal_ready_252_rows),
+            "signal_ready_273_rows": int(signal_ready_273_rows),
+            "model_handoff_history_ready_300_rows": int(fully_warmed_required_rows),
+        }
         status = "PASS" if (
             not hard_failures["not_materialized"]
             and not hard_failures["candidate_start_snapshot_missing"]
             and not hard_failures["decision_window_snapshots_missing"]
-            and not hard_failures["warmup_not_ready"]
             and int(identity_failures) == 0
             and int(price_adjustment_failures) == 0
             and int(instrument_failures) == 0
@@ -251,6 +297,7 @@ def main() -> None:
             "first_decision_session": str(first_decision_session) if first_decision_session else None,
             "first_expected_snapshot": str(first_expected_snapshot) if first_expected_snapshot else None,
             "first_materialized_snapshot": str(first_materialized_snapshot) if first_materialized_snapshot else None,
+            "refined_earliest_passing_snapshot": str(refined_earliest_passing_snapshot) if refined_earliest_passing_snapshot else None,
             "control_start": args.control_start,
             "profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
@@ -267,6 +314,7 @@ def main() -> None:
             "fully_warmed_required_rows": int(fully_warmed_required_rows),
             "required_securities": int(required_securities),
             "material_events": int(material_events),
+            "feature_readiness": feature_readiness,
             "hard_failures": hard_failures,
             "status": status,
         })

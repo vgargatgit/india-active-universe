@@ -260,6 +260,7 @@ def test_platform_exposes_candidate_promotion_decisions():
             "candidate_audit_status": "FAIL",
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
             "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
         }
     ]
@@ -291,6 +292,7 @@ def test_platform_exposes_candidate_gate_pass_start_dates():
             "candidate_audit_status": "PASS",
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
             "session_liquidity_gate": "PASS",
             "identity_gate": "PASS",
             "price_action_gate": "PASS",
@@ -303,6 +305,7 @@ def test_platform_exposes_candidate_gate_pass_start_dates():
             "candidate_audit_status": "PASS",
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
             "session_liquidity_gate": "PASS",
             "identity_gate": "PASS",
             "price_action_gate": "PASS",
@@ -315,6 +318,7 @@ def test_platform_exposes_candidate_gate_pass_start_dates():
             "candidate_audit_status": "PASS",
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
             "session_liquidity_gate": "PASS",
             "identity_gate": "PASS",
             "price_action_gate": "PASS",
@@ -327,6 +331,7 @@ def test_platform_exposes_candidate_gate_pass_start_dates():
             "candidate_audit_status": "FAIL",
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
             "session_liquidity_gate": "PASS",
             "identity_gate": "FAIL",
             "price_action_gate": "PASS",
@@ -519,6 +524,7 @@ def test_candidate_promotion_loader_rejects_duplicate_candidate_starts():
         "candidate_audit_status": "FAIL",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "FAIL",
         "price_action_gate": "PASS",
@@ -548,6 +554,7 @@ def test_candidate_promotion_loader_rejects_partial_candidate_start_sets():
         "candidate_audit_status": "FAIL",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "FAIL",
         "price_action_gate": "PASS",
@@ -578,6 +585,7 @@ def test_candidate_promotion_loader_returns_configured_candidate_order():
         "candidate_audit_status": "FAIL",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "FAIL",
         "price_action_gate": "PASS",
@@ -612,6 +620,7 @@ def test_candidate_promotion_loader_rejects_invalid_candidate_values():
         "candidate_audit_status": "FAIL",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "FAIL",
         "price_action_gate": "PASS",
@@ -649,6 +658,7 @@ def test_candidate_promotion_loader_rejects_extra_hard_failure_keys():
         "candidate_audit_status": "FAIL",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "FAIL",
         "price_action_gate": "PASS",
@@ -682,6 +692,7 @@ def test_candidate_promotion_loader_rejects_audit_status_hard_failure_contradict
         "candidate_audit_status": "FAIL",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "FAIL",
         "price_action_gate": "PASS",
@@ -721,6 +732,7 @@ def test_candidate_promotion_loader_rejects_gate_pass_interpretation_contradicti
         "candidate_audit_status": "PASS",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "PASS",
         "price_action_gate": "PASS",
@@ -765,6 +777,7 @@ def test_candidate_promotion_loader_validates_earliest_candidate_gate_pass_start
         "candidate_audit_status": "PASS",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "PASS",
         "price_action_gate": "PASS",
@@ -819,6 +832,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
                         "candidate_audit_status": "FAIL",
                         "decision_window_gate": "PASS",
                         "warmup_gate": "PASS",
+                        "feature_readiness": {"feature_warmup_not_ready": False},
                         "session_liquidity_gate": "PASS",
                         "identity_gate": "FAIL",
                         "price_action_gate": "PASS",
@@ -830,7 +844,6 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
                             "not_materialized": False,
                             "candidate_start_snapshot_missing": False,
                             "decision_window_snapshots_missing": False,
-                            "warmup_not_ready": False,
                             "identity_failures": 1,
                         },
                         "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
@@ -866,7 +879,6 @@ def test_release_loader_preserves_data_manifest_candidate_state_when_research_ma
         "not_materialized": False,
         "candidate_start_snapshot_missing": False,
         "decision_window_snapshots_missing": False,
-        "warmup_not_ready": False,
         "identity_failures": 1,
     }
     candidate_rows = [
@@ -875,6 +887,7 @@ def test_release_loader_preserves_data_manifest_candidate_state_when_research_ma
             "candidate_audit_status": "FAIL",
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
             "session_liquidity_gate": "PASS",
             "identity_gate": "FAIL",
             "price_action_gate": "PASS",
@@ -1073,6 +1086,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 "candidate_audit_status": "FAIL",
                 "decision_window_gate": "PASS",
                 "warmup_gate": "FAIL",
+                "feature_readiness": {"feature_warmup_not_ready": True},
                 "session_liquidity_gate": "PASS",
                 "identity_gate": "PASS",
                 "price_action_gate": "PASS",
@@ -1084,7 +1098,6 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                     "not_materialized": False,
                     "candidate_start_snapshot_missing": False,
                     "decision_window_snapshots_missing": False,
-                    "warmup_not_ready": True,
                 },
                 "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
             }
@@ -1322,7 +1335,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "candidate_promotion_decisions": [
             {
                 **valid_manifest["candidate_promotion_decisions"][0],
-                "hard_failures": {"warmup_not_ready": True},
+                "hard_failures": {"identity_failures": 1},
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
         ],
@@ -1337,7 +1350,6 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 **valid_manifest["candidate_promotion_decisions"][0],
                 "hard_failures": {
                     **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
-                    "warmup_not_ready": 0,
                 },
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
@@ -1355,7 +1367,6 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 "hard_failures": {
                     **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
                     "candidate_start_snapshot_missing": True,
-                    "warmup_not_ready": False,
                 },
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
@@ -1371,9 +1382,9 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 **valid_manifest["candidate_promotion_decisions"][0],
                 "candidate_audit_status": "FAIL",
                 "warmup_gate": "PASS",
+                "feature_readiness": {"feature_warmup_not_ready": True},
                 "hard_failures": {
                     **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
-                    "warmup_not_ready": False,
                 },
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
@@ -1405,16 +1416,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             {
                 **valid_manifest["candidate_promotion_decisions"][0],
                 "warmup_gate": "PASS",
+                "feature_readiness": {"feature_warmup_not_ready": True},
                 "hard_failures": {
                     **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
-                    "warmup_not_ready": True,
                 },
             },
             *valid_manifest["candidate_promotion_decisions"][1:],
         ],
     }
     failures = research_manifest_contract_failures(release, data_manifest, contradictory_warmup_gate)
-    assert any("warmup_gate contradicts hard_failures" in failure for failure in failures)
+    assert any("warmup_gate contradicts feature_readiness" in failure for failure in failures)
 
     contradictory_session_liquidity_gate = {
         **valid_manifest,
@@ -1543,6 +1554,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "candidate_audit_status": "PASS",
         "decision_window_gate": "PASS",
         "warmup_gate": "PASS",
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "session_liquidity_gate": "PASS",
         "identity_gate": "PASS",
         "price_action_gate": "PASS",
@@ -1554,7 +1566,6 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "not_materialized": False,
             "candidate_start_snapshot_missing": False,
             "decision_window_snapshots_missing": False,
-            "warmup_not_ready": False,
         },
         "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
     }
@@ -1764,14 +1775,19 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         "required_rows": 10,
         "fully_warmed_required_rows": 10,
         "monthly_snapshots_after_decision": 1,
+        "feature_readiness": {"feature_warmup_not_ready": False},
         "hard_failures": {key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
     }
     valid_row["hard_failures"]["not_materialized"] = False
     valid_row["hard_failures"]["candidate_start_snapshot_missing"] = False
     valid_row["hard_failures"]["decision_window_snapshots_missing"] = False
-    valid_row["hard_failures"]["warmup_not_ready"] = False
 
-    stale_row = {**valid_row, "candidate_start": "2009-01-01", "fully_warmed_required_rows": 9}
+    stale_row = {
+        **valid_row,
+        "candidate_start": "2009-01-01",
+        "fully_warmed_required_rows": 9,
+        "feature_readiness": {"feature_warmup_not_ready": True},
+    }
     missing_evidence_row = {key: value for key, value in {**valid_row, "candidate_start": "2007-01-01"}.items() if key != "required_rows"}
     valid_2006_row = {**valid_row, "candidate_start": "2006-01-01"}
 
@@ -1790,7 +1806,7 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
     assert summary["missing_candidate_starts"] == []
     assert summary["unexpected_candidate_starts"] == []
     assert summary["duplicate_candidate_starts"] == []
-    assert summary["malformed_candidate_audits"] == ["2009-01-01", "2007-01-01"]
+    assert summary["malformed_candidate_audits"] == ["2007-01-01"]
     assert summary["malformed_candidate_report"] == []
 
     duplicate_summary = candidate_promotion_audit_summary({**valid_report, "candidate_audits": [valid_row, {**valid_row}]})
@@ -1887,7 +1903,6 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
     hard_failures["not_materialized"] = False
     hard_failures["candidate_start_snapshot_missing"] = False
     hard_failures["decision_window_snapshots_missing"] = False
-    hard_failures["warmup_not_ready"] = False
     manifest = {
         "candidate_promotion_decisions": [
             {

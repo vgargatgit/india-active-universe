@@ -11,7 +11,8 @@ COMMANDS = [
     "download-nse-history", "download-nse-reference-data", "normalize-market-data",
     "build-security-master", "resolve-identities", "build-listing-episodes",
     "build-corporate-actions", "build-raw-prices", "build-adjusted-prices",
-    "build-active-universe", "build-liquidity-features", "build-source-release", "candidate-readiness", "audit-data", "publish-release", "build",
+    "build-active-universe", "build-liquidity-features", "build-source-release",
+    "build-candidate-promotion-audits", "candidate-readiness", "audit-data", "publish-release", "build",
 ]
 CORE_SOURCE_STAGES = {
     "build-security-master", "resolve-identities", "build-listing-episodes",
@@ -137,6 +138,25 @@ def main() -> None:
                 "candidate_promotion_summary": platform.candidate_promotion_summary(),
             }
         print(json.dumps(output, indent=2, sort_keys=True))
+    elif args.command == "build-candidate-promotion-audits":
+        if not args.release_id:
+            raise SystemExit("build-candidate-promotion-audits requires --release-id")
+        release = root / "releases" / args.release_id
+        output = root / "reports" / f"candidate_promotion_audit_{args.release_id}.json"
+        command = [
+            sys.executable,
+            str(root / "scripts/build_candidate_promotion_audits.py"),
+            "--release",
+            str(release),
+            "--out",
+            str(output),
+        ]
+        if args.start:
+            command.extend(["--control-start", args.start])
+        if args.dry_run:
+            print(" ".join(command))
+            return
+        subprocess.run(command, check=True, cwd=root)
     elif args.command == "publish-release":
         if not args.release_id:
             raise SystemExit("publish-release requires --release-id")

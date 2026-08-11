@@ -85,7 +85,6 @@ CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS = (
     "not_materialized",
     "candidate_start_snapshot_missing",
     "decision_window_snapshots_missing",
-    "warmup_not_ready",
 )
 CANDIDATE_NUMERIC_HARD_FAILURE_KEYS = (
     "identity_failures",
@@ -97,9 +96,11 @@ CANDIDATE_NUMERIC_HARD_FAILURE_KEYS = (
     "session_liquidity_window_failures",
 )
 CANDIDATE_HARD_FAILURE_KEYS = CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS + CANDIDATE_NUMERIC_HARD_FAILURE_KEYS
+CANDIDATE_ADVISORY_READINESS_KEYS = (
+    "warmup_gate",
+)
 CANDIDATE_DECISION_GATE_KEYS = (
     "decision_window_gate",
-    "warmup_gate",
     "session_liquidity_gate",
     "identity_gate",
     "price_action_gate",
@@ -110,6 +111,8 @@ CANDIDATE_DECISION_REQUIRED_FIELDS = (
     "candidate_start",
     "candidate_audit_status",
     *CANDIDATE_DECISION_GATE_KEYS,
+    *CANDIDATE_ADVISORY_READINESS_KEYS,
+    "feature_readiness",
     "hard_failures",
     "promotion_interpretation",
 )
@@ -119,6 +122,9 @@ CANDIDATE_PROMOTION_SUMMARY_FIELDS = (
     "recorded_matches_derived_earliest_candidate_gate_pass_start",
     "candidate_gate_pass_start_dates",
     "candidate_research_ready_start_dates",
+    "refined_earliest_candidate_gate_pass_boundary",
+    "recorded_refined_earliest_candidate_gate_pass_boundary",
+    "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary",
     "candidate_promotion_decisions",
 )
 CANDIDATE_PROMOTION_API_METHODS = (
@@ -131,6 +137,7 @@ CANDIDATE_PROMOTION_API_METHODS = (
     "candidate_research_ready_start_dates",
     "candidate_research_ready",
     "earliest_candidate_gate_pass_date",
+    "refined_earliest_candidate_gate_pass_boundary",
 )
 CANDIDATE_PASS_VALUE = "PASS"
 CANDIDATE_FAIL_VALUE = "FAIL"

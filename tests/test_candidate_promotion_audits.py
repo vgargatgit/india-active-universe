@@ -34,7 +34,7 @@ def test_candidate_promotion_audit_emits_all_configured_candidates(tmp_path):
                 "instrument_type": ["ORDINARY_EQUITY", "ORDINARY_EQUITY", "ORDINARY_EQUITY", "ORDINARY_EQUITY"],
                 "instrument_type_quality": ["OFFICIAL_REFERENCE", "OFFICIAL_REFERENCE", "OFFICIAL_REFERENCE", "OFFICIAL_REFERENCE"],
                 "status_quality": ["OBSERVED_OFFICIAL_TRADE", "OBSERVED_OFFICIAL_TRADE", "OBSERVED_OFFICIAL_TRADE", "OBSERVED_OFFICIAL_TRADE"],
-                "model_handoff_history_ready_300": [True, True, True, True],
+                "model_handoff_history_ready_300": [False, True, True, True],
                 "signal_history_ready_252": [True, True, True, True],
                 "signal_history_ready_273": [True, True, True, True],
             }
@@ -106,9 +106,10 @@ def test_candidate_promotion_audit_emits_all_configured_candidates(tmp_path):
     assert all(row["priority_scope"] == PRIORITY_SCOPE for row in audits)
     assert all(set(row["hard_failures"]) == EXPECTED_CANDIDATE_HARD_FAILURE_KEYS for row in audits)
     assert all(row["monthly_snapshots_after_decision"] > 0 for row in audits)
-    assert all(row["required_rows"] == row["fully_warmed_required_rows"] for row in audits)
-    assert all(row["hard_failures"]["warmup_not_ready"] is False for row in audits)
+    assert any(row["required_rows"] > row["fully_warmed_required_rows"] for row in audits)
+    assert any(row["feature_readiness"]["feature_warmup_not_ready"] is True for row in audits)
     assert all(row["hard_failures"]["candidate_start_snapshot_missing"] is False for row in audits)
     assert all(row["hard_failures"]["decision_window_snapshots_missing"] is False for row in audits)
     assert all(row["hard_failures"]["session_liquidity_window_failures"] == 0 for row in audits)
+    assert all(row["refined_earliest_passing_snapshot"] is not None for row in audits)
     assert all(row["status"] == "PASS" for row in audits)

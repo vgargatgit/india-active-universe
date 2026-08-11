@@ -1661,6 +1661,16 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             **{key: True for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
             **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
         }
+        feature_readiness = candidate_audit.get("feature_readiness", {}) if candidate_audit else {
+            "feature_warmup_not_ready": True,
+            "required_prior_sessions_for_full_readiness": max(FEATURE_READINESS_WINDOWS.values()),
+            "fully_warmed_required_rows": 0,
+            "required_rows": 0,
+            "signal_ready_252_rows": 0,
+            "signal_ready_273_rows": 0,
+            "model_handoff_history_ready_300_rows": 0,
+        }
+        refined_boundary = candidate_audit.get("refined_earliest_passing_snapshot") if candidate_audit else None
         candidate_audit_status = candidate_audit.get("status", CANDIDATE_NOT_RECORDED_VALUE) if candidate_audit else CANDIDATE_NOT_RECORDED_VALUE
         if not candidate_audit:
             decision_window_gate = CANDIDATE_NOT_RECORDED_VALUE
@@ -1671,7 +1681,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         else:
             decision_window_gate = CANDIDATE_PASS_VALUE if hard_failures.get("decision_window_snapshots_missing") is False else CANDIDATE_FAIL_VALUE
             warmup_gate = CANDIDATE_PASS_VALUE if (
-                hard_failures.get("warmup_not_ready") is False
+                feature_readiness.get("feature_warmup_not_ready") is False
                 and hard_failures.get("decision_window_snapshots_missing") is False
             ) else CANDIDATE_FAIL_VALUE
             session_failure_count = int(hard_failures.get("session_liquidity_window_failures") or 0)
@@ -1710,6 +1720,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             "price_action_gate": adjustment_gate,
             "instrument_gate": instrument_gate,
             "status_gate": status_gate,
+            "feature_readiness": feature_readiness,
+            "refined_earliest_passing_snapshot": refined_boundary,
             "hard_failures": hard_failures,
             "promotion_interpretation": interpretation,
         })
@@ -1719,6 +1731,13 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         if item["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
     )
     earliest_candidate_gate_pass_start = pass_candidate_starts[0] if pass_candidate_starts else None
+    refined_candidate_boundaries = sorted(
+        str(item["refined_earliest_passing_snapshot"])
+        for item in candidate_promotion_decisions
+        if item["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
+        and item.get("refined_earliest_passing_snapshot")
+    )
+    refined_earliest_candidate_gate_pass_boundary = refined_candidate_boundaries[0] if refined_candidate_boundaries else None
     executive_text = [
         "# Extended history research readiness",
         "",
@@ -1751,7 +1770,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         f"21. RESEARCH_EXPLORATORY intervals: any interval marked `{RESEARCH_EXPLORATORY_STATUS}` in `research_quality_intervals`, plus candidate intervals whose gates are not all pass.",
         f"22. SOURCE_ONLY interval: source observations before the first promoted research interval remain `{SOURCE_ONLY_STATUS}` or warmup-only evidence.",
         "23. Downstream Model Arena safe pre-2013 start: not declared by this report unless all hard gates plus CI/test evidence pass.",
-        f"24. Earliest candidate gate-pass start: `{earliest_candidate_gate_pass_start}`. This is not a final safe start unless full release evidence also passes.",
+        f"24. Earliest candidate gate-pass start: `{earliest_candidate_gate_pass_start}`. Refined earliest monthly/session boundary: `{refined_earliest_candidate_gate_pass_boundary}`. This is not a final safe start unless full release evidence also passes.",
         "25. Remaining limitations: terminal values and total-return dividends remain partial; market cap and historical sector data are not fabricated.",
         "",
         "## Candidate gate matrix",
@@ -1761,7 +1780,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "",
         "## Final promotion rule",
         "",
-        "`SOURCE_INTEGRITY = PASS`, `WARMUP_READINESS = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `MATERIAL_PRICE_ACTION_MISSING_FACTORS = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `PIT_INVARIANTS = PASS`, and `CI = PASS`.",
+        "`SOURCE_INTEGRITY = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `MATERIAL_PRICE_ACTION_MISSING_FACTORS = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `PIT_INVARIANTS = PASS`, and `CI = PASS`. Feature/model warm-up readiness is reported separately and does not invalidate the PIT universe interval.",
         "",
         "Terminal values and complete total-return history are not required for price-return alpha research, but their limitations must remain explicit.",
     ]
@@ -1785,6 +1804,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "research_quality_intervals": research_quality_intervals,
         "candidate_promotion_decisions": candidate_promotion_decisions,
         "earliest_candidate_gate_pass_start": earliest_candidate_gate_pass_start,
+        "refined_earliest_candidate_gate_pass_boundary": refined_earliest_candidate_gate_pass_boundary,
         "required_research_securities": int(promoted_required_count),
         "candidate_required_research_securities": int(required_count),
         "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
