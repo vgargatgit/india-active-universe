@@ -31,6 +31,13 @@ REQUIRED_RESEARCH_REPORTS = [
     "current_survivor_comparison.md", "research_scale.md",
 ]
 
+REQUIRED_PARTITIONED_ARTIFACTS = {
+    "daily_prices_raw.parquet",
+    "daily_prices_adjusted.parquet",
+    "liquidity_features.parquet",
+    "active_universe_daily.parquet",
+}
+
 
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -106,12 +113,15 @@ def ci_summary(path: Path, manifest: dict) -> dict:
 def partition_summary(path: Path) -> dict:
     manifest = json.loads(path.read_text(encoding="utf-8"))
     artifacts = manifest.get("artifacts") or []
+    partitioned_artifacts = [item.get("source_artifact") for item in artifacts]
+    missing_required = sorted(REQUIRED_PARTITIONED_ARTIFACTS - set(partitioned_artifacts))
     return {
         "layout": manifest.get("layout"),
         "status": manifest.get("status"),
         "artifact_count": len(artifacts),
         "failed_artifacts": [item.get("source_artifact") for item in artifacts if item.get("status") != "PASS"],
-        "partitioned_artifacts": [item.get("source_artifact") for item in artifacts],
+        "missing_required_artifacts": missing_required,
+        "partitioned_artifacts": partitioned_artifacts,
         "file_count": sum(int(item.get("file_count") or 0) for item in artifacts),
     }
 
@@ -427,7 +437,7 @@ def main() -> None:
         failures.append("Model Arena handoff smoke test did not pass in release evidence")
     if research_manifest.get("ci_status_sha256") and (ci["status"] != "completed" or ci["conclusion"] != "success" or not ci["descends_from_release_git_commit"] or ci["failed_jobs"]):
         failures.append(f"GitHub Actions CI evidence is not clean: {json.dumps(ci, sort_keys=True)}")
-    if partitions["status"] != "PASS" or partitions["artifact_count"] < 4 or partitions["failed_artifacts"]:
+    if partitions["status"] != "PASS" or partitions["artifact_count"] < 4 or partitions["failed_artifacts"] or partitions["missing_required_artifacts"]:
         failures.append(f"partitioned sidecar evidence is not clean: {json.dumps(partitions, sort_keys=True)}")
     for name in REQUIRED:
         present = (release / name).exists()

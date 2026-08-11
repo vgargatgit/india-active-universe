@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -8,6 +9,8 @@ from pathlib import Path
 import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
+
+from scripts.build_completion_audit import partition_summary
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,3 +55,25 @@ def test_partitioned_release_artifacts_preserve_rows(tmp_path: Path):
         connection.close()
     assert rows == 3
     assert years == [(2020,), (2021,)]
+
+
+def test_partition_summary_requires_all_large_release_artifacts(tmp_path: Path):
+    manifest = tmp_path / "partitioned_artifacts_manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "layout": "YEAR_PARTITIONED_SIDECAR_V1",
+                "status": "PASS",
+                "artifacts": [
+                    {"source_artifact": "daily_prices_raw.parquet", "status": "PASS", "file_count": 1},
+                    {"source_artifact": "daily_prices_adjusted.parquet", "status": "PASS", "file_count": 1},
+                    {"source_artifact": "liquidity_features.parquet", "status": "PASS", "file_count": 1},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    summary = partition_summary(manifest)
+
+    assert summary["missing_required_artifacts"] == ["active_universe_daily.parquet"]
