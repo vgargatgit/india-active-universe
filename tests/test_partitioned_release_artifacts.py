@@ -11,7 +11,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from scripts.build_completion_audit import junit_summary, partition_summary, raw_integrity_summary, source_coverage_summary
-from india_active_universe.profiles import PARTITIONED_RELEASE_ARTIFACTS
+from india_active_universe.profiles import PARTITIONED_ARTIFACTS_MANIFEST, PARTITIONED_RELEASE_ARTIFACTS
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,7 +46,7 @@ def test_partitioned_release_artifacts_preserve_rows(tmp_path: Path):
         text=True,
     )
 
-    manifest = release / "partitioned_artifacts_manifest.json"
+    manifest = release / PARTITIONED_ARTIFACTS_MANIFEST
     assert manifest.exists()
     connection = duckdb.connect()
     try:
@@ -59,7 +59,7 @@ def test_partitioned_release_artifacts_preserve_rows(tmp_path: Path):
 
 
 def test_partition_summary_requires_all_large_release_artifacts(tmp_path: Path):
-    manifest = tmp_path / "partitioned_artifacts_manifest.json"
+    manifest = tmp_path / PARTITIONED_ARTIFACTS_MANIFEST
     manifest.write_text(
         json.dumps(
             {

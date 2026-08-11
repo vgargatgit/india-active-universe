@@ -10,6 +10,7 @@ from india_active_universe.pipeline import build_active_snapshot, classify_instr
 from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     COMPONENT_QUALITY,
+    DATA_RELEASE_MANIFEST_ARTIFACT,
     DATASET_QUALITY_TIER,
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
@@ -21,6 +22,7 @@ from india_active_universe.profiles import (
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_MONTHLY_SNAPSHOT_START,
     RESEARCH_START_DATE,
@@ -201,7 +203,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
 
     release = tmp_path / "india_equity_data_test"
     release.mkdir()
-    (release / "data_release_manifest.json").write_text(
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
         json.dumps(
             {
                 "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
@@ -212,7 +214,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
         ),
         encoding="utf-8",
     )
-    (release / "research_release_manifest.json").write_text(
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
         json.dumps(
             {
                 "research_quality": {
@@ -460,7 +462,7 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "quality_tier": DATASET_QUALITY_TIER,
         "parser_versions": PARSER_VERSIONS,
         "artifacts": {
-            **{f"release/{name}": "0" * 64 for name in REQUIRED if name not in {"data_release_manifest.json", "research_release_manifest.json"}},
+            **{f"release/{name}": "0" * 64 for name in REQUIRED if name not in {DATA_RELEASE_MANIFEST_ARTIFACT, RESEARCH_RELEASE_MANIFEST_ARTIFACT}},
             f"release/{SOURCE_MANIFEST_ARTIFACT}": "0" * 64,
         },
     }
