@@ -215,6 +215,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
         required_rows = item.get("required_rows")
         fully_warmed_required_rows = item.get("fully_warmed_required_rows")
         monthly_snapshots_after_decision = item.get("monthly_snapshots_after_decision")
+        pit_universe_gate_pass = item.get("pit_universe_gate_pass")
+        feature_model_readiness_complete = item.get("feature_model_readiness_complete")
         active_hard_failures = (
             [
                 value for value in hard_failures.values()
@@ -232,6 +234,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or item.get("status") not in {"PASS", "FAIL"}
             or not isinstance(hard_failures, dict)
             or not isinstance(feature_readiness, dict)
+            or type(pit_universe_gate_pass) is not bool
+            or type(feature_model_readiness_complete) is not bool
             or type(feature_readiness.get("feature_warmup_not_ready")) is not bool
             or "refined_earliest_passing_snapshot" not in item
             or (refined_earliest_passing_snapshot is not None and not isinstance(refined_earliest_passing_snapshot, str))
@@ -245,6 +249,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
             or (item.get("status") == CANDIDATE_PASS_VALUE and refined_earliest_passing_snapshot is None)
             or (item.get("status") == CANDIDATE_FAIL_VALUE and not active_hard_failures)
             or (item.get("status") == CANDIDATE_PASS_VALUE and monthly_snapshots_after_decision <= 0)
+            or (pit_universe_gate_pass != (item.get("status") == CANDIDATE_PASS_VALUE))
+            or (feature_model_readiness_complete == feature_readiness.get("feature_warmup_not_ready"))
             or (monthly_snapshots_after_decision <= 0 and hard_failures.get("decision_window_snapshots_missing") is False)
             or (monthly_snapshots_after_decision > 0 and hard_failures.get("decision_window_snapshots_missing") is True)
         ):
@@ -280,6 +286,10 @@ def candidate_manifest_audit_consistency_failures(research_manifest: dict, candi
             failures.append(f"candidate {candidate_start} decision hard_failures do not match candidate audit report")
         if decision.get("feature_readiness") != audit.get("feature_readiness"):
             failures.append(f"candidate {candidate_start} decision feature_readiness does not match candidate audit report")
+        if decision.get("feature_model_readiness_complete") != audit.get("feature_model_readiness_complete"):
+            failures.append(f"candidate {candidate_start} decision feature_model_readiness_complete does not match candidate audit report")
+        if decision.get("pit_universe_gate_pass") != audit.get("pit_universe_gate_pass"):
+            failures.append(f"candidate {candidate_start} decision pit_universe_gate_pass does not match candidate audit report")
         if decision.get("refined_earliest_passing_snapshot") != audit.get("refined_earliest_passing_snapshot"):
             failures.append(f"candidate {candidate_start} decision refined_earliest_passing_snapshot does not match candidate audit report")
     return failures

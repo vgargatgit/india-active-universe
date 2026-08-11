@@ -30,7 +30,7 @@ The candidate promotion evidence records:
 
 A candidate gate pass is not a release promotion by itself. A downstream consumer must treat the trusted research interval as the interval published in `research_quality_intervals`. Candidate evidence is advisory until the full release audit, source coverage, artifact hashes, and quality reports support promotion.
 
-`CANDIDATE_GATE_PASS_INTERPRETATION` requires every first-class candidate gate to be `PASS`. The ordered gate set is published in the profile constants as `CANDIDATE_DECISION_GATE_KEYS`. The required candidate decision schema is published as `CANDIDATE_DECISION_REQUIRED_FIELDS`.
+`CANDIDATE_GATE_PASS_INTERPRETATION` requires every first-class candidate gate to be `PASS`. The ordered gate set is published in the profile constants as `CANDIDATE_DECISION_GATE_KEYS`. New candidate audits also publish `pit_universe_gate_pass` separately from `feature_model_readiness_complete`; the latter is not a PIT-universe promotion gate. The required candidate decision schema is published as `CANDIDATE_DECISION_REQUIRED_FIELDS`.
 
 The candidate promotion summary schema is published as `CANDIDATE_PROMOTION_SUMMARY_FIELDS`.
 

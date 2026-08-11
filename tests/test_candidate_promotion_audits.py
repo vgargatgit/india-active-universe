@@ -108,6 +108,8 @@ def test_candidate_promotion_audit_emits_all_configured_candidates(tmp_path):
     assert all(row["monthly_snapshots_after_decision"] > 0 for row in audits)
     assert any(row["required_rows"] > row["fully_warmed_required_rows"] for row in audits)
     assert any(row["feature_readiness"]["feature_warmup_not_ready"] is True for row in audits)
+    assert all(row["pit_universe_gate_pass"] is True for row in audits)
+    assert any(row["feature_model_readiness_complete"] is False for row in audits)
     assert all(row["hard_failures"]["candidate_start_snapshot_missing"] is False for row in audits)
     assert all(row["hard_failures"]["decision_window_snapshots_missing"] is False for row in audits)
     assert all(row["hard_failures"]["session_liquidity_window_failures"] == 0 for row in audits)

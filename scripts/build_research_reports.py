@@ -1680,6 +1680,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             warmup_gate = CANDIDATE_NOT_RECORDED_VALUE
             session_gate = CANDIDATE_NOT_RECORDED_VALUE
             status_gate = CANDIDATE_NOT_RECORDED_VALUE
+            pit_universe_gate_pass = False
+            feature_model_readiness_complete = False
             hard_failure_summary = "NO_CANDIDATE_AUDIT_ROW"
         else:
             decision_window_gate = CANDIDATE_PASS_VALUE if hard_failures.get("decision_window_snapshots_missing") is False else CANDIDATE_FAIL_VALUE
@@ -1695,6 +1697,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
                 f"{key}={value}" for key, value in sorted(hard_failures.items())
                 if value is True or (isinstance(value, int) and value != 0)
             ]
+            pit_universe_gate_pass = candidate_audit.get("pit_universe_gate_pass") is True
+            feature_model_readiness_complete = candidate_audit.get("feature_model_readiness_complete") is True
             hard_failure_summary = ", ".join(active_hard_failures) if active_hard_failures else "none"
         first_class_gate_values = {
             "decision_window_gate": decision_window_gate,
@@ -1724,8 +1728,10 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             "instrument_gate": instrument_gate,
             "status_gate": status_gate,
             "feature_readiness": feature_readiness,
+            "feature_model_readiness_complete": feature_model_readiness_complete,
             "refined_earliest_passing_snapshot": refined_boundary,
             "hard_failures": hard_failures,
+            "pit_universe_gate_pass": pit_universe_gate_pass,
             "promotion_interpretation": interpretation,
         })
         candidate_decision_text.append(f"| {candidate_start} | `{candidate_audit_status}` | `{decision_window_gate}` | `{warmup_gate}` | `{session_gate}` | `{identity_gate}` | `{adjustment_gate}` | `{instrument_gate}` | `{status_gate}` | `{hard_failure_summary}` | `{interpretation}` |")

@@ -356,7 +356,7 @@ def main() -> None:
             "signal_ready_273_rows": int(signal_ready_273_rows),
             "model_handoff_history_ready_300_rows": int(fully_warmed_required_rows),
         }
-        status = "PASS" if (
+        pit_universe_gate_pass = (
             not hard_failures["not_materialized"]
             and not hard_failures["candidate_start_snapshot_missing"]
             and not hard_failures["decision_window_snapshots_missing"]
@@ -367,7 +367,9 @@ def main() -> None:
             and int(material_missing_factors) == 0
             and int(signal_window_non_pass_boundaries) == 0
             and int(session_liquidity_window_failures) == 0
-        ) else "FAIL"
+        )
+        feature_model_readiness_complete = not feature_readiness["feature_warmup_not_ready"]
+        status = "PASS" if pit_universe_gate_pass else "FAIL"
         audits.append({
             "candidate_start": str(candidate_start),
             "first_decision_session": str(first_decision_session) if first_decision_session else None,
@@ -391,7 +393,9 @@ def main() -> None:
             "required_securities": int(required_securities),
             "material_events": int(material_events),
             "feature_readiness": feature_readiness,
+            "feature_model_readiness_complete": feature_model_readiness_complete,
             "hard_failures": hard_failures,
+            "pit_universe_gate_pass": pit_universe_gate_pass,
             "status": status,
         })
 

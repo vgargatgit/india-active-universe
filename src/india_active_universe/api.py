@@ -79,6 +79,10 @@ def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
             raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness must be an object")
         if type(feature_readiness.get("feature_warmup_not_ready")) is not bool:
             raise ValueError(f"candidate_promotion_decisions[{index}].feature_readiness.feature_warmup_not_ready must be bool")
+        if "feature_model_readiness_complete" in row and type(row["feature_model_readiness_complete"]) is not bool:
+            raise ValueError(f"candidate_promotion_decisions[{index}].feature_model_readiness_complete must be bool")
+        if "pit_universe_gate_pass" in row and type(row["pit_universe_gate_pass"]) is not bool:
+            raise ValueError(f"candidate_promotion_decisions[{index}].pit_universe_gate_pass must be bool")
         promotion_interpretation = row["promotion_interpretation"]
         if promotion_interpretation not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
             raise ValueError(

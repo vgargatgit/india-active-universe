@@ -2118,6 +2118,8 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         "fully_warmed_required_rows": 10,
         "monthly_snapshots_after_decision": 1,
         "feature_readiness": {"feature_warmup_not_ready": False},
+        "feature_model_readiness_complete": True,
+        "pit_universe_gate_pass": True,
         "refined_earliest_passing_snapshot": "2011-01-31",
         "hard_failures": {key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
     }
@@ -2130,6 +2132,7 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         "candidate_start": "2009-01-01",
         "fully_warmed_required_rows": 9,
         "feature_readiness": {"feature_warmup_not_ready": True},
+        "feature_model_readiness_complete": False,
     }
     missing_evidence_row = {key: value for key, value in {**valid_row, "candidate_start": "2007-01-01"}.items() if key != "required_rows"}
     valid_2006_row = {**valid_row, "candidate_start": "2006-01-01"}
