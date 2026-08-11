@@ -10,7 +10,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import PARTITIONED_RELEASE_ARTIFACTS
+from india_active_universe.profiles import PARTITIONED_ARTIFACTS_MANIFEST, PARTITIONED_RELEASE_ARTIFACTS
 
 DEFAULT_ARTIFACTS = PARTITIONED_RELEASE_ARTIFACTS
 
@@ -71,7 +71,7 @@ def partition_one(connection: duckdb.DuckDBPyConnection, source: Path, target: P
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True)
-    parser.add_argument("--out", default="partitioned_artifacts_manifest.json")
+    parser.add_argument("--out", default=PARTITIONED_ARTIFACTS_MANIFEST)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--artifacts", nargs="*", default=list(DEFAULT_ARTIFACTS))
     args = parser.parse_args()

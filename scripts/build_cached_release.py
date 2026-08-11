@@ -12,6 +12,7 @@ from pathlib import Path
 
 from india_active_universe.profiles import (
     CACHED_PROMOTION_BUILD_MODE,
+    DATA_RELEASE_MANIFEST_ARTIFACT,
     REQUIRED_RELEASE_ARTIFACTS,
     SOURCE_MANIFEST_ARTIFACT,
     SUSPENSION_SOURCE_MANIFEST_ARTIFACT,
@@ -69,7 +70,7 @@ def main() -> None:
     target = (root / "releases" / args.release_id).resolve()
     if args.release_id == TARGET_RELEASE_ID:
         raise SystemExit(f"{TARGET_RELEASE_ID} must be built from source with build_source_release.py, not cached promotion")
-    manifest_path = source / "data_release_manifest.json"
+    manifest_path = source / DATA_RELEASE_MANIFEST_ARTIFACT
     if not manifest_path.is_file():
         raise SystemExit(f"Parent release manifest does not exist: {manifest_path}")
     if target.exists():
@@ -97,7 +98,7 @@ def main() -> None:
         output_manifest["build_mode"] = CACHED_PROMOTION_BUILD_MODE
         output_manifest["manifest_note"] = "Cached promotion. Parent artifact hashes were verified before copy."
         output_manifest["artifacts"] = {f"release/{name}": sha256(staging / name) for name in sorted(p.name for p in staging.iterdir() if p.is_file())}
-        (staging / "data_release_manifest.json").write_text(json.dumps(output_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (staging / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(json.dumps(output_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         staging.rename(target)
     except Exception:
         shutil.rmtree(staging, ignore_errors=True)

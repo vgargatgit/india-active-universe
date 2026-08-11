@@ -12,14 +12,17 @@ from pathlib import Path
 import duckdb
 
 from india_active_universe.profiles import (
+    DATA_RELEASE_MANIFEST_ARTIFACT,
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
+    PARTITIONED_ARTIFACTS_MANIFEST,
     PRIORITY_SCOPE,
     PROFILE_ID,
     PROFILE_VERSION,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
@@ -68,7 +71,7 @@ def main() -> None:
     release = Path(args.release)
     reports = Path(args.reports)
     r = path_sql(release)
-    release_manifest = json.loads((release / "data_release_manifest.json").read_text(encoding="utf-8"))
+    release_manifest = json.loads((release / DATA_RELEASE_MANIFEST_ARTIFACT).read_text(encoding="utf-8"))
     observed_coverage = release_manifest.get("coverage", {})
     connection = duckdb.connect()
     try:
@@ -257,7 +260,7 @@ def main() -> None:
     validation_path = reports / f"research_invariant_validation_{release.name}.json"
     test_result_path = reports / f"test_results_{release.name}.xml"
     ci_status_path = reports / f"ci_status_{release.name}.json"
-    partition_manifest_path = release / "partitioned_artifacts_manifest.json"
+    partition_manifest_path = release / PARTITIONED_ARTIFACTS_MANIFEST
 
     year_map = {int(row[0]): row[1:] for row in yearly_required_rows}
     year_text = ["| Year | Active ordinary | LIQUID_V1 | Top-750 | Required | Identity passing | Identity failures | Price-action failures | Unknown-status exclusions | Sparse names |", "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
@@ -444,7 +447,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             "Historical source retrieval timestamps may reflect local raw-file metadata where original HTTP retrieval metadata is unavailable.",
         ],
     }
-    (release / "research_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"quality": quality, "liquid_v1": counts[3], "required": required_count, "identity_failures": int(required_scope_failure_count), "missing_price_action_factors": missing_factor_count}, sort_keys=True))
 
 

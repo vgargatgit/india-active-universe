@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
-from .profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, RESEARCH_HIGH_CONFIDENCE_STATUS, TOP_LIQUIDITY_RANKING_METRIC
+from .profiles import DATA_RELEASE_MANIFEST_ARTIFACT, LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, RESEARCH_HIGH_CONFIDENCE_STATUS, RESEARCH_RELEASE_MANIFEST_ARTIFACT, TOP_LIQUIDITY_RANKING_METRIC
 from .storage import iter_jsonl, read_jsonl
 
 
@@ -462,7 +462,7 @@ class DataPlatform:
     def from_release(cls, release: str | Path, *, strict: bool = False) -> "DataPlatform":
         base = Path(release)
         platform = cls(base, strict=strict)
-        manifest_path = base / "data_release_manifest.json"
+        manifest_path = base / DATA_RELEASE_MANIFEST_ARTIFACT
         if manifest_path.exists():
             import json
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -472,7 +472,7 @@ class DataPlatform:
             platform.verified_start = _as_date(manifest["verified_start_date"]) if manifest.get("verified_start_date") else None
             platform.verified_end = _as_date(manifest["verified_end_date"]) if manifest.get("verified_end_date") else None
             platform.quality_tier = manifest.get("quality_tier")
-        research_manifest_path = base / "research_release_manifest.json"
+        research_manifest_path = base / RESEARCH_RELEASE_MANIFEST_ARTIFACT
         if research_manifest_path.exists():
             import json
             research_manifest = json.loads(research_manifest_path.read_text(encoding="utf-8"))
