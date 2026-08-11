@@ -23,6 +23,7 @@ from india_active_universe.profiles import (
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -180,7 +181,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
             failures.append(f"data manifest source_coverage.{key} is missing")
     research_coverage = manifest.get("research_coverage") or {}
     expected_research = {
-        "research_verified_start": "2013-01-01",
+        "research_verified_start": RESEARCH_START_DATE,
         "universe_profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
         "priority_scope": PRIORITY_SCOPE,
@@ -223,7 +224,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     quality = research_manifest.get("research_quality") or {}
     expected_quality = {
         "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
-        "start": "2013-01-01",
+        "start": RESEARCH_START_DATE,
         "universe_profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
         "priority_scope": PRIORITY_SCOPE,
@@ -524,14 +525,14 @@ def main() -> None:
             SELECT COUNT(DISTINCT v.event_id)
             FROM read_parquet(?) v
             JOIN read_parquet(?) q USING (security_id)
-            WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
+            WHERE CAST(v.ex_date AS DATE) >= CAST(? AS DATE)
               AND v.validation_status IN (
                 'WARNING_LARGE_BOUNDARY_MOVE',
                 'INVALID_PRE_EVENT_PRICE',
                 'NO_BOUNDARY_OBSERVATIONS',
                 'NO_LOCAL_BOUNDARY_OBSERVATION'
               )
-        """, [str(boundary_path), str(release / "required_research_security.parquet")]).fetchone()[0]
+        """, [str(boundary_path), str(release / "required_research_security.parquet"), RESEARCH_START_DATE]).fetchone()[0]
 
     rows = [
         f"# Release completion audit: `{manifest['release_id']}`",

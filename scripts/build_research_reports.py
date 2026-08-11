@@ -22,6 +22,7 @@ from india_active_universe.profiles import (
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -126,14 +127,14 @@ def main() -> None:
           SELECT v.validation_status, COUNT(DISTINCT v.event_id)
           FROM read_parquet('{r}/corporate_action_boundary_validation.parquet') v
           JOIN read_parquet('{r}/required_research_security.parquet') q USING (security_id)
-          WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
+          WHERE CAST(v.ex_date AS DATE) >= DATE '{RESEARCH_START_DATE}'
           GROUP BY 1 ORDER BY 1
         """).fetchall()
         unresolved_boundary_count = scalar(connection, f"""
           SELECT COUNT(DISTINCT v.event_id)
           FROM read_parquet('{r}/corporate_action_boundary_validation.parquet') v
           JOIN read_parquet('{r}/required_research_security.parquet') q USING (security_id)
-          WHERE CAST(v.ex_date AS DATE) >= DATE '2013-01-01'
+          WHERE CAST(v.ex_date AS DATE) >= DATE '{RESEARCH_START_DATE}'
             AND v.validation_status IN (
               'WARNING_LARGE_BOUNDARY_MOVE',
               'INVALID_PRE_EVENT_PRICE',
@@ -248,7 +249,7 @@ def main() -> None:
     missing_factor_count = sum(int(row[2]) for row in event_rows)
     gate_pass = int(required_scope_failure_count) == 0 and missing_factor_count == 0 and int(unresolved_boundary_count) == 0 and int(status_overlap) == 0
     quality = RESEARCH_HIGH_CONFIDENCE_STATUS if gate_pass else RESEARCH_EXPLORATORY_STATUS
-    research_start = "2013-01-01"
+    research_start = RESEARCH_START_DATE
     git_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     validation_path = reports / f"research_invariant_validation_{release.name}.json"
     test_result_path = reports / f"test_results_{release.name}.xml"

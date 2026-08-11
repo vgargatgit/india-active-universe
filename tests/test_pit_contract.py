@@ -18,6 +18,8 @@ from india_active_universe.profiles import (
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_MONTHLY_SNAPSHOT_START,
+    RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -208,7 +210,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
             {
                 "research_quality": {
                     "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
-                    "start": "2013-01-01",
+                    "start": RESEARCH_START_DATE,
                     "end": "2026-08-10",
                 }
             }
@@ -220,7 +222,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
         pq.write_table(pa.table({"date": [], "security_id": []}), release / name)
 
     platform = DataPlatform.from_release(release, strict=True)
-    assert platform.verified_start == date(2013, 1, 1)
+    assert platform.verified_start == date.fromisoformat(RESEARCH_START_DATE)
     assert platform.quality_tier == RESEARCH_HIGH_CONFIDENCE_STATUS
     with pytest.raises(CoverageError):
         platform.active_on("2012-12-31")
@@ -239,9 +241,9 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "git_sha": "abc123",
         "research_quality": {
             "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
-            "start": "2013-01-01",
+            "start": RESEARCH_START_DATE,
             "end": "2026-08-10",
-            "monthly_snapshot_start": "2013-01-31",
+            "monthly_snapshot_start": RESEARCH_MONTHLY_SNAPSHOT_START,
             "universe_profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
             "priority_scope": PRIORITY_SCOPE,
@@ -249,7 +251,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "source_coverage": {
             "observed_start": "2006-01-02",
             "observed_end": "2026-08-10",
-            "research_start": "2013-01-01",
+            "research_start": RESEARCH_START_DATE,
             "research_end": "2026-08-10",
         },
         "known_policy": {
@@ -441,7 +443,7 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
             "verification_basis": "official NSE market-data files; no independent exchange calendar claim",
         },
         "research_coverage": {
-            "research_verified_start": "2013-01-01",
+            "research_verified_start": RESEARCH_START_DATE,
             "research_verified_end": "2026-08-10",
             "universe_profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
