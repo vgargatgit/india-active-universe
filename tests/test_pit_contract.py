@@ -2293,6 +2293,8 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
                 "candidate_start": "2011-01-01",
                 "candidate_audit_status": "PASS",
                 "feature_readiness": {"feature_warmup_not_ready": False},
+                "feature_model_readiness_complete": True,
+                "pit_universe_gate_pass": True,
                 "refined_earliest_passing_snapshot": "2011-01-31",
                 "hard_failures": hard_failures,
             }
@@ -2304,6 +2306,8 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
                 "candidate_start": "2011-01-01",
                 "status": "PASS",
                 "feature_readiness": {"feature_warmup_not_ready": False},
+                "feature_model_readiness_complete": True,
+                "pit_universe_gate_pass": True,
                 "refined_earliest_passing_snapshot": "2011-01-31",
                 "hard_failures": hard_failures,
             }
@@ -2346,6 +2350,30 @@ def test_candidate_manifest_decisions_match_candidate_audit_report():
     }
     assert candidate_manifest_audit_consistency_failures(stale_feature_readiness, report) == [
         "candidate 2011-01-01 decision feature_readiness does not match candidate audit report"
+    ]
+
+    stale_feature_model_readiness = {
+        "candidate_promotion_decisions": [
+            {
+                **manifest["candidate_promotion_decisions"][0],
+                "feature_model_readiness_complete": False,
+            }
+        ]
+    }
+    assert candidate_manifest_audit_consistency_failures(stale_feature_model_readiness, report) == [
+        "candidate 2011-01-01 decision feature_model_readiness_complete does not match candidate audit report"
+    ]
+
+    stale_pit_universe_gate = {
+        "candidate_promotion_decisions": [
+            {
+                **manifest["candidate_promotion_decisions"][0],
+                "pit_universe_gate_pass": False,
+            }
+        ]
+    }
+    assert candidate_manifest_audit_consistency_failures(stale_pit_universe_gate, report) == [
+        "candidate 2011-01-01 decision pit_universe_gate_pass does not match candidate audit report"
     ]
 
     stale_refined_snapshot = {

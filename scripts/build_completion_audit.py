@@ -555,6 +555,18 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append(f"research manifest candidate {item.get('candidate_start')} feature_readiness is not an object")
             elif type(feature_readiness.get("feature_warmup_not_ready")) is not bool:
                 failures.append(f"research manifest candidate {item.get('candidate_start')} feature_readiness.feature_warmup_not_ready is not bool")
+            if "feature_model_readiness_complete" in item and type(item.get("feature_model_readiness_complete")) is not bool:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} feature_model_readiness_complete is not bool")
+            if isinstance(feature_readiness, dict) and type(item.get("feature_model_readiness_complete")) is bool and (
+                item.get("feature_model_readiness_complete") == feature_readiness.get("feature_warmup_not_ready")
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} feature_model_readiness_complete contradicts feature_readiness")
+            if "pit_universe_gate_pass" in item and type(item.get("pit_universe_gate_pass")) is not bool:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} pit_universe_gate_pass is not bool")
+            if type(item.get("pit_universe_gate_pass")) is bool and (
+                item.get("pit_universe_gate_pass") != (item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE)
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} pit_universe_gate_pass contradicts candidate_audit_status")
             hard_failures = item.get("hard_failures")
             if not isinstance(hard_failures, dict):
                 failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures is not an object")

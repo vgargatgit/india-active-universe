@@ -1802,7 +1802,9 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "",
         "## Final promotion rule",
         "",
-        "`SOURCE_INTEGRITY = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `MATERIAL_PRICE_ACTION_MISSING_FACTORS = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `PIT_INVARIANTS = PASS`, and `CI = PASS`. Feature/model warm-up readiness is reported separately and does not invalidate the PIT universe interval.",
+        "PIT universe interval: `SOURCE_INTEGRITY = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `MATERIAL_PRICE_ACTION_MISSING_FACTORS = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `PIT_INVARIANTS = PASS`, and `CI = PASS`.",
+        "",
+        "Feature/model-ready research interval: the PIT universe interval gates must pass, and `WARMUP_READINESS = PASS` for the required published feature/model windows. Do not remove otherwise valid universe securities only because a downstream model feature is not ready.",
         "",
         "Terminal values and complete total-return history are not required for price-return alpha research, but their limitations must remain explicit.",
     ]
