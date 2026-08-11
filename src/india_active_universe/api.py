@@ -304,9 +304,12 @@ def _validate_research_quality_scalar_matches_interval(
         isinstance(interval, dict)
         and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
         and interval.get("start") == research_quality.get("start")
+        and interval.get("profile") == PROFILE_ID
+        and interval.get("profile_version") == PROFILE_VERSION
+        and interval.get("priority_scope") == PRIORITY_SCOPE
         for interval in intervals
     ):
-        raise ValueError(f"{manifest_name} research_quality.start is not backed by a matching RESEARCH_HIGH_CONFIDENCE interval")
+        raise ValueError(f"{manifest_name} research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval")
 
 
 class SecurityMaster:

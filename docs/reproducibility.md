@@ -8,7 +8,7 @@ Release audit is fail-closed. It writes the report before returning a non-zero s
 
 ## Phase 3 candidate promotion evidence
 
-Phase 3 extends the evidence path for earlier research starts without silently promoting them. A release manifest must keep the promoted `research_quality_intervals` separate from candidate promotion evidence. The scalar `research_quality.start` is valid only when the same start appears in a `RESEARCH_HIGH_CONFIDENCE` interval row. It can be later than `research_coverage.research_verified_start` when the release materializes earlier candidate support coverage that is not promoted. The scalar `research_quality.monthly_snapshot_start` must belong to the scalar promoted interval and must not be pulled backward by wider candidate support coverage.
+Phase 3 extends the evidence path for earlier research starts without silently promoting them. A release manifest must keep the promoted `research_quality_intervals` separate from candidate promotion evidence. The scalar `research_quality.start` is valid only when the same start appears in a scoped `RESEARCH_HIGH_CONFIDENCE` interval row for the published profile, profile version, and priority scope. It can be later than `research_coverage.research_verified_start` when the release materializes earlier candidate support coverage that is not promoted. The scalar `research_quality.monthly_snapshot_start` must belong to the scalar promoted interval and must not be pulled backward by wider candidate support coverage.
 
 The candidate promotion evidence records:
 

@@ -1051,7 +1051,50 @@ def test_release_loader_rejects_research_quality_start_without_matching_interval
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="research_quality.start is not backed by a matching RESEARCH_HIGH_CONFIDENCE interval"):
+    with pytest.raises(ValueError, match="research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_rejects_research_quality_start_backed_only_by_wrong_scope(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "research_quality": {
+                    "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    "start": RESEARCH_START_DATE,
+                    "end": "2026-08-10",
+                },
+                "research_quality_intervals": [
+                    {
+                        "start": RESEARCH_START_DATE,
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                        "profile": PROFILE_ID,
+                        "profile_version": PROFILE_VERSION,
+                        "priority_scope": "ALL_SECURITIES",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval"):
         DataPlatform.from_release(release, strict=True)
 
 
@@ -1766,7 +1809,23 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         ],
     }
     failures = research_manifest_contract_failures(release, data_manifest, scalar_start_without_interval)
-    assert "research_quality.start is not backed by a matching RESEARCH_HIGH_CONFIDENCE interval" in failures
+    assert "research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval" in failures
+
+    scalar_start_with_wrong_scope_interval = {
+        **valid_manifest,
+        "research_quality_intervals": [
+            {
+                "start": RESEARCH_START_DATE,
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": "ALL_SECURITIES",
+            }
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, scalar_start_with_wrong_scope_interval)
+    assert "research_quality.start is not backed by a matching scoped RESEARCH_HIGH_CONFIDENCE interval" in failures
 
     incomplete = {**valid_manifest, "known_limitations": ["Terminal values are partial."]}
     failures = research_manifest_contract_failures(release, data_manifest, incomplete)
