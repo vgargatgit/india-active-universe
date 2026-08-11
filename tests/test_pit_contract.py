@@ -707,6 +707,8 @@ def test_candidate_promotion_loader_rejects_invalid_candidate_values():
         ({**row, "candidate_start": "2010-01-01"}, "candidate_start is not configured"),
         ({**row, "candidate_audit_status": "UNKNOWN"}, "candidate_audit_status is invalid"),
         ({**row, "identity_gate": "UNKNOWN"}, "identity_gate is invalid"),
+        ({**row, "feature_model_readiness_complete": False}, "feature_model_readiness_complete contradicts feature_readiness"),
+        ({**row, "pit_universe_gate_pass": True}, "pit_universe_gate_pass contradicts candidate_audit_status"),
         ({**row, "promotion_interpretation": "UNKNOWN"}, "promotion_interpretation is invalid"),
     )
     for invalid_row, message in invalid_cases:
