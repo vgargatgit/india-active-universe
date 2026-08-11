@@ -1015,6 +1015,79 @@ def test_release_loader_rejects_pre_warmup_research_manifest_research_interval(t
         DataPlatform.from_release(release, strict=True)
 
 
+def test_release_loader_rejects_pre_refined_boundary_data_manifest_research_interval(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "research_quality_intervals": [
+                    {
+                        "start": "2007-04-30",
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before refined candidate gate-pass boundary"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_rejects_pre_refined_boundary_research_manifest_research_interval(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "research_quality_intervals": [
+                    {
+                        "start": RESEARCH_START_DATE,
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "research_quality_intervals": [
+                    {
+                        "start": "2007-04-30",
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before refined candidate gate-pass boundary"):
+        DataPlatform.from_release(release, strict=True)
+
+
 def test_release_loader_preserves_data_manifest_candidate_state_when_research_manifest_omits_candidate_fields(tmp_path):
     import json
     import pyarrow as pa
@@ -1620,6 +1693,22 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, pre_warmup_rhc)
     assert "research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
 
+    pre_refined_boundary_rhc = {
+        **valid_manifest,
+        "research_quality_intervals": [
+            {
+                "start": "2007-04-30",
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+            }
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, pre_refined_boundary_rhc)
+    assert "research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before refined candidate gate-pass boundary" in failures
+
     stale_candidate_decisions = {
         **valid_manifest,
         "candidate_promotion_decisions": valid_manifest["candidate_promotion_decisions"][:-1],
@@ -2162,6 +2251,22 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
     }
     failures = data_manifest_contract_failures(release, pre_warmup_rhc)
     assert "data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date" in failures
+
+    pre_refined_boundary_rhc = {
+        **manifest,
+        "research_quality_intervals": [
+            {
+                "start": "2007-04-30",
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+            }
+        ],
+    }
+    failures = data_manifest_contract_failures(release, pre_refined_boundary_rhc)
+    assert "data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before refined candidate gate-pass boundary" in failures
 
     missing_monthly_snapshot_start = {
         **manifest,
