@@ -1685,6 +1685,24 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
 
     assert research_manifest_contract_failures(release, data_manifest, valid_manifest) == []
+    candidate_data_coverage = {
+        **data_manifest,
+        "research_coverage": {
+            **data_manifest["research_coverage"],
+            "research_verified_start": "2009-01-01",
+        },
+    }
+    assert research_manifest_contract_failures(release, candidate_data_coverage, valid_manifest) == []
+
+    scalar_before_data_coverage = {
+        **data_manifest,
+        "research_coverage": {
+            **data_manifest["research_coverage"],
+            "research_verified_start": "2014-01-01",
+        },
+    }
+    failures = research_manifest_contract_failures(release, scalar_before_data_coverage, valid_manifest)
+    assert "research_quality.start is earlier than data manifest research_coverage.research_verified_start" in failures
 
     scalar_start_without_interval = {
         **valid_manifest,
