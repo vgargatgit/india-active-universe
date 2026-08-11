@@ -421,6 +421,13 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
             "profile_version": "LIQUID_V1",
             "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
         },
+        "component_quality": {
+            "raw_source": "SOURCE_HIGH_CONFIDENCE",
+            "raw_ohlcv": "RESEARCH_HIGH_CONFIDENCE",
+            "research_universe_2013_onward": "RESEARCH_HIGH_CONFIDENCE",
+            "terminal_events": "PARTIAL",
+            "total_return": "PARTIAL",
+        },
         "source_manifest_sha256": "0" * 64,
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
@@ -433,6 +440,13 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
     incomplete = {**manifest, "manual_override_sha256": None}
     failures = data_manifest_contract_failures(release, incomplete)
     assert "data manifest manual_override_sha256 is missing or invalid" in failures
+
+    missing_component_quality = {
+        **manifest,
+        "component_quality": {**manifest["component_quality"], "research_universe_2013_onward": "DATASET_EXPLORATORY"},
+    }
+    failures = data_manifest_contract_failures(release, missing_component_quality)
+    assert "data manifest component_quality.research_universe_2013_onward is not RESEARCH_HIGH_CONFIDENCE" in failures
 
     missing_release_hash = {
         **manifest,

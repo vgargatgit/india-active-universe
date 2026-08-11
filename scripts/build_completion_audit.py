@@ -172,6 +172,17 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
             failures.append(f"data manifest research_coverage.{key} is not {expected}")
     if not research_coverage.get("research_verified_end"):
         failures.append("data manifest research_coverage.research_verified_end is missing")
+    component_quality = manifest.get("component_quality") or {}
+    expected_component_quality = {
+        "raw_source": "SOURCE_HIGH_CONFIDENCE",
+        "raw_ohlcv": "RESEARCH_HIGH_CONFIDENCE",
+        "research_universe_2013_onward": "RESEARCH_HIGH_CONFIDENCE",
+        "terminal_events": "PARTIAL",
+        "total_return": "PARTIAL",
+    }
+    for key, expected in expected_component_quality.items():
+        if component_quality.get(key) != expected:
+            failures.append(f"data manifest component_quality.{key} is not {expected}")
     for key in ("source_manifest_sha256", "config_sha256", "manual_override_sha256"):
         digest = manifest.get(key)
         if not isinstance(digest, str) or len(digest) != 64:
