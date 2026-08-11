@@ -95,3 +95,49 @@ def test_research_release_validator_accepts_matching_required_artifact(tmp_path)
     assert metrics["required_artifact_security_without_monthly_scope"] == 0
     assert metrics["required_artifact_flag_failures"] == 0
     assert metrics["status"] == "PASS"
+
+
+def test_research_release_validator_fails_when_required_artifact_has_extra_security(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1", "EXTRA"])
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["required_artifact_security_without_monthly_scope"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def test_research_release_validator_fails_when_required_artifact_flags_mismatch_monthly_scope(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    pq.write_table(
+        pa.table(
+            {
+                "security_id": ["SEC1"],
+                "enters_liquid_v1": [False],
+                "enters_top750": [True],
+            }
+        ),
+        release / "required_research_security.parquet",
+    )
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["required_artifact_flag_failures"] == 1
+    assert metrics["status"] == "FAIL"
