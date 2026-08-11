@@ -304,6 +304,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "manual_override_sha256": "0" * 64,
         "research_invariant_validation_sha256": "0" * 64,
         "test_result_sha256": "0" * 64,
+        "ci_status_sha256": "0" * 64,
         "quality_reports": {"research_universe_coverage.md": "0" * 64},
         "known_limitations": [
             "Complete archive remains exploratory outside the scoped research universe.",
@@ -325,6 +326,10 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_artifact_contract = {**valid_manifest, "liquidity_artifact": "research_universe_monthly.parquet"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_artifact_contract)
     assert "research manifest liquidity_artifact is not liquidity_features.parquet" in failures
+
+    missing_ci_status_hash = {key: value for key, value in valid_manifest.items() if key != "ci_status_sha256"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)
+    assert "research manifest ci_status_sha256 is missing" in failures
 
     missing_required_security_field = {
         **valid_manifest,
