@@ -441,15 +441,15 @@ def main() -> None:
         if not key.startswith("release/"):
             continue
         path = release / key.removeprefix("release/")
-        if not path.is_file() or sha256(path) != expected:
+        if not is_sha256_digest(expected) or not path.is_file() or sha256(path) != expected:
             hash_mismatches.append(key)
     for name, expected in research_manifest.get("artifacts", {}).items():
         path = release / name
-        if not path.is_file() or sha256(path) != expected:
+        if not is_sha256_digest(expected) or not path.is_file() or sha256(path) != expected:
             hash_mismatches.append(f"research/{name}")
     for name, expected in research_manifest.get("quality_reports", {}).items():
         path = report_dir / name
-        if not path.is_file() or sha256(path) != expected:
+        if not is_sha256_digest(expected) or not path.is_file() or sha256(path) != expected:
             hash_mismatches.append(f"report/{name}")
     validation_expected = research_manifest.get("research_invariant_validation_sha256")
     validation_path = report_dir / f"research_invariant_validation_{release.name}.json"
