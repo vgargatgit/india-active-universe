@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
-from india_active_universe.identity import apply_manual_overrides
+from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
 from scripts.collect_nse_suspension_evidence import effective_date
@@ -41,6 +41,71 @@ def test_approved_manual_override_is_explicitly_applied():
     assert identities[1]["identity_source"] == "MANUAL_APPROVED_OVERRIDE"
     assert identities[1]["symbol"] == "ABC"
     assert matches[0]["security_id"] == "SEC1"
+
+
+def test_adjacent_manual_overrides_are_allowed(tmp_path):
+    pytest.importorskip("yaml")
+    path = tmp_path / "manual_identity_overrides.yaml"
+    path.write_text(
+        """
+overrides:
+  - exchange: NSE
+    symbol: ABC
+    series: EQ
+    effective_from: 2015-01-01
+    effective_to: 2015-06-30
+    security_id: SEC1
+    evidence_references: [NSE_NOTICE_1]
+    rationale: First official dated symbol notice
+    review_status: APPROVED
+  - exchange: NSE
+    symbol: ABC
+    series: EQ
+    effective_from: 2015-07-01
+    effective_to: 2015-12-31
+    security_id: SEC1
+    evidence_references: [NSE_NOTICE_2]
+    rationale: Adjacent official dated symbol notice
+    review_status: APPROVED
+""",
+        encoding="utf-8",
+    )
+    overrides = load_manual_overrides(path)
+    assert [(row["effective_from"], row["effective_to"]) for row in overrides] == [
+        (date(2015, 1, 1), date(2015, 6, 30)),
+        (date(2015, 7, 1), date(2015, 12, 31)),
+    ]
+
+
+def test_overlapping_manual_overrides_are_rejected(tmp_path):
+    pytest.importorskip("yaml")
+    path = tmp_path / "manual_identity_overrides.yaml"
+    path.write_text(
+        """
+overrides:
+  - exchange: NSE
+    symbol: ABC
+    series: EQ
+    effective_from: 2015-01-01
+    effective_to: 2015-07-31
+    security_id: SEC1
+    evidence_references: [NSE_NOTICE_1]
+    rationale: First official dated symbol notice
+    review_status: APPROVED
+  - exchange: NSE
+    symbol: ABC
+    series: EQ
+    effective_from: 2015-07-01
+    effective_to: 2015-12-31
+    security_id: SEC2
+    evidence_references: [NSE_NOTICE_2]
+    rationale: Overlapping official dated symbol notice
+    review_status: APPROVED
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="overlapping manual override range"):
+        load_manual_overrides(path)
 
 
 def test_date_free_ambiguity_is_rejected():
