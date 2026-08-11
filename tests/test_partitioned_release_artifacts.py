@@ -86,6 +86,7 @@ def test_junit_summary_detects_handoff_test_without_package_prefix(tmp_path: Pat
 <testsuites>
   <testsuite name="pytest" tests="1" failures="0" errors="0" skipped="0">
     <testcase classname="test_model_arena_handoff" name="test_model_arena_handoff_reads_profile_history_liquidity_and_execution_prices" />
+    <testcase classname="test_multi_era_source_fixture" name="test_real_nse_source_eras_build_to_liquidity_and_adjusted_prices" />
   </testsuite>
 </testsuites>
 """,
@@ -95,6 +96,7 @@ def test_junit_summary_detects_handoff_test_without_package_prefix(tmp_path: Pat
     summary = junit_summary(report)
 
     assert summary["model_arena_handoff_passed"] is True
+    assert summary["multi_era_source_fixture_passed"] is True
 
 
 def test_source_coverage_summary_requires_pass_gate(tmp_path: Path):
