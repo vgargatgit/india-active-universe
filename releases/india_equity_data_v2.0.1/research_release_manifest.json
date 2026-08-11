@@ -19,7 +19,7 @@
   },
   "ci_status_sha256": "0ace623a51fbf3a65d5ddc05cb51797d344a60dbe317354393de3a38dc5addef",
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "397704a741d47c647202a18d74f1fa8c4dccb253",
+  "git_sha": "03aa4e0b99b2c74b7b91e5ee4f04376822d218a1",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -29,6 +29,7 @@
   "liquid_v1_securities": 2352,
   "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
   "material_price_action_missing_factors": 0,
+  "partitioned_artifacts_manifest_sha256": "b039406db1abba7366904e8d16ccb31c89b49c4179679eff8b2dcbc088175490",
   "quality_reports": {
     "current_survivor_comparison.md": "478823e955d848c12028356360b7c2ff3b96b2df909517d6722c71bf7994b7af",
     "data_source_coverage.md": "4a8d50c73699c17a81c4c1f17c0fafdf1066a71f37b64cae0084b766819f969a",
@@ -61,5 +62,5 @@
     "research_start": "2013-01-01"
   },
   "status_interval_overlaps": 0,
-  "test_result_sha256": "aeecfcab9ff7c1d8bbea4308edff945015916d29ff8ff9ec1c10f4f72cba13e9"
+  "test_result_sha256": "73d467b14bb3f93c55e663f32ba104314e4448191f791523f6ecf7b2249354b1"
 }

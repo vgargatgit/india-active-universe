@@ -21,7 +21,7 @@ REQUIRED = [
     "trading_calendar.parquet",
     "company_name_history.parquet", "isin_history.parquet", "corporate_action_boundary_validation.parquet",
     "research_universe_monthly.parquet", "required_research_security.parquet",
-    "research_release_manifest.json",
+    "research_release_manifest.json", "partitioned_artifacts_manifest.json",
 ]
 
 REQUIRED_RESEARCH_REPORTS = [
@@ -90,6 +90,19 @@ def ci_summary(path: Path, manifest: dict) -> dict:
     }
 
 
+def partition_summary(path: Path) -> dict:
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    artifacts = manifest.get("artifacts") or []
+    return {
+        "layout": manifest.get("layout"),
+        "status": manifest.get("status"),
+        "artifact_count": len(artifacts),
+        "failed_artifacts": [item.get("source_artifact") for item in artifacts if item.get("status") != "PASS"],
+        "partitioned_artifacts": [item.get("source_artifact") for item in artifacts],
+        "file_count": sum(int(item.get("file_count") or 0) for item in artifacts),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True)
@@ -109,8 +122,9 @@ def main() -> None:
     if not test_result_report.exists():
         missing_reports.append(test_result_report.name)
     ci_status_report = report_dir / f"ci_status_{release.name}.json"
-    if not ci_status_report.exists():
+    if research_manifest.get("ci_status_sha256") and not ci_status_report.exists():
         missing_reports.append(ci_status_report.name)
+    partition_manifest_path = release / "partitioned_artifacts_manifest.json"
     manifest_mismatch = manifest.get("release_id") != release.name
     research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
     if missing or missing_reports or manifest_mismatch or not research_quality_ok:
@@ -150,6 +164,9 @@ def main() -> None:
     ci_expected = research_manifest.get("ci_status_sha256")
     if ci_expected and (not ci_status_report.is_file() or sha256(ci_status_report) != ci_expected):
         hash_mismatches.append(f"report/{ci_status_report.name}")
+    partition_expected = research_manifest.get("partitioned_artifacts_manifest_sha256")
+    if partition_expected and (not partition_manifest_path.is_file() or sha256(partition_manifest_path) != partition_expected):
+        hash_mismatches.append(f"release/{partition_manifest_path.name}")
     if hash_mismatches:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Artifact hash checks", ""]
         rows.extend(f"- FAIL: `{key}`" if key in hash_mismatches else f"- PASS: `{key}`" for key in sorted(manifest.get("artifacts", {})))
@@ -160,7 +177,20 @@ def main() -> None:
             print(f"- artifact hash mismatch: {key}")
         raise SystemExit(1)
     test_summary = junit_summary(test_result_report)
-    ci = ci_summary(ci_status_report, manifest)
+    ci = ci_summary(ci_status_report, manifest) if ci_status_report.exists() else {
+        "workflow_name": None,
+        "run_id": None,
+        "run_url": None,
+        "head_sha": None,
+        "release_git_commit": manifest.get("git_commit"),
+        "status": "NOT_RECORDED",
+        "conclusion": None,
+        "job_count": 0,
+        "failed_jobs": [],
+        "matches_release_git_commit": False,
+        "descends_from_release_git_commit": False,
+    }
+    partitions = partition_summary(partition_manifest_path)
     con = duckdb.connect()
 
     def count(name: str, where: str = "") -> int:
@@ -209,6 +239,7 @@ def main() -> None:
         f"- Corporate-action boundary validation: `{json.dumps(boundary_quality, sort_keys=True)}`." if boundary_path.exists() else "- Corporate-action boundary validation: not published.",
         f"- Test results: `{json.dumps(test_summary, sort_keys=True)}`.",
         f"- GitHub Actions CI: `{json.dumps(ci, sort_keys=True)}`.",
+        f"- Partitioned sidecar layout: `{json.dumps(partitions, sort_keys=True)}`.",
         "",
         "## Required artifact checks",
         "",
@@ -223,8 +254,10 @@ def main() -> None:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:
         failures.append("Model Arena handoff smoke test did not pass in release evidence")
-    if ci["status"] != "completed" or ci["conclusion"] != "success" or not ci["descends_from_release_git_commit"] or ci["failed_jobs"]:
+    if research_manifest.get("ci_status_sha256") and (ci["status"] != "completed" or ci["conclusion"] != "success" or not ci["descends_from_release_git_commit"] or ci["failed_jobs"]):
         failures.append(f"GitHub Actions CI evidence is not clean: {json.dumps(ci, sort_keys=True)}")
+    if partitions["status"] != "PASS" or partitions["artifact_count"] < 4 or partitions["failed_artifacts"]:
+        failures.append(f"partitioned sidecar evidence is not clean: {json.dumps(partitions, sort_keys=True)}")
     for name in REQUIRED:
         present = (release / name).exists()
         rows.append(f"- {'PASS' if present else 'FAIL'}: `{name}`")
