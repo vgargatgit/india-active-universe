@@ -9,7 +9,13 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import (
+    LIQUID_V1_DEFINITION,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    RESEARCH_START_DATE,
+    TOP_LIQUIDITY_RANKING_METRIC,
+)
 
 
 def q(path: Path) -> str:
@@ -19,7 +25,7 @@ def q(path: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True)
-    parser.add_argument("--start", default="2013-01-01")
+    parser.add_argument("--start", default=RESEARCH_START_DATE)
     parser.add_argument("--end")
     args = parser.parse_args()
     release = Path(args.release)
