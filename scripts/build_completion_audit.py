@@ -370,6 +370,8 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for name in REQUIRED_RESEARCH_REPORTS:
         if name not in quality_reports:
             failures.append(f"research manifest quality report hash missing for {name}")
+        elif not isinstance(quality_reports.get(name), str) or len(quality_reports[name]) != 64:
+            failures.append(f"research manifest quality report hash for {name} is invalid")
     limitations = research_manifest.get("known_limitations") or []
     required_limit_tokens = (
         "exploratory",
