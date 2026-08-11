@@ -195,6 +195,57 @@ def _normalize_refined_earliest_candidate_gate_pass_boundary(value: Any, decisio
     return _as_date(point)
 
 
+def _validate_candidate_interval_recommendations(
+    manifest_name: str,
+    manifest: dict[str, Any],
+    refined_boundary: date | None,
+    *,
+    required: bool,
+) -> None:
+    expected_status = "CANDIDATE_REFINED_BOUNDARY_AVAILABLE" if refined_boundary else "NO_REFINED_BOUNDARY"
+    expected_start = refined_boundary.isoformat() if refined_boundary else None
+
+    def validate_common(field: str, interval: Any) -> dict[str, Any]:
+        if not isinstance(interval, dict):
+            raise ValueError(f"{manifest_name} {field} is missing or not an object")
+        if interval.get("status") != expected_status:
+            raise ValueError(f"{manifest_name} {field}.status does not match refined boundary availability")
+        if interval.get("start") != expected_start:
+            raise ValueError(f"{manifest_name} {field}.start does not match refined boundary")
+        if not isinstance(interval.get("end"), str):
+            raise ValueError(f"{manifest_name} {field}.end is missing or not a string")
+        if interval.get("profile") != PROFILE_ID:
+            raise ValueError(f"{manifest_name} {field}.profile is not the published profile")
+        if interval.get("profile_version") != PROFILE_VERSION:
+            raise ValueError(f"{manifest_name} {field}.profile_version is not the published profile version")
+        if interval.get("boundary_scan_method") != CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD:
+            raise ValueError(f"{manifest_name} {field}.boundary_scan_method is not the published refined scan method")
+        if interval.get("promotion_status") != "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS":
+            raise ValueError(f"{manifest_name} {field}.promotion_status is not fail-closed")
+        return interval
+
+    recommendation_fields_present = (
+        "candidate_recommended_research_interval" in manifest
+        or "candidate_recommended_pit_universe_interval" in manifest
+    )
+    if not required and not recommendation_fields_present:
+        return
+    validate_common(
+        "candidate_recommended_research_interval",
+        manifest.get("candidate_recommended_research_interval"),
+    )
+    pit_interval = validate_common(
+        "candidate_recommended_pit_universe_interval",
+        manifest.get("candidate_recommended_pit_universe_interval"),
+    )
+    if pit_interval.get("interval_type") != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE:
+        raise ValueError(f"{manifest_name} candidate_recommended_pit_universe_interval.interval_type is not PIT_UNIVERSE")
+    if pit_interval.get("feature_readiness_policy") != CANDIDATE_FEATURE_READINESS_POLICY:
+        raise ValueError(
+            f"{manifest_name} candidate_recommended_pit_universe_interval.feature_readiness_policy does not separate feature readiness"
+        )
+
+
 class SecurityMaster:
     """Date-sensitive identity lookup over a published security master."""
 
@@ -878,6 +929,12 @@ class DataPlatform:
                     manifest.get("refined_earliest_candidate_gate_pass_boundary"),
                     platform.candidate_promotion_decisions,
                 )
+            _validate_candidate_interval_recommendations(
+                "data manifest",
+                manifest,
+                platform._refined_earliest_candidate_gate_pass_boundary,
+                required=has_data_refined_candidate_boundary,
+            )
         research_manifest_path = base / RESEARCH_RELEASE_MANIFEST_ARTIFACT
         if research_manifest_path.exists():
             import json
@@ -924,6 +981,12 @@ class DataPlatform:
                         research_manifest.get("refined_earliest_candidate_gate_pass_boundary"),
                         platform.candidate_promotion_decisions,
                     )
+                _validate_candidate_interval_recommendations(
+                    "research manifest",
+                    research_manifest,
+                    platform._refined_earliest_candidate_gate_pass_boundary,
+                    required=has_research_refined_candidate_boundary,
+                )
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)

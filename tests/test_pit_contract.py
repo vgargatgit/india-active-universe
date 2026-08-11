@@ -1184,6 +1184,91 @@ def test_release_loader_requires_refined_boundary_when_research_manifest_candida
         DataPlatform.from_release(release, strict=True)
 
 
+def test_release_loader_validates_candidate_interval_recommendations(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    candidate_decisions = [
+        {
+            "candidate_start": candidate_start,
+            "candidate_audit_status": "FAIL",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "FAIL",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "refined_earliest_passing_snapshot": "2011-01-31" if candidate_start == "2011-01-01" else None,
+            "hard_failures": {
+                **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+                "not_materialized": False,
+                "candidate_start_snapshot_missing": False,
+                "decision_window_snapshots_missing": False,
+                "identity_failures": 1,
+            },
+            "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+        }
+        for candidate_start in CANDIDATE_RESEARCH_START_DATES
+    ]
+    valid_recommendation = {
+        "status": "CANDIDATE_REFINED_BOUNDARY_AVAILABLE",
+        "start": "2011-01-31",
+        "end": "2026-08-10",
+        "profile": PROFILE_ID,
+        "profile_version": PROFILE_VERSION,
+        "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
+        "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+    }
+    valid_pit_recommendation = {
+        **valid_recommendation,
+        "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+        "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
+    }
+
+    def write_research_manifest(**overrides):
+        (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+            json.dumps(
+                {
+                    "candidate_promotion_decisions": candidate_decisions,
+                    "earliest_candidate_gate_pass_start": None,
+                    "refined_earliest_candidate_gate_pass_boundary": "2011-01-31",
+                    "candidate_recommended_research_interval": valid_recommendation,
+                    "candidate_recommended_pit_universe_interval": valid_pit_recommendation,
+                    **overrides,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    write_research_manifest(candidate_recommended_pit_universe_interval={
+        **valid_pit_recommendation,
+        "feature_readiness_policy": "REQUIRED_FOR_UNIVERSE_PROMOTION",
+    })
+    with pytest.raises(ValueError, match="feature_readiness_policy does not separate feature readiness"):
+        DataPlatform.from_release(release, strict=True)
+
+    write_research_manifest(candidate_recommended_research_interval={
+        **valid_recommendation,
+        "boundary_scan_method": "COARSE_CANDIDATE_STARTS_ONLY",
+    })
+    with pytest.raises(ValueError, match="boundary_scan_method is not the published refined scan method"):
+        DataPlatform.from_release(release, strict=True)
+
+
 def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     release = tmp_path / TARGET_RELEASE_ID
     release.mkdir()
