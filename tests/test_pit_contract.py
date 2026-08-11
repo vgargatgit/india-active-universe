@@ -240,6 +240,25 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "required_research_security_contract": [
+            "security_id",
+            "first_research_date",
+            "last_research_date",
+            "enters_liquid_v1",
+            "enters_top750",
+            "best_rank_126",
+            "worst_rank_126",
+            "max_median_traded_value_60",
+            "max_median_traded_value_126",
+            "max_positive_volume_days_60",
+            "research_identity_quality",
+            "price_adjustment_quality",
+            "price_adjustment_ok",
+            "instrument_type",
+            "instrument_type_quality",
+            "status_quality",
+            "active_trading_ok",
+        ],
         "artifacts": {
             "research_universe_monthly.parquet": "0" * 64,
             "required_research_security.parquet": "0" * 64,
@@ -276,6 +295,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_artifact_contract = {**valid_manifest, "liquidity_artifact": "research_universe_monthly.parquet"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_artifact_contract)
     assert "research manifest liquidity_artifact is not liquidity_features.parquet" in failures
+
+    missing_required_security_field = {
+        **valid_manifest,
+        "required_research_security_contract": [
+            field for field in valid_manifest["required_research_security_contract"]
+            if field != "price_adjustment_ok"
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_required_security_field)
+    assert any("required_research_security_contract" in failure and "price_adjustment_ok" in failure for failure in failures)
 
 
 def test_raw_and_adjusted_history_are_separate():
