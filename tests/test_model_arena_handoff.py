@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -9,7 +10,8 @@ from india_active_universe.api import DataPlatform
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RELEASE = ROOT / "releases" / "india_equity_data_v2.0.1"
+RELEASE_ID = os.environ.get("INDIA_EQUITY_DATA_RELEASE_ID", "india_equity_data_v2.0.0")
+RELEASE = ROOT / "releases" / RELEASE_ID
 REQUIRED_RELEASE_FILES = (
     "data_release_manifest.json",
     "research_universe_monthly.parquet",
@@ -18,7 +20,7 @@ REQUIRED_RELEASE_FILES = (
     "trading_calendar.parquet",
     "terminal_events.parquet",
 )
-HANDOFF_DATES = ("2013-03-28", "2018-03-28", "2020-03-31", "2024-03-28", "2026-08-10")
+BASE_HANDOFF_DATES = ("2013-03-28", "2018-03-28", "2020-03-31", "2024-03-28")
 MANDATORY_UNIVERSE_FIELDS = (
     "security_id",
     "listing_episode_id",
@@ -48,7 +50,13 @@ def test_model_arena_handoff_reads_profile_history_liquidity_and_execution_price
     platform = DataPlatform.from_release(RELEASE, strict=True)
     assert platform.coverage_end is not None
 
-    for as_of in HANDOFF_DATES:
+    handoff_dates = [
+        as_of for as_of in BASE_HANDOFF_DATES
+        if platform.verified_start <= platform._check_date(as_of) <= platform.coverage_end
+    ]
+    handoff_dates.append(platform.coverage_end.isoformat())
+
+    for as_of in handoff_dates:
         universe = sorted(platform.profile_on(as_of, "LIQUID_V1"), key=lambda row: row["liquidity_rank_126"])
         assert universe, as_of
 

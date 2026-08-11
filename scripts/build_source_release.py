@@ -4,15 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 
-def run(root: Path, command: list[str]) -> None:
+def run(root: Path, command: list[str], *, env: dict[str, str] | None = None) -> None:
     print("RUN", " ".join(command))
-    subprocess.run(command, check=True, cwd=root)
+    subprocess.run(command, check=True, cwd=root, env=env)
 
 
 def main() -> None:
@@ -116,7 +117,11 @@ def main() -> None:
                 if not source_report.is_file():
                     raise SystemExit(f"CI status report does not exist: {source_report}")
                 shutil.copy2(source_report, ci_status_target)
-        run(root, command)
+        command_env = None
+        if command[:3] == [sys.executable, "-m", "pytest"]:
+            command_env = os.environ.copy()
+            command_env["INDIA_EQUITY_DATA_RELEASE_ID"] = args.release_id
+        run(root, command, env=command_env)
     print(f"SOURCE_RELEASE_COMPLETE {release}")
 
 
