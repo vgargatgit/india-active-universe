@@ -23,7 +23,7 @@ It is generated from release artifacts and companion audit reports. It does not 
 16. Price-return series trust: `price_return_adjusted_close` is the promoted signal series when price-action candidate gates pass.
 17. Liquidity features session-correct: `session_correct_liquidity_audit.md` documents official-session windows.
 18. Survivorship protection: see `pre2013_survivorship_evidence.md` and `survivorship_audit.md`.
-19. 2013+ v2.0.1 regression status: `REVIEW_REQUIRED`.
+19. 2013+ v2.0.1 regression status: `PASS_WITH_JUSTIFIED_SCOPE_CORRECTION`.
 20. RESEARCH_HIGH_CONFIDENCE intervals:
 - `2006-01-31` through `2026-08-10`: `RESEARCH_HIGH_CONFIDENCE` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 - `2004-01-01` through `2005-03-14`: `SOURCE_ONLY` for `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
