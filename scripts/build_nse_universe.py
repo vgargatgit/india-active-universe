@@ -58,6 +58,7 @@ def main() -> None:
     parser.add_argument("--start")
     parser.add_argument("--end")
     parser.add_argument("--manual-overrides", default="data/reference/manual_identity_overrides.yaml")
+    parser.add_argument("--canonicalization-version", default="identity-v2")
     args = parser.parse_args()
     start = date.fromisoformat(args.start) if args.start else None
     end = date.fromisoformat(args.end) if args.end else None
@@ -66,6 +67,7 @@ def main() -> None:
 
     findings: list[dict] = []
     paths = selected_paths(Path(args.raw), start, end, findings)
+    session_index_by_date = {point: index for index, (_path, point) in enumerate(paths, start=1)}
 
     def observations():
         for path, point in paths:
@@ -73,7 +75,7 @@ def main() -> None:
                 yield item
 
     discovered = discover_securities(observations())
-    identities = build_identity_rows(discovered)
+    identities = build_identity_rows(discovered, canonicalization_version=args.canonicalization_version, session_index_by_date=session_index_by_date)
     overrides = load_manual_overrides(args.manual_overrides)
     apply_manual_overrides(identities, overrides)
     by_key: dict[tuple, list[dict]] = {}
@@ -111,7 +113,7 @@ def main() -> None:
                     unresolved_count += 1
                     continue
                 identity = candidates[0]
-                row = {"date": item.date, "security_id": identity["security_id"], "issuer_id": identity["issuer_id"], "listing_episode_id": identity["listing_episode_id"], "symbol_at_date": item.symbol, "isin": item.isin, "company_name": item.company_name, "series": item.series, "instrument_type": identity["instrument_type"], "instrument_type_quality": identity.get("instrument_type_quality"), "instrument_type_source": identity.get("instrument_type_source"), "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source": item.source_quality, "quality": "OFFICIAL_SOURCE_UNREVIEWED", "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "parser_version": "nse-bhavcopy-v2", "canonicalization_version": "identity-v1"}
+                row = {"date": item.date, "security_id": identity["security_id"], "issuer_id": identity["issuer_id"], "listing_episode_id": identity["listing_episode_id"], "symbol_at_date": item.symbol, "isin": item.isin, "company_name": item.company_name, "series": item.series, "instrument_type": identity["instrument_type"], "instrument_type_quality": identity.get("instrument_type_quality"), "instrument_type_source": identity.get("instrument_type_source"), "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source": item.source_quality, "quality": "OFFICIAL_SOURCE_UNREVIEWED", "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "parser_version": "nse-bhavcopy-v2", "canonicalization_version": args.canonicalization_version}
                 day_rows.append(row)
                 write_row(raw_handle, row)
                 raw_count += 1

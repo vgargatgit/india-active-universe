@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections import defaultdict
 from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
@@ -13,7 +14,52 @@ def stable_id(prefix: str, *parts: str) -> str:
     return f"{prefix}_{hashlib.sha256(payload.encode()).hexdigest()[:16]}"
 
 
-def build_identity_rows(discovered: Iterable[dict[str, Any]], *, canonicalization_version: str = "identity-v1") -> list[dict[str, Any]]:
+def continuity_chains(
+    discovered_rows: list[dict[str, Any]],
+    *,
+    session_index_by_date: dict[date, int] | None = None,
+    max_gap_sessions: int = 1,
+) -> dict[int, int]:
+    """Map discovered-row positions to conservative same-symbol continuity chains."""
+    chain_by_index: dict[int, int] = {}
+    grouped: dict[tuple[str, str, str], list[tuple[int, dict[str, Any]]]] = defaultdict(list)
+    for index, row in enumerate(discovered_rows):
+        grouped[(row["exchange"], row["symbol"], row["series"])].append((index, row))
+    next_chain = 0
+    for values in grouped.values():
+        values.sort(key=lambda item: (item[1]["first_seen"], item[1]["last_seen"], item[1].get("candidate_isin") or ""))
+        previous_row: dict[str, Any] | None = None
+        current_chain: int | None = None
+        for index, row in values:
+            join_previous = False
+            if previous_row is not None and current_chain is not None:
+                previous_last = previous_row["last_seen"]
+                current_first = row["first_seen"]
+                if current_first > previous_last:
+                    if session_index_by_date:
+                        previous_session = session_index_by_date.get(previous_last)
+                        current_session = session_index_by_date.get(current_first)
+                        join_previous = (
+                            previous_session is not None
+                            and current_session is not None
+                            and 0 < current_session - previous_session <= max_gap_sessions
+                        )
+                    else:
+                        join_previous = 0 < (current_first - previous_last).days <= 7
+            if not join_previous:
+                current_chain = next_chain
+                next_chain += 1
+            chain_by_index[index] = current_chain
+            previous_row = row
+    return chain_by_index
+
+
+def build_identity_rows(
+    discovered: Iterable[dict[str, Any]],
+    *,
+    canonicalization_version: str = "identity-v1",
+    session_index_by_date: dict[date, int] | None = None,
+) -> list[dict[str, Any]]:
     """Create conservative provisional identities from observed exchange keys.
 
     Provisional IDs are stable for the observed listing episode but remain PARTIAL
@@ -22,17 +68,48 @@ def build_identity_rows(discovered: Iterable[dict[str, Any]], *, canonicalizatio
     discovered_rows = list(discovered)
     source_start = min((row["first_seen"] for row in discovered_rows), default=None)
     output = []
-    for row in discovered_rows:
+    chain_by_index = continuity_chains(discovered_rows, session_index_by_date=session_index_by_date) if canonicalization_version != "identity-v1" else {index: index for index, _row in enumerate(discovered_rows)}
+    rows_by_chain: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for index, row in enumerate(discovered_rows):
+        rows_by_chain[chain_by_index[index]].append(row)
+    chain_identity: dict[int, dict[str, str | bool | None]] = {}
+    for chain, values in rows_by_chain.items():
+        values.sort(key=lambda item: (item["first_seen"], item["last_seen"], item.get("candidate_isin") or ""))
+        first = values[0]
+        first_isin = next((item.get("candidate_isin") for item in values if item.get("candidate_isin")), None)
+        canonical_basis = first_isin or first["symbol"]
+        has_pre_isin = any(not item.get("candidate_isin") for item in values)
+        has_isin = any(item.get("candidate_isin") for item in values)
+        reconstructed = canonicalization_version != "identity-v1" and len(values) > 1
+        chain_identity[chain] = {
+            "security_id": stable_id("SEC", first["exchange"], canonical_basis, first["series"]),
+            "listing_episode_id": stable_id("EP", first["exchange"], canonical_basis, first["series"]),
+            "issuer_id": stable_id("ISSUER", first["exchange"], canonical_basis or first.get("company_name") or first["symbol"]),
+            "reconstructed": reconstructed,
+            "has_pre_isin": has_pre_isin,
+            "has_isin": has_isin,
+        }
+    for index, row in enumerate(discovered_rows):
         exchange, symbol, series = row["exchange"], row["symbol"], row["series"]
         identity_basis = row.get("candidate_isin")
-        episode = stable_id("EP", exchange, identity_basis or symbol, series)
-        security = stable_id("SEC", exchange, identity_basis or symbol, series)
-        issuer = stable_id("ISSUER", exchange, identity_basis or row.get("company_name") or symbol)
-        quality = IdentityQuality.SINGLE_OFFICIAL_SOURCE.value if identity_basis else IdentityQuality.PARTIAL.value
+        chain = chain_identity[chain_by_index[index]]
+        episode = str(chain["listing_episode_id"])
+        security = str(chain["security_id"])
+        issuer = str(chain["issuer_id"])
+        if chain["reconstructed"]:
+            quality = IdentityQuality.RECONSTRUCTED_HIGH_CONFIDENCE.value
+        else:
+            quality = IdentityQuality.SINGLE_OFFICIAL_SOURCE.value if identity_basis else IdentityQuality.PARTIAL.value
+        if chain["reconstructed"] and chain["has_pre_isin"] and chain["has_isin"]:
+            identity_source = "RECONSTRUCTED_PRE_ISIN_CONTINUITY"
+        elif chain["reconstructed"]:
+            identity_source = "RECONSTRUCTED_ADJACENT_SYMBOL_ISIN_CONTINUITY"
+        else:
+            identity_source = "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None
         instrument_quality = "HEURISTIC_HIGH_CONFIDENCE" if row.get("instrument_type") == "ORDINARY_EQUITY" else "EXPLICIT_EXCHANGE_MARKER"
         left_censored = bool(source_start and row["first_seen"] == source_start)
         listing_age_quality = "LISTING_HISTORY_LEFT_CENSORED" if left_censored else "FIRST_OBSERVED_TRADE_DATE"
-        output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "known_listing_date": None, "listing_date_quality": "UNKNOWN_LEFT_CENSORED" if left_censored else "UNKNOWN_FIRST_OBSERVED", "observed_history_start": row["first_seen"], "listing_age_sessions_quality": listing_age_quality, "listing_history_left_censored": left_censored, "identity_quality": quality, "identity_source": "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None, "instrument_type_quality": instrument_quality, "instrument_type_source": "NSE_EQ_SERIES_AND_HISTORICAL_SYMBOL_COMPANY_MARKER", "review_status": "REVIEW_REQUIRED" if not identity_basis else "UNREVIEWED", "canonicalization_version": canonicalization_version})
+        output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "known_listing_date": None, "listing_date_quality": "UNKNOWN_LEFT_CENSORED" if left_censored else "UNKNOWN_FIRST_OBSERVED", "observed_history_start": row["first_seen"], "listing_age_sessions_quality": listing_age_quality, "listing_history_left_censored": left_censored, "identity_quality": quality, "identity_source": identity_source, "instrument_type_quality": instrument_quality, "instrument_type_source": "NSE_EQ_SERIES_AND_HISTORICAL_SYMBOL_COMPANY_MARKER", "review_status": "REVIEW_REQUIRED" if not identity_basis and not chain["reconstructed"] else "UNREVIEWED", "canonicalization_version": canonicalization_version})
     return output
 
 
