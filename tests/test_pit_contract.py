@@ -7,7 +7,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from scripts.build_completion_audit import REQUIRED_RESEARCH_REPORTS, invariant_validation_summary, research_manifest_contract_failures
+from scripts.build_completion_audit import REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -371,6 +371,43 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
     failures = research_manifest_contract_failures(release, data_manifest, missing_monthly_field)
     assert any("research_universe_monthly_contract" in failure and "LIQUID_V1_eligible" in failure for failure in failures)
+
+
+def test_data_manifest_contract_requires_release_provenance(tmp_path):
+    release = tmp_path / "india_equity_data_v2.0.0"
+    release.mkdir()
+    manifest = {
+        "release_id": release.name,
+        "git_commit": "abc123",
+        "coverage": {
+            "observed_start": "2006-01-02",
+            "observed_end": "2026-08-10",
+            "security_count": 2,
+            "observation_count": 3,
+        },
+        "source_coverage": {
+            "source_verified_start": "2006-01-02",
+            "source_verified_end": "2026-08-10",
+            "verification_basis": "official NSE market-data files; no independent exchange calendar claim",
+        },
+        "research_coverage": {
+            "research_verified_start": "2013-01-01",
+            "research_verified_end": "2026-08-10",
+            "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
+            "profile_version": "LIQUID_V1",
+            "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+        },
+        "source_manifest_sha256": "0" * 64,
+        "config_sha256": "0" * 64,
+        "manual_override_sha256": "0" * 64,
+        "parser_versions": {"nse_bhavcopy": "nse-bhavcopy-v2", "canonicalization": "identity-v1"},
+    }
+
+    assert data_manifest_contract_failures(release, manifest) == []
+
+    incomplete = {**manifest, "manual_override_sha256": None}
+    failures = data_manifest_contract_failures(release, incomplete)
+    assert "data manifest manual_override_sha256 is missing or invalid" in failures
 
 
 def test_invariant_validation_summary_reports_nonzero_metrics_as_failures(tmp_path):

@@ -138,6 +138,43 @@ def partition_summary(path: Path) -> dict:
     }
 
 
+def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
+    failures: list[str] = []
+    if manifest.get("release_id") != release.name:
+        failures.append("data manifest release_id does not match release directory")
+    if not manifest.get("git_commit") or manifest.get("git_commit") == "UNKNOWN":
+        failures.append("data manifest git_commit is missing")
+    coverage = manifest.get("coverage") or {}
+    for key in ("observed_start", "observed_end", "security_count", "observation_count"):
+        if coverage.get(key) is None:
+            failures.append(f"data manifest coverage.{key} is missing")
+    source_coverage = manifest.get("source_coverage") or {}
+    for key in ("source_verified_start", "source_verified_end", "verification_basis"):
+        if not source_coverage.get(key):
+            failures.append(f"data manifest source_coverage.{key} is missing")
+    research_coverage = manifest.get("research_coverage") or {}
+    expected_research = {
+        "research_verified_start": "2013-01-01",
+        "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
+        "profile_version": "LIQUID_V1",
+        "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+    }
+    for key, expected in expected_research.items():
+        if research_coverage.get(key) != expected:
+            failures.append(f"data manifest research_coverage.{key} is not {expected}")
+    if not research_coverage.get("research_verified_end"):
+        failures.append("data manifest research_coverage.research_verified_end is missing")
+    for key in ("source_manifest_sha256", "config_sha256", "manual_override_sha256"):
+        digest = manifest.get(key)
+        if not isinstance(digest, str) or len(digest) != 64:
+            failures.append(f"data manifest {key} is missing or invalid")
+    parser_versions = manifest.get("parser_versions") or {}
+    for key in ("nse_bhavcopy", "canonicalization"):
+        if not parser_versions.get(key):
+            failures.append(f"data manifest parser_versions.{key} is missing")
+    return failures
+
+
 def research_manifest_contract_failures(release: Path, manifest: dict, research_manifest: dict) -> list[str]:
     failures: list[str] = []
     if not research_manifest:
@@ -317,14 +354,16 @@ def main() -> None:
     partition_manifest_path = release / "partitioned_artifacts_manifest.json"
     manifest_mismatch = manifest.get("release_id") != release.name
     research_quality_ok = research_manifest.get("research_quality", {}).get("status") == "RESEARCH_HIGH_CONFIDENCE"
+    data_contract_failures = data_manifest_contract_failures(release, manifest)
     research_contract_failures = research_manifest_contract_failures(release, manifest, research_manifest)
-    if missing or missing_reports or manifest_mismatch or not research_quality_ok or research_contract_failures:
+    if missing or missing_reports or manifest_mismatch or not research_quality_ok or data_contract_failures or research_contract_failures:
         rows = [f"# Release completion audit: `{manifest.get('release_id')}`", "", "## Required artifact checks", ""]
         rows.extend(f"- {'PASS' if name not in missing else 'FAIL'}: `{name}`" for name in REQUIRED)
         if manifest_mismatch:
             rows.extend(["", f"- FAIL: manifest release_id does not match directory `{release.name}`"])
         if not research_quality_ok:
             rows.extend(["", "- FAIL: research quality is not RESEARCH_HIGH_CONFIDENCE"])
+        rows.extend(f"- FAIL: {failure}" for failure in data_contract_failures)
         rows.extend(f"- FAIL: {failure}" for failure in research_contract_failures)
         rows.extend(f"- FAIL: missing research report `{name}`" for name in missing_reports)
         Path(args.out).write_text("\n".join(rows) + "\n", encoding="utf-8")
@@ -447,6 +486,7 @@ def main() -> None:
         failures.append(f"manifest release_id {manifest.get('release_id')!r} does not match directory {release.name!r}")
     if not research_quality_ok:
         failures.append("research release is not RESEARCH_HIGH_CONFIDENCE")
+    failures.extend(data_contract_failures)
     failures.extend(research_contract_failures)
     failures.extend(f"missing required research report: {name}" for name in missing_reports)
     if invariant_summary["status"] != "PASS" or invariant_summary["failure_count"]:
