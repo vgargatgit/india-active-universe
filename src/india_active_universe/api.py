@@ -228,11 +228,12 @@ class ParquetUniverseStore(UniverseStore):
         if profile != "LIQUID_V1":
             raise ValueError(f"Unknown universe profile: {profile}")
         point = _as_date(as_of_date)
+        point_value = point.isoformat()
         import pyarrow.parquet as parquet
         try:
-            rows = parquet.read_table(self.path, filters=[("date", "=", point), ("NSE_BROAD_LIQUID_PIT_V1_eligible", "=", True)]).to_pylist()
+            rows = parquet.read_table(self.path, filters=[("date", "=", point_value), ("NSE_BROAD_LIQUID_PIT_V1_eligible", "=", True)]).to_pylist()
         except Exception:
-            date_rows = parquet.read_table(self.path, filters=[("date", "=", point)]).to_pylist()
+            date_rows = parquet.read_table(self.path, filters=[("date", "=", point_value)]).to_pylist()
             rows = [row for row in date_rows if self._liquid_v1_eligible(row)]
         for row in rows:
             row.setdefault("profile_id", "NSE_BROAD_LIQUID_PIT_V1")

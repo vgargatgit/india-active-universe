@@ -646,7 +646,7 @@ def test_parquet_profile_on_executes_liquid_v1_when_materialized_flag_is_absent(
     pq.write_table(
         pa.table(
             {
-                "date": [date(2020, 1, 1), date(2020, 1, 1)],
+                "date": ["2020-01-01", "2020-01-01"],
                 "security_id": ["PASS", "FAIL"],
                 "active": [True, True],
                 "instrument_type": ["ORDINARY_EQUITY", "ORDINARY_EQUITY"],
