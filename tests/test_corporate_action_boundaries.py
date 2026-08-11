@@ -20,3 +20,4 @@ def test_boundary_classification_checks_holder_value_continuity():
 
 def test_preference_share_bonus_is_not_common_equity_bonus():
     assert classify("Bonus Preference Shares 21:1") == "BONUS_PREFERENCE_SECURITY"
+    assert classify("Bonus Ncrps 1:116") == "BONUS_PREFERENCE_SECURITY"

@@ -17,7 +17,7 @@ def parse_date(value: str | None) -> str | None:
 
 def classify(subject: str) -> str:
     text = subject.upper()
-    if "BONUS" in text and "PREFERENCE" in text:
+    if "BONUS" in text and ("PREFERENCE" in text or "NCRPS" in text):
         return "BONUS_PREFERENCE_SECURITY"
     if "BONUS" in text and "DEBENTURE" not in text:
         return "BONUS"
@@ -53,7 +53,7 @@ def ratio(subject: str) -> tuple[int | None, int | None, str | None]:
 
 def face_value_transition(subject: str, event_type: str) -> tuple[float | None, float | None, float | None]:
     """Return old face value, new face value, and price factor when unambiguous."""
-    if event_type not in {"SPLIT", "REVERSE_SPLIT"}:
+    if event_type not in {"SPLIT", "REVERSE_SPLIT", "BONUS"}:
         return None, None, None
     text = subject.upper()
     transition = re.search(r"FROM.*?R[SE]\.?\s*(\d+(?:\.\d+)?)\D+TO\s+R[SE]\.?\s*(\d+(?:\.\d+)?)", text)
@@ -107,6 +107,9 @@ def main() -> None:
         if event_type == "BONUS" and numerator is not None and denominator:
             share_factor = (numerator + denominator) / denominator
             price_factor = 1.0 / share_factor
+            if face_price_factor is not None:
+                price_factor *= face_price_factor
+                share_factor /= face_price_factor
         if event_type in {"SPLIT", "REVERSE_SPLIT"} and face_price_factor is not None:
             price_factor = face_price_factor
             share_factor = 1.0 / face_price_factor
