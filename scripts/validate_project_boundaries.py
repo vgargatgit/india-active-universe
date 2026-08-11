@@ -37,6 +37,8 @@ def validate(root: Path) -> list[str]:
         for pattern in FORBIDDEN_PATH_PATTERNS:
             if pattern.search(relative):
                 failures.append(f"forbidden strategy/index path: {relative}")
+        if relative == "scripts/validate_project_boundaries.py":
+            continue
         text = path.read_text(encoding="utf-8")
         for token in FORBIDDEN_TEXT:
             if token in text:
