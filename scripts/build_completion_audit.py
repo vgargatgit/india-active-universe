@@ -12,7 +12,21 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, REQUIRED_QUALITY_THRESHOLD, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import (
+    EXECUTION_POLICY,
+    LIQUIDITY_ARTIFACT,
+    LIQUID_V1_DEFINITION,
+    PRIORITY_SCOPE,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    RECOMMENDED_SIGNAL_PRICE_SERIES,
+    REQUIRED_QUALITY_THRESHOLD,
+    SIGNAL_POLICY,
+    TERMINAL_VALUE_POLICY,
+    TERMINAL_VALUE_POLICY_REQUIREMENT,
+    TOP_LIQUIDITY_RANKING_METRIC,
+)
 
 
 REQUIRED = [
@@ -238,20 +252,20 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
 
     policy = research_manifest.get("known_policy") or {}
     expected_policy = {
-        "signals": "price-return adjusted close",
-        "execution": "raw nominal OHLC",
-        "terminal_values": "explicit recovery scenarios; no invented canonical value",
+        "signals": SIGNAL_POLICY,
+        "execution": EXECUTION_POLICY,
+        "terminal_values": TERMINAL_VALUE_POLICY,
     }
     for key, expected in expected_policy.items():
         if policy.get(key) != expected:
             failures.append(f"known_policy.{key} is not the published downstream contract")
     expected_contract_fields = {
         "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
-        "recommended_signal_price_series": "price_return_adjusted_close",
-        "raw_execution_price_artifact": "daily_prices_raw.parquet",
-        "liquidity_artifact": "liquidity_features.parquet",
+        "recommended_signal_price_series": RECOMMENDED_SIGNAL_PRICE_SERIES,
+        "raw_execution_price_artifact": RAW_EXECUTION_PRICE_ARTIFACT,
+        "liquidity_artifact": LIQUIDITY_ARTIFACT,
         "top_liquidity_ranking_metric": TOP_LIQUIDITY_RANKING_METRIC,
-        "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "terminal_value_policy_requirement": TERMINAL_VALUE_POLICY_REQUIREMENT,
     }
     for key, expected in expected_contract_fields.items():
         if research_manifest.get(key) != expected:

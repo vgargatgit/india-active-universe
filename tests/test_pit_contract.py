@@ -7,7 +7,21 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, REQUIRED_QUALITY_THRESHOLD, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import (
+    EXECUTION_POLICY,
+    LIQUIDITY_ARTIFACT,
+    LIQUID_V1_DEFINITION,
+    PRIORITY_SCOPE,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    RECOMMENDED_SIGNAL_PRICE_SERIES,
+    REQUIRED_QUALITY_THRESHOLD,
+    SIGNAL_POLICY,
+    TERMINAL_VALUE_POLICY,
+    TERMINAL_VALUE_POLICY_REQUIREMENT,
+    TOP_LIQUIDITY_RANKING_METRIC,
+)
 from scripts.build_completion_audit import REQUIRED, REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
@@ -237,17 +251,17 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "research_end": "2026-08-10",
         },
         "known_policy": {
-            "signals": "price-return adjusted close",
-            "execution": "raw nominal OHLC",
-            "terminal_values": "explicit recovery scenarios; no invented canonical value",
+            "signals": SIGNAL_POLICY,
+            "execution": EXECUTION_POLICY,
+            "terminal_values": TERMINAL_VALUE_POLICY,
         },
         "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
-        "recommended_signal_price_series": "price_return_adjusted_close",
-        "raw_execution_price_artifact": "daily_prices_raw.parquet",
-        "liquidity_artifact": "liquidity_features.parquet",
+        "recommended_signal_price_series": RECOMMENDED_SIGNAL_PRICE_SERIES,
+        "raw_execution_price_artifact": RAW_EXECUTION_PRICE_ARTIFACT,
+        "liquidity_artifact": LIQUIDITY_ARTIFACT,
         "top_liquidity_ranking_metric": TOP_LIQUIDITY_RANKING_METRIC,
         "liquid_v1_definition": LIQUID_V1_DEFINITION,
-        "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "terminal_value_policy_requirement": TERMINAL_VALUE_POLICY_REQUIREMENT,
         "required_research_securities": 10,
         "identity_failures": 0,
         "material_price_action_missing_factors": 0,

@@ -11,7 +11,21 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, REQUIRED_QUALITY_THRESHOLD, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import (
+    EXECUTION_POLICY,
+    LIQUIDITY_ARTIFACT,
+    LIQUID_V1_DEFINITION,
+    PRIORITY_SCOPE,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    RECOMMENDED_SIGNAL_PRICE_SERIES,
+    REQUIRED_QUALITY_THRESHOLD,
+    SIGNAL_POLICY,
+    TERMINAL_VALUE_POLICY,
+    TERMINAL_VALUE_POLICY_REQUIREMENT,
+    TOP_LIQUIDITY_RANKING_METRIC,
+)
 
 
 MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS')"
@@ -347,12 +361,12 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         },
         "required_research_securities": int(required_count),
         "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
-        "recommended_signal_price_series": "price_return_adjusted_close",
-        "raw_execution_price_artifact": "daily_prices_raw.parquet",
-        "liquidity_artifact": "liquidity_features.parquet",
+        "recommended_signal_price_series": RECOMMENDED_SIGNAL_PRICE_SERIES,
+        "raw_execution_price_artifact": RAW_EXECUTION_PRICE_ARTIFACT,
+        "liquidity_artifact": LIQUIDITY_ARTIFACT,
         "top_liquidity_ranking_metric": TOP_LIQUIDITY_RANKING_METRIC,
         "liquid_v1_definition": LIQUID_V1_DEFINITION,
-        "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "terminal_value_policy_requirement": TERMINAL_VALUE_POLICY_REQUIREMENT,
         "liquid_v1_securities": int(counts[3]),
         "identity_failures": int(required_scope_failure_count),
         "material_price_action_missing_factors": missing_factor_count,
@@ -415,7 +429,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
         "quality_reports": {name: sha256(reports / name) for name in ("data_source_coverage.md", "raw_integrity_audit.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},
-        "known_policy": {"signals": "price-return adjusted close", "execution": "raw nominal OHLC", "terminal_values": "explicit recovery scenarios; no invented canonical value"},
+        "known_policy": {"signals": SIGNAL_POLICY, "execution": EXECUTION_POLICY, "terminal_values": TERMINAL_VALUE_POLICY},
         "known_limitations": [
             "Complete 2006 onward archive remains dataset-wide exploratory outside the scoped research universe.",
             "Terminal-event, merger, insolvency, and terminal-value history is partial; unresolved values require downstream recovery sensitivity.",
