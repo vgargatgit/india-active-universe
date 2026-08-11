@@ -12,7 +12,20 @@ from .quality import QualityFinding, validate_ohlc
 
 def classify_instrument_type(symbol: str | None, company_name: str | None) -> str:
     """Classify only unambiguous non-company markers; default conservatively."""
+    exact_symbol = (symbol or "").upper()
     text = f"{symbol or ''} {company_name or ''}".upper()
+    exact_etf_symbols = {
+        "AXISGOLD",
+        "GOLDSHARE",
+        "IDBIGOLD",
+        "IIFLNIFTY",
+        "KOTAKGOLD",
+        "MGOLD",
+        "QGOLDHALF",
+        "RELGOLD",
+    }
+    if exact_symbol in exact_etf_symbols:
+        return InstrumentType.ETF.value
     if re.search(r"ETF|BEES|LIQUID", text) or re.search(r"AMC\s*[-–]", text):
         return InstrumentType.ETF.value
     if re.search(r"\bREIT\b", text):

@@ -588,6 +588,12 @@ def main() -> None:
           regexp_matches(UPPER(COALESCE(symbol_at_date, '') || ' ' || COALESCE(company_name, '')),
             '(ETF|BEES|LIQUID|GILT|GOLD|SILVER|FUND|MUTUAL|NIFTY|SENSEX|BANKBEES|JUNIORBEES|PSUBNKBEES|SHARIAHBEES|PREF|PREFERENCE|WARRANT|RIGHTS|REIT|INVIT)')
         """
+        exact_product_symbol_sql = """
+          UPPER(COALESCE(symbol_at_date, '')) IN (
+            'AXISGOLD', 'GOLDSHARE', 'IDBIGOLD', 'IIFLNIFTY',
+            'KOTAKGOLD', 'MGOLD', 'QGOLDHALF', 'RELGOLD'
+          )
+        """
         pre2013_instrument_candidate_rows = connection.execute(f"""
           WITH candidates(candidate_start) AS (
             VALUES {candidate_values}
@@ -596,7 +602,8 @@ def main() -> None:
               u.security_id,
               u.instrument_type,
               u.instrument_type_quality,
-              {product_marker_sql} AS product_like_marker
+              {product_marker_sql} AS product_like_marker,
+              {exact_product_symbol_sql} AS known_product_symbol
             FROM candidates c
             LEFT JOIN read_parquet('{r}/research_universe_monthly.parquet') u
               ON CAST(u.date AS DATE) >= c.candidate_start
@@ -607,7 +614,8 @@ def main() -> None:
               security_id,
               MIN(instrument_type) AS instrument_type,
               MIN(instrument_type_quality) AS instrument_type_quality,
-              MAX(CASE WHEN product_like_marker THEN 1 ELSE 0 END)::BOOLEAN AS product_like_marker
+              MAX(CASE WHEN product_like_marker THEN 1 ELSE 0 END)::BOOLEAN AS product_like_marker,
+              MAX(CASE WHEN known_product_symbol THEN 1 ELSE 0 END)::BOOLEAN AS known_product_symbol
             FROM scoped
             WHERE security_id IS NOT NULL
             GROUP BY candidate_start, security_id
@@ -616,7 +624,8 @@ def main() -> None:
             COUNT(DISTINCT s.security_id) AS required_securities,
             COUNT(DISTINCT s.security_id) FILTER (WHERE s.instrument_type <> 'ORDINARY_EQUITY') AS non_ordinary,
             COUNT(DISTINCT s.security_id) FILTER (WHERE s.instrument_type_quality IS NULL OR s.instrument_type_quality = 'UNRESOLVED') AS ambiguous_quality,
-            COUNT(DISTINCT s.security_id) FILTER (WHERE s.instrument_type = 'ORDINARY_EQUITY' AND s.product_like_marker) AS product_like_ordinary
+            COUNT(DISTINCT s.security_id) FILTER (WHERE s.known_product_symbol) AS known_product_symbols,
+            COUNT(DISTINCT s.security_id) FILTER (WHERE s.instrument_type = 'ORDINARY_EQUITY' AND s.product_like_marker AND NOT s.known_product_symbol) AS product_like_ordinary_review
           FROM candidates c
           LEFT JOIN security_scope s USING (candidate_start)
           GROUP BY c.candidate_start
@@ -633,7 +642,8 @@ def main() -> None:
               MIN(instrument_type_quality) AS instrument_type_quality,
               MIN(liquidity_rank_126) AS best_rank_126,
               COUNT(DISTINCT date) AS research_months,
-              MAX(CASE WHEN {product_marker_sql} THEN 1 ELSE 0 END)::BOOLEAN AS product_like_marker
+              MAX(CASE WHEN {product_marker_sql} THEN 1 ELSE 0 END)::BOOLEAN AS product_like_marker,
+              MAX(CASE WHEN {exact_product_symbol_sql} THEN 1 ELSE 0 END)::BOOLEAN AS known_product_symbol
             FROM read_parquet('{r}/research_universe_monthly.parquet')
             WHERE CAST(date AS DATE) < DATE '{research_start}'
               AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
@@ -648,17 +658,20 @@ def main() -> None:
             instrument_type_quality,
             best_rank_126,
             research_months,
-            product_like_marker
+            product_like_marker,
+            known_product_symbol
           FROM scoped
           WHERE instrument_type <> 'ORDINARY_EQUITY'
              OR instrument_type_quality IS NULL
              OR instrument_type_quality = 'UNRESOLVED'
              OR product_like_marker
+             OR known_product_symbol
           ORDER BY
             CASE
               WHEN instrument_type <> 'ORDINARY_EQUITY' THEN 0
               WHEN instrument_type_quality IS NULL OR instrument_type_quality = 'UNRESOLVED' THEN 1
-              WHEN product_like_marker THEN 2
+              WHEN known_product_symbol THEN 2
+              WHEN product_like_marker THEN 3
               ELSE 3
             END,
             best_rank_126 NULLS LAST,
@@ -1298,47 +1311,48 @@ Weekend and holiday dates are not part of any window.
         "",
         "## Candidate instrument gate",
         "",
-        "| Candidate start | Required securities | Non-ordinary securities | Ambiguous quality | Product-like ordinary names | Gate |",
-        "|---|---:|---:|---:|---:|---|",
+        "| Candidate start | Required securities | Non-ordinary securities | Ambiguous quality | Known product symbols | Product-like false-positive review | Gate |",
+        "|---|---:|---:|---:|---:|---:|---|",
     ]
     instrument_rows_by_candidate = {str(row[0]): row for row in pre2013_instrument_candidate_rows}
     for candidate_start in CANDIDATE_RESEARCH_START_DATES:
         row = instrument_rows_by_candidate.get(candidate_start)
         if row is None:
-            required_securities = non_ordinary = ambiguous_quality = product_like_ordinary = 0
+            required_securities = non_ordinary = ambiguous_quality = known_product_symbols = product_like_ordinary_review = 0
         else:
-            _candidate, required_securities, non_ordinary, ambiguous_quality, product_like_ordinary = row
-        if non_ordinary:
+            _candidate, required_securities, non_ordinary, ambiguous_quality, known_product_symbols, product_like_ordinary_review = row
+        if non_ordinary or known_product_symbols:
             gate = "FAIL_NON_ORDINARY"
         elif ambiguous_quality:
             gate = "FAIL_AMBIGUOUS"
-        elif product_like_ordinary:
-            gate = "REVIEW_REQUIRED"
         elif not required_securities:
             gate = "NOT_MATERIALIZED"
         else:
             gate = "PASS"
-        instrument_text.append(f"| {candidate_start} | {required_securities} | {non_ordinary} | {ambiguous_quality} | {product_like_ordinary} | `{gate}` |")
+        instrument_text.append(f"| {candidate_start} | {required_securities} | {non_ordinary} | {ambiguous_quality} | {known_product_symbols} | {product_like_ordinary_review} | `{gate}` |")
     instrument_text.extend([
         "",
         "## Review queue",
         "",
-        "| Security | Symbol | Company | First month | Last month | Instrument type | Instrument quality | Best rank | Research months | Product-like marker | Review flag |",
-        "|---|---|---|---|---|---|---|---:|---:|---|---|",
+        "| Security | Symbol | Company | First month | Last month | Instrument type | Instrument quality | Best rank | Research months | Product-like marker | Known product symbol | Review flag |",
+        "|---|---|---|---|---|---|---|---:|---:|---|---|---|",
     ])
     for row in pre2013_instrument_review_rows:
-        sid, symbol, company, first_month, last_month, instrument_type_value, instrument_quality, best_rank, research_months, product_like_marker = row
+        sid, symbol, company, first_month, last_month, instrument_type_value, instrument_quality, best_rank, research_months, product_like_marker, known_product_symbol = row
         flags = []
         if instrument_type_value != "ORDINARY_EQUITY":
             flags.append("NON_ORDINARY_IN_REQUIRED_SCOPE")
         if instrument_quality is None or instrument_quality == "UNRESOLVED":
             flags.append("AMBIGUOUS_INSTRUMENT_QUALITY")
+        if known_product_symbol:
+            flags.append("KNOWN_PRODUCT_SYMBOL_REBUILD_REQUIRED")
         if product_like_marker:
             flags.append("PRODUCT_LIKE_NAME_REVIEW")
-        instrument_text.append(f"| `{sid}` | `{symbol}` | `{company}` | {first_month} | {last_month} | `{instrument_type_value}` | `{instrument_quality}` | {best_rank} | {research_months} | `{product_like_marker}` | `{','.join(flags)}` |")
+        instrument_text.append(f"| `{sid}` | `{symbol}` | `{company}` | {first_month} | {last_month} | `{instrument_type_value}` | `{instrument_quality}` | {best_rank} | {research_months} | `{product_like_marker}` | `{known_product_symbol}` | `{','.join(flags)}` |")
     instrument_text.extend([
         "",
         "Product-like markers are a review signal only. They do not override source-backed instrument classification by themselves.",
+        "Known product symbols are exact-symbol ETF/product blockers and require a source rebuild so they leave the ordinary-equity release artifacts.",
         "Promotion requires zero known non-ordinary and zero ambiguous classifications inside the promoted required scope.",
     ])
     write(reports / "pre2013_instrument_classification_audit.md", "\n".join(instrument_text))
@@ -1692,13 +1706,11 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         if row is None:
             instrument_gate_by_candidate[candidate_start] = "NOT_MATERIALIZED"
             continue
-        _candidate, required_securities, non_ordinary, ambiguous_quality, product_like_ordinary = row
-        if non_ordinary:
+        _candidate, required_securities, non_ordinary, ambiguous_quality, known_product_symbols, _product_like_ordinary_review = row
+        if non_ordinary or known_product_symbols:
             instrument_gate_by_candidate[candidate_start] = "FAIL_NON_ORDINARY"
         elif ambiguous_quality:
             instrument_gate_by_candidate[candidate_start] = "FAIL_AMBIGUOUS"
-        elif product_like_ordinary:
-            instrument_gate_by_candidate[candidate_start] = "REVIEW_REQUIRED"
         elif not required_securities:
             instrument_gate_by_candidate[candidate_start] = "NOT_MATERIALIZED"
         else:
