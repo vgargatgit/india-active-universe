@@ -49,11 +49,11 @@ def main() -> None:
         last_price = event.pop("last_observed_price", None)
         common = {"security_id": event.get("security_id"), "event_id": event.get("event_id"), "terminal_event_type": event.get("terminal_event_type")}
         event["recovery_scenarios"] = [
-            {"scenario": "ZERO_RECOVERY", "value": 0.0, "canonical": False},
-            {"scenario": "LAST_OBSERVED_PRICE", "value": last_price, "canonical": False},
+            {"scenario": "ZERO_RECOVERY", "value": 0.0, "value_basis": "DOWNSTREAM_ASSUMPTION", "canonical": False},
+            {"scenario": "LAST_OBSERVED_PRICE", "value": last_price, "value_basis": "LAST_OBSERVED_RAW_CLOSE", "canonical": False},
         ]
         if event.get("terminal_value") is not None:
-            event["recovery_scenarios"].append({"scenario": "DOCUMENTED_VALUE", "value": event["terminal_value"], "canonical": True})
+            event["recovery_scenarios"].append({"scenario": "DOCUMENTED_VALUE", "value": event["terminal_value"], "value_basis": event.get("terminal_value_basis"), "canonical": True})
         output.append({**common, "event": event})
     Path(args.out).write_text(json.dumps({"holdings": sorted(holdings), "events": output}, indent=2, default=str) + "\n", encoding="utf-8")
     print(json.dumps({"holdings": len(holdings), "events": len(output), "out": args.out}, sort_keys=True))
