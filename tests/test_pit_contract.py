@@ -245,6 +245,10 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
+        "required_research_securities": 10,
+        "identity_failures": 0,
+        "material_price_action_missing_factors": 0,
+        "material_price_action_unresolved_boundaries": 0,
         "research_universe_monthly_contract": [
             "date",
             "security_id",
@@ -352,6 +356,10 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_ci_status_hash = {key: value for key, value in valid_manifest.items() if key != "ci_status_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)
     assert "research manifest ci_status_sha256 is missing" in failures
+
+    unresolved_price_action = {**valid_manifest, "material_price_action_unresolved_boundaries": 1}
+    failures = research_manifest_contract_failures(release, data_manifest, unresolved_price_action)
+    assert "research manifest material_price_action_unresolved_boundaries is not zero" in failures
 
     missing_raw_report_hash = {
         **valid_manifest,

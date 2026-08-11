@@ -242,6 +242,18 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key, expected in expected_contract_fields.items():
         if research_manifest.get(key) != expected:
             failures.append(f"research manifest {key} is not {expected}")
+    required_numeric_metrics = (
+        "required_research_securities",
+        "identity_failures",
+        "material_price_action_missing_factors",
+        "material_price_action_unresolved_boundaries",
+    )
+    for key in required_numeric_metrics:
+        if not isinstance(research_manifest.get(key), int):
+            failures.append(f"research manifest {key} is missing or not an integer")
+    for key in ("identity_failures", "material_price_action_missing_factors", "material_price_action_unresolved_boundaries"):
+        if isinstance(research_manifest.get(key), int) and research_manifest[key] != 0:
+            failures.append(f"research manifest {key} is not zero")
 
     required_artifacts = {
         "research_universe_monthly.parquet",
