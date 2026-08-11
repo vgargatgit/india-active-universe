@@ -132,6 +132,7 @@ def main() -> None:
                     if refined_boundary
                     else None
                 ),
+                "candidate_pit_universe_ready": platform.candidate_pit_universe_ready(args.candidate_start),
                 "candidate_gate_pass_ready": platform.candidate_gate_pass_ready(args.candidate_start),
                 "research_quality_status": platform.research_quality_on(args.candidate_start),
                 "candidate_research_ready": platform.candidate_research_ready(args.candidate_start),

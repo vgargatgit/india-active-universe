@@ -282,6 +282,10 @@ def test_platform_exposes_candidate_promotion_decisions():
     assert platform.candidate_promotion_summary()["recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary"] is True
     assert platform.candidate_promotion_summary()["candidate_gate_pass_start_dates"] == []
     assert platform.candidate_promotion_summary()["candidate_research_ready_start_dates"] == []
+    assert platform.candidate_pit_universe_ready("2009-01-29") is False
+    assert platform.candidate_pit_universe_ready("2009-01-30") is True
+    platform.coverage_end = date(2009, 2, 28)
+    assert platform.candidate_pit_universe_ready("2009-03-01") is False
     assert platform.candidate_promotion_status()[0]["candidate_start"] == "2009-01-01"
     with pytest.raises(LookupError):
         platform.candidate_promotion_decision("2007-01-01")
@@ -394,6 +398,7 @@ def test_platform_exposes_machine_readable_candidate_promotion_contract():
 
     assert tuple(contract["candidate_research_start_dates"]) == CANDIDATE_RESEARCH_START_DATES
     assert tuple(contract["candidate_promotion_api_methods"]) == CANDIDATE_PROMOTION_API_METHODS
+    assert "candidate_pit_universe_ready" in contract["candidate_promotion_api_methods"]
     assert tuple(contract["candidate_decision_required_fields"]) == CANDIDATE_DECISION_REQUIRED_FIELDS
     assert tuple(contract["candidate_promotion_summary_fields"]) == CANDIDATE_PROMOTION_SUMMARY_FIELDS
     assert tuple(contract["candidate_decision_gate_keys"]) == CANDIDATE_DECISION_GATE_KEYS
@@ -449,6 +454,9 @@ def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, caps
         def candidate_gate_pass_ready(self, candidate_start):
             return False
 
+        def candidate_pit_universe_ready(self, as_of_date):
+            return False
+
         def research_quality_on(self, candidate_start):
             return RESEARCH_EXPLORATORY_STATUS
 
@@ -482,6 +490,7 @@ def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, caps
     assert output["candidate_feature_readiness"] == {"feature_warmup_not_ready": True}
     assert output["candidate_refined_earliest_passing_snapshot"] == "2006-07-31"
     assert output["refined_earliest_candidate_gate_pass_boundary"] == "2006-07-31"
+    assert output["candidate_pit_universe_ready"] is False
     assert output["candidate_gate_pass_ready"] is False
     assert output["research_quality_status"] == RESEARCH_EXPLORATORY_STATUS
     assert output["candidate_research_ready"] is False

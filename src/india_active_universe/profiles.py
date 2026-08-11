@@ -139,6 +139,7 @@ CANDIDATE_PROMOTION_API_METHODS = (
     "candidate_promotion_summary",
     "candidate_gate_pass_start_dates",
     "candidate_gate_pass_ready",
+    "candidate_pit_universe_ready",
     "candidate_research_ready_start_dates",
     "candidate_research_ready",
     "earliest_candidate_gate_pass_date",

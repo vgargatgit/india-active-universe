@@ -747,6 +747,16 @@ class DataPlatform:
         """Return the earliest monthly/session boundary whose candidate universe gates pass."""
         return self._refined_earliest_candidate_gate_pass_boundary
 
+    def candidate_pit_universe_ready(self, as_of_date: str | date) -> bool:
+        """Return whether a date is inside the refined candidate PIT-universe interval."""
+        point = _as_date(as_of_date)
+        boundary = self._refined_earliest_candidate_gate_pass_boundary
+        if boundary is None or point < boundary:
+            return False
+        if self.coverage_end and point > self.coverage_end:
+            return False
+        return True
+
     def candidate_gate_pass_start_dates(self) -> list[date]:
         """Return candidate starts whose promotion gates pass, sorted chronologically."""
         configured_candidate_starts = {
