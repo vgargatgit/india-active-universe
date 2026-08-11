@@ -14,6 +14,7 @@ from india_active_universe.profiles import (
     LIQUIDITY_ARTIFACT,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RESEARCH_START_DATE,
+    SOURCE_MANIFEST_ARTIFACT,
 )
 
 
@@ -89,7 +90,7 @@ def main() -> None:
         [sys.executable, str(root / "scripts/validate_research_release.py"), "--release", str(release), "--out", str(root / "reports" / f"research_invariant_validation_{args.release_id}.json")],
         [sys.executable, "-m", "pytest", "-q", "--junitxml", str(root / "reports" / f"test_results_{args.release_id}.xml")],
         [sys.executable, str(root / "scripts/audit_raw_integrity.py"), "--root", str(raw), "--out", str(root / "reports" / "raw_integrity_audit.md")],
-        [sys.executable, str(root / "scripts/build_source_coverage_audit.py"), "--release", str(release), "--manifest", str(root / "data/raw/manifests/source_manifest.json"), "--out", str(root / "reports/data_source_coverage.md")],
+        [sys.executable, str(root / "scripts/build_source_coverage_audit.py"), "--release", str(release), "--manifest", str(source_manifest), "--out", str(root / "reports/data_source_coverage.md")],
         [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
     ])
@@ -118,7 +119,7 @@ def main() -> None:
         return
     work.mkdir(parents=True)
     release.mkdir(parents=True)
-    target = work / "raw/manifests/source_manifest.json"
+    target = work / "raw/manifests" / SOURCE_MANIFEST_ARTIFACT
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_manifest, target)
     reports.mkdir(parents=True, exist_ok=True)
