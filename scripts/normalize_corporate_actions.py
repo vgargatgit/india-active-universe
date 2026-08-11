@@ -56,7 +56,11 @@ def face_value_transition(subject: str, event_type: str) -> tuple[float | None, 
     if event_type not in {"SPLIT", "REVERSE_SPLIT", "BONUS"}:
         return None, None, None
     text = subject.upper()
-    transition = re.search(r"FROM.*?R[SE]\.?\s*(\d+(?:\.\d+)?)\D+TO\s+R[SE]\.?\s*(\d+(?:\.\d+)?)", text)
+    transition = re.search(
+        r"FROM(?:\s+FACE\s+VALUE)?\s*(?:R[SE]\.?)?\s*(\d+(?:\.\d+)?)\s*/?-?\D+"
+        r"TO(?:\s+FACE\s+VALUE)?\s*(?:R[SE]\.?)?\s*(\d+(?:\.\d+)?)",
+        text,
+    )
     if not transition:
         transition = re.search(r"CONSOLIDATION.*?R[SE]\.?\s*(\d+(?:\.\d+)?)\D+TO\s+R[SE]\.?\s*(\d+(?:\.\d+)?)", text)
     values = [float(value) for value in transition.groups()] if transition else [float(value) for value in re.findall(r"R[SE]\.?\s*(\d+(?:\.\d+)?)", text)]
