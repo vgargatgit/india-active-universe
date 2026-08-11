@@ -139,6 +139,13 @@ def main() -> None:
               )
                  OR research_identity_quality IS NULL
             """).fetchone()[0],
+            "required_artifact_price_adjustment_failures": connection.execute(f"""
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet')
+              WHERE price_adjustment_ok IS DISTINCT FROM TRUE
+                 OR price_adjustment_quality IS NULL
+                 OR price_adjustment_quality IN ('UNRESOLVED_CORPORATE_ACTION', 'RAW_ONLY_UNKNOWN')
+            """).fetchone()[0],
             "future_listing_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') u
               JOIN (SELECT security_id, MIN(CAST(date AS DATE)) AS first_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) p USING (security_id)

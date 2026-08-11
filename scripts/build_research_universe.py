@@ -153,7 +153,13 @@ def main() -> None:
                  MAX(CASE WHEN liquid_v1_eligible THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
                  MAX(CASE WHEN top750_liquidity THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750,
                  MAX(rank_126) FILTER (WHERE rank_126 IS NOT NULL) AS worst_rank_126,
-                 MIN(research_identity_quality) AS research_identity_quality
+                 MIN(research_identity_quality) AS research_identity_quality,
+                 MIN(price_adjustment_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS price_adjustment_quality,
+                 MIN(CASE
+                   WHEN (liquid_v1_eligible OR top750_liquidity) AND price_adjustment_ok THEN 1
+                   WHEN (liquid_v1_eligible OR top750_liquidity) THEN 0
+                   ELSE NULL
+                 END)::BOOLEAN AS price_adjustment_ok
           FROM read_parquet('{monthly}')
           GROUP BY security_id
           HAVING enters_liquid_v1 OR enters_top750
