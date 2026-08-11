@@ -112,6 +112,22 @@ def main() -> None:
               WHERE rrs.enters_liquid_v1 IS DISTINCT FROM m.enters_liquid_v1
                  OR rrs.enters_top750 IS DISTINCT FROM m.enters_top750
             """).fetchone()[0],
+            "required_artifact_date_range_failures": connection.execute(f"""
+              WITH monthly_ranges AS (
+                SELECT security_id,
+                       MIN(date) AS first_research_date,
+                       MAX(date) AS last_research_date
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                   OR COALESCE(top750_liquidity, FALSE)
+                GROUP BY security_id
+              )
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              JOIN monthly_ranges m USING (security_id)
+              WHERE CAST(rrs.first_research_date AS DATE) IS DISTINCT FROM CAST(m.first_research_date AS DATE)
+                 OR CAST(rrs.last_research_date AS DATE) IS DISTINCT FROM CAST(m.last_research_date AS DATE)
+            """).fetchone()[0],
             "future_listing_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') u
               JOIN (SELECT security_id, MIN(CAST(date AS DATE)) AS first_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) p USING (security_id)
