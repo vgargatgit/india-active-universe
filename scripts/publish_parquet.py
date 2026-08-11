@@ -7,6 +7,8 @@ from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from india_active_universe.profiles import TARGET_RELEASE_ID
+
 
 def json_rows(path: Path):
     with path.open(encoding="utf-8") as handle:
@@ -83,7 +85,7 @@ def publish(source: Path, target: Path, batch_size: int = 25_000, schema_if_empt
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", default="data")
-    parser.add_argument("--release", default="releases/india_equity_data_v0.1.0")
+    parser.add_argument("--release", default=f"releases/{TARGET_RELEASE_ID}")
     args = parser.parse_args()
     data, release = Path(args.data), Path(args.release)
     mappings = {

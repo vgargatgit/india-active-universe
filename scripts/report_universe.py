@@ -7,7 +7,7 @@ import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from india_active_universe.profiles import ACTIVE_DEFINITION, COMPONENT_QUALITY, DATASET_QUALITY_TIER, DATA_RELEASE_MANIFEST_ARTIFACT, PARSER_VERSIONS, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, RESEARCH_START_DATE, SOURCE_MANIFEST_ARTIFACT, SUSPENSION_SOURCE_MANIFEST_ARTIFACT
+from india_active_universe.profiles import ACTIVE_DEFINITION, COMPONENT_QUALITY, DATASET_QUALITY_TIER, DATA_RELEASE_MANIFEST_ARTIFACT, PARSER_VERSIONS, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, RESEARCH_START_DATE, SOURCE_MANIFEST_ARTIFACT, SUSPENSION_SOURCE_MANIFEST_ARTIFACT, TARGET_RELEASE_ID
 
 
 def rows(path: Path):
@@ -35,7 +35,7 @@ def current_commit(root: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default="data")
-    parser.add_argument("--release-id", default="india_equity_data_v0.1.0")
+    parser.add_argument("--release-id", default=TARGET_RELEASE_ID)
     parser.add_argument("--release-dir")
     parser.add_argument("--reports-dir")
     parser.add_argument("--config")
