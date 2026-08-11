@@ -17,9 +17,9 @@
     "PASS": 432,
     "WARNING_LARGE_BOUNDARY_MOVE": 26
   },
-  "ci_status_sha256": "0ace623a51fbf3a65d5ddc05cb51797d344a60dbe317354393de3a38dc5addef",
+  "ci_status_sha256": "695c8b2e6febfa61ff61ac062f6a9111f86a55f0da053d4bd1ac1b580d0e0b16",
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "03aa4e0b99b2c74b7b91e5ee4f04376822d218a1",
+  "git_sha": "d0db60fd08fed6bb848e63b7cd46babc36915f87",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -62,5 +62,5 @@
     "research_start": "2013-01-01"
   },
   "status_interval_overlaps": 0,
-  "test_result_sha256": "73d467b14bb3f93c55e663f32ba104314e4448191f791523f6ecf7b2249354b1"
+  "test_result_sha256": "1fbbb59bf19b768de79f3b7558af8664ace24f1328b8934e90208d5870b6e808"
 }
