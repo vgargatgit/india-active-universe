@@ -17,6 +17,7 @@ from india_active_universe.profiles import (
     LIQUID_V1_DEFINITION,
     PROFILE_ID,
     PROFILE_VERSION,
+    SOURCE_OBSERVED_START_DATE,
     TARGET_RELEASE_ID,
 )
 
@@ -84,7 +85,7 @@ def test_model_arena_handoff_reads_profile_history_liquidity_and_execution_price
             for field in MANDATORY_UNIVERSE_FIELDS:
                 assert row.get(field) is not None, (as_of, row.get("security_id"), field)
 
-        prior_sessions = platform.sessions_between("2006-01-02", as_of)
+        prior_sessions = platform.sessions_between(SOURCE_OBSERVED_START_DATE, as_of)
         assert len(prior_sessions) >= 300, as_of
         history_start = prior_sessions[-300]["date"]
 
