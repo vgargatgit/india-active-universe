@@ -261,10 +261,12 @@ def test_platform_exposes_candidate_promotion_decisions():
             "decision_window_gate": "PASS",
             "warmup_gate": "PASS",
             "feature_readiness": {"feature_warmup_not_ready": False},
+            "refined_earliest_passing_snapshot": "2009-01-30",
             "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
         }
     ]
     platform.earliest_candidate_gate_pass_start = date(2009, 1, 1)
+    platform._refined_earliest_candidate_gate_pass_boundary = date(2009, 1, 30)
 
     decision = platform.candidate_promotion_decision("2009-01-01")
 
@@ -273,6 +275,8 @@ def test_platform_exposes_candidate_promotion_decisions():
     assert platform.candidate_promotion_summary()["recorded_earliest_candidate_gate_pass_start"] == "2009-01-01"
     assert platform.candidate_promotion_summary()["earliest_candidate_gate_pass_start"] is None
     assert platform.candidate_promotion_summary()["recorded_matches_derived_earliest_candidate_gate_pass_start"] is False
+    assert platform.candidate_promotion_summary()["refined_earliest_candidate_gate_pass_boundary"] == "2009-01-30"
+    assert platform.candidate_promotion_summary()["recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary"] is True
     assert platform.candidate_promotion_summary()["candidate_gate_pass_start_dates"] == []
     assert platform.candidate_promotion_summary()["candidate_research_ready_start_dates"] == []
     assert platform.candidate_promotion_status()[0]["candidate_start"] == "2009-01-01"

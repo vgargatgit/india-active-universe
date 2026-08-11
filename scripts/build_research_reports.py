@@ -1734,8 +1734,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
     refined_candidate_boundaries = sorted(
         str(item["refined_earliest_passing_snapshot"])
         for item in candidate_promotion_decisions
-        if item["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
-        and item.get("refined_earliest_passing_snapshot")
+        if item.get("refined_earliest_passing_snapshot")
     )
     refined_earliest_candidate_gate_pass_boundary = refined_candidate_boundaries[0] if refined_candidate_boundaries else None
     executive_text = [

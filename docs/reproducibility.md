@@ -49,7 +49,7 @@ Candidate gates must agree with the hard-failure map. For example, `decision_win
 
 Likewise, `candidate_audit_status` must match the hard-failure map: it cannot publish `PASS` while any hard-failure value is active, and it cannot publish `FAIL` when no hard-failure value is active.
 
-`earliest_candidate_gate_pass_start` must be consistent with the candidate rows. If it is `null`, no candidate row can have `CANDIDATE_GATE_PASS_INTERPRETATION`. If it is set, it must be a configured start and the earliest row whose audit status and every first-class gate are `PASS`. New Phase 3 manifests also emit `refined_earliest_candidate_gate_pass_boundary`, the earliest monthly/session boundary inside passing coarse candidates.
+`earliest_candidate_gate_pass_start` must be consistent with the candidate rows. If it is `null`, no candidate row can have `CANDIDATE_GATE_PASS_INTERPRETATION`. If it is set, it must be a configured start and the earliest row whose audit status and every first-class gate are `PASS`. New Phase 3 manifests also emit `refined_earliest_candidate_gate_pass_boundary`, the earliest monthly/session boundary whose remaining interval passes universe gates after the coarse candidate scan. This boundary can be inside a coarse candidate that failed at its exact start.
 
 The manifest candidate decision rows must also match the generated candidate promotion audit artifact. For each configured candidate start, `candidate_audit_status` and `hard_failures` in `research_release_manifest.json` must equal the corresponding row in `candidate_promotion_audit_<release>.json`. Boolean hard-failure fields must remain booleans, and count fields must remain integers. The field set is published in the profile constants as `CANDIDATE_HARD_FAILURE_KEYS`.
 

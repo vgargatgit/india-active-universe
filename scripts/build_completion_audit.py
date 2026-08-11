@@ -611,7 +611,6 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         refined_gate_pass_boundaries = sorted(
             item.get("refined_earliest_passing_snapshot") for item in candidate_decisions
             if isinstance(item, dict)
-            and item.get("promotion_interpretation") == pass_interpretation
             and item.get("refined_earliest_passing_snapshot")
         )
         if refined_earliest_candidate_gate_pass_boundary is None and refined_gate_pass_boundaries:

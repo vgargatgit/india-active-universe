@@ -175,10 +175,7 @@ def _normalize_refined_earliest_candidate_gate_pass_boundary(value: Any, decisio
     refined_boundaries = sorted(
         _as_date(row["refined_earliest_passing_snapshot"]).isoformat()
         for row in decisions
-        if row["candidate_audit_status"] == CANDIDATE_PASS_VALUE
-        and all(row[field] == CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS)
-        and row["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
-        and row.get("refined_earliest_passing_snapshot")
+        if row.get("refined_earliest_passing_snapshot")
     )
     if value is None:
         if refined_boundaries:
@@ -666,10 +663,7 @@ class DataPlatform:
         refined_boundaries = sorted(
             str(row["refined_earliest_passing_snapshot"])
             for row in self.candidate_promotion_decisions
-            if row.get("candidate_audit_status") == CANDIDATE_PASS_VALUE
-            and all(row.get(field) == CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS)
-            and row.get("promotion_interpretation") == CANDIDATE_GATE_PASS_INTERPRETATION
-            and row.get("refined_earliest_passing_snapshot")
+            if row.get("refined_earliest_passing_snapshot")
         )
         recorded_refined = (
             self._refined_earliest_candidate_gate_pass_boundary.isoformat()

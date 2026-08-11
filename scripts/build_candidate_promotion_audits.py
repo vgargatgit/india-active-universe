@@ -161,42 +161,117 @@ def main() -> None:
               ON lf.security_id = rs.security_id
              AND CAST(lf.date AS DATE) = CAST(rs.date AS DATE)
             GROUP BY rs.candidate_start
-          ), monthly_gate_counts AS (
-            SELECT rs.candidate_start,
-              CAST(rs.date AS DATE) AS snapshot_date,
+          ), candidate_boundaries AS (
+            SELECT sm.candidate_start,
+              CAST(sm.date AS DATE) AS boundary_date
+            FROM scoped_monthly sm
+            JOIN candidate_sessions cs USING (candidate_start)
+            WHERE sm.security_id IS NOT NULL
+              AND CAST(sm.date AS DATE) >= cs.first_decision_session
+            GROUP BY sm.candidate_start, CAST(sm.date AS DATE)
+          ), boundary_required_scope AS (
+            SELECT cb.candidate_start,
+              cb.boundary_date,
+              CAST(rs.date AS DATE) AS date,
+              rs.security_id,
+              rs.research_identity_ok,
+              rs.price_adjustment_ok,
+              rs.instrument_type,
+              rs.instrument_type_quality,
+              rs.status_quality
+            FROM candidate_boundaries cb
+            JOIN required_scope rs
+              ON rs.candidate_start = cb.candidate_start
+             AND CAST(rs.date AS DATE) >= cb.boundary_date
+          ), boundary_security_scope AS (
+            SELECT candidate_start,
+              boundary_date,
+              security_id,
+              MIN(CAST(date AS DATE)) AS first_required_month,
+              MIN(CASE WHEN research_identity_ok THEN 1 ELSE 0 END)::BOOLEAN AS identity_ok,
+              MIN(CASE WHEN price_adjustment_ok THEN 1 ELSE 0 END)::BOOLEAN AS price_adjustment_ok,
+              MIN(CASE WHEN instrument_type = 'ORDINARY_EQUITY'
+                         AND instrument_type_quality IS NOT NULL
+                         AND instrument_type_quality <> 'UNRESOLVED'
+                       THEN 1 ELSE 0 END)::BOOLEAN AS instrument_ok,
+              MIN(CASE WHEN status_quality NOT IN ('UNKNOWN_STATUS', 'UNRESOLVED')
+                         AND status_quality IS NOT NULL
+                       THEN 1 ELSE 0 END)::BOOLEAN AS status_ok
+            FROM boundary_required_scope
+            GROUP BY candidate_start, boundary_date, security_id
+          ), boundary_material_events AS (
+            SELECT bss.candidate_start,
+              bss.boundary_date,
+              ca.event_id,
+              ca.price_factor,
+              ca.share_factor,
+              COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
+              event_cal.session_index AS event_session_index,
+              boundary_cal.session_index AS boundary_session_index
+            FROM boundary_security_scope bss
+            JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
+            LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v
+              ON v.event_id = ca.event_id
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') event_cal
+              ON CAST(event_cal.date AS DATE) = CAST(ca.event_date AS DATE)
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') boundary_cal
+              ON CAST(boundary_cal.date AS DATE) = bss.boundary_date
+            WHERE ca.event_type IN {MATERIAL_ACTIONS}
+              AND CAST(ca.event_date AS DATE) < DATE '{args.control_start}'
+              AND (
+                CAST(ca.event_date AS DATE) >= bss.first_required_month
+                OR event_cal.session_index >= boundary_cal.session_index - {max_window}
+              )
+          ), boundary_material_counts AS (
+            SELECT candidate_start,
+              boundary_date,
+              COUNT(DISTINCT event_id) FILTER (WHERE price_factor IS NULL OR share_factor IS NULL) AS material_missing_factors,
+              COUNT(DISTINCT event_id) FILTER (
+                WHERE validation_status <> 'PASS'
+                  AND event_session_index >= boundary_session_index - {max_window}
+              ) AS signal_window_non_pass_boundaries
+            FROM boundary_material_events
+            GROUP BY candidate_start, boundary_date
+          ), boundary_gate_counts AS (
+            SELECT brs.candidate_start,
+              brs.boundary_date,
               COUNT(*) AS required_rows,
-              COUNT(*) FILTER (WHERE research_identity_ok IS DISTINCT FROM TRUE) AS identity_failures,
-              COUNT(*) FILTER (WHERE price_adjustment_ok IS DISTINCT FROM TRUE) AS price_adjustment_failures,
-              COUNT(*) FILTER (
-                WHERE instrument_type IS DISTINCT FROM 'ORDINARY_EQUITY'
-                   OR instrument_type_quality IS NULL
-                   OR instrument_type_quality = 'UNRESOLVED'
-              ) AS instrument_failures,
-              COUNT(*) FILTER (
-                WHERE status_quality IN ('UNKNOWN_STATUS', 'UNRESOLVED')
-                   OR status_quality IS NULL
-              ) AS status_failures,
+              COUNT(DISTINCT brs.security_id) AS required_securities,
+              COUNT(DISTINCT brs.security_id) FILTER (WHERE bss.identity_ok IS DISTINCT FROM TRUE) AS identity_failures,
+              COUNT(DISTINCT brs.security_id) FILTER (WHERE bss.price_adjustment_ok IS DISTINCT FROM TRUE) AS price_adjustment_failures,
+              COUNT(DISTINCT brs.security_id) FILTER (WHERE bss.instrument_ok IS DISTINCT FROM TRUE) AS instrument_failures,
+              COUNT(DISTINCT brs.security_id) FILTER (WHERE bss.status_ok IS DISTINCT FROM TRUE) AS status_failures,
               COUNT(*) FILTER (
                 WHERE lf.liquidity_window_definition IS DISTINCT FROM 'OFFICIAL_NSE_SESSION_WINDOW'
-              ) AS session_liquidity_window_failures
-            FROM required_scope rs
+              ) AS session_liquidity_window_failures,
+              COALESCE(bmc.material_missing_factors, 0) AS material_missing_factors,
+              COALESCE(bmc.signal_window_non_pass_boundaries, 0) AS signal_window_non_pass_boundaries
+            FROM boundary_required_scope brs
+            JOIN boundary_security_scope bss
+              ON bss.candidate_start = brs.candidate_start
+             AND bss.boundary_date = brs.boundary_date
+             AND bss.security_id = brs.security_id
             LEFT JOIN read_parquet('{r}/liquidity_features.parquet') lf
-              ON lf.security_id = rs.security_id
-             AND CAST(lf.date AS DATE) = CAST(rs.date AS DATE)
-            GROUP BY rs.candidate_start, CAST(rs.date AS DATE)
+              ON lf.security_id = brs.security_id
+             AND CAST(lf.date AS DATE) = CAST(brs.date AS DATE)
+            LEFT JOIN boundary_material_counts bmc
+              ON bmc.candidate_start = brs.candidate_start
+             AND bmc.boundary_date = brs.boundary_date
+            GROUP BY brs.candidate_start, brs.boundary_date, bmc.material_missing_factors, bmc.signal_window_non_pass_boundaries
           ), refined_boundaries AS (
-            SELECT mgc.candidate_start,
-              MIN(mgc.snapshot_date) AS refined_earliest_passing_snapshot
-            FROM monthly_gate_counts mgc
-            JOIN candidate_sessions cs USING (candidate_start)
-            WHERE mgc.snapshot_date >= cs.first_decision_session
-              AND mgc.required_rows > 0
-              AND mgc.identity_failures = 0
-              AND mgc.price_adjustment_failures = 0
-              AND mgc.instrument_failures = 0
-              AND mgc.status_failures = 0
-              AND mgc.session_liquidity_window_failures = 0
-            GROUP BY mgc.candidate_start
+            SELECT candidate_start,
+              MIN(boundary_date) AS refined_earliest_passing_snapshot
+            FROM boundary_gate_counts
+            WHERE required_rows > 0
+              AND required_securities > 0
+              AND identity_failures = 0
+              AND price_adjustment_failures = 0
+              AND instrument_failures = 0
+              AND status_failures = 0
+              AND session_liquidity_window_failures = 0
+              AND material_missing_factors = 0
+              AND signal_window_non_pass_boundaries = 0
+            GROUP BY candidate_start
           )
           SELECT c.candidate_start,
             cs.first_decision_session,
