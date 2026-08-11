@@ -368,6 +368,9 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         digest = research_manifest.get(key)
         if not is_sha256_digest(digest):
             failures.append(f"research manifest {key} is missing or invalid")
+    for key in ("config_sha256", "manual_override_sha256"):
+        if research_manifest.get(key) != manifest.get(key):
+            failures.append(f"research manifest {key} does not match data manifest")
     quality_reports = research_manifest.get("quality_reports") or {}
     if not quality_reports:
         failures.append("research manifest quality_reports are missing")
