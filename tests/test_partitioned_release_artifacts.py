@@ -10,7 +10,7 @@ import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from scripts.build_completion_audit import partition_summary
+from scripts.build_completion_audit import junit_summary, partition_summary
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,3 +77,21 @@ def test_partition_summary_requires_all_large_release_artifacts(tmp_path: Path):
     summary = partition_summary(manifest)
 
     assert summary["missing_required_artifacts"] == ["active_universe_daily.parquet"]
+
+
+def test_junit_summary_detects_handoff_test_without_package_prefix(tmp_path: Path):
+    report = tmp_path / "test_results.xml"
+    report.write_text(
+        """<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="pytest" tests="1" failures="0" errors="0" skipped="0">
+    <testcase classname="test_model_arena_handoff" name="test_model_arena_handoff_reads_profile_history_liquidity_and_execution_prices" />
+  </testsuite>
+</testsuites>
+""",
+        encoding="utf-8",
+    )
+
+    summary = junit_summary(report)
+
+    assert summary["model_arena_handoff_passed"] is True

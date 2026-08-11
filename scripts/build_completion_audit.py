@@ -56,7 +56,7 @@ def junit_summary(path: Path) -> dict:
     skipped = sum(int(suite.get("skipped", "0")) for suite in suites)
     handoff_cases = [
         case for case in root.iter("testcase")
-        if case.get("classname") == "tests.test_model_arena_handoff"
+        if (case.get("classname") or "").endswith("test_model_arena_handoff")
         and case.get("name") == "test_model_arena_handoff_reads_profile_history_liquidity_and_execution_prices"
     ]
     handoff_passed = bool(handoff_cases) and all(case.find("skipped") is None for case in handoff_cases)
