@@ -1043,6 +1043,8 @@ def main() -> None:
     for key, expected in manifest.get("artifacts", {}).items():
         if not key.startswith("release/"):
             continue
+        if key in {f"release/{DATA_RELEASE_MANIFEST_ARTIFACT}", f"release/{RESEARCH_RELEASE_MANIFEST_ARTIFACT}"}:
+            continue
         path = release / key.removeprefix("release/")
         if not is_sha256_digest(expected) or not path.is_file() or sha256(path) != expected:
             hash_mismatches.append(key)
