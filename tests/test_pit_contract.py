@@ -7,7 +7,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
 from scripts.build_completion_audit import REQUIRED, REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
@@ -226,9 +226,9 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "start": "2013-01-01",
             "end": "2026-08-10",
             "monthly_snapshot_start": "2013-01-31",
-            "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
-            "profile_version": "LIQUID_V1",
-            "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+            "universe_profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "priority_scope": PRIORITY_SCOPE,
         },
         "source_coverage": {
             "observed_start": "2006-01-02",
@@ -427,9 +427,9 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "research_coverage": {
             "research_verified_start": "2013-01-01",
             "research_verified_end": "2026-08-10",
-            "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
-            "profile_version": "LIQUID_V1",
-            "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+            "universe_profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "priority_scope": PRIORITY_SCOPE,
         },
         "component_quality": {
             "raw_source": "SOURCE_HIGH_CONFIDENCE",
@@ -586,12 +586,12 @@ def test_profile_on_adds_downstream_audit_metadata():
             "NSE_BROAD_LIQUID_PIT_V1_eligible": True,
         }
     ])
-    row = store.profile_on("2020-01-01", "LIQUID_V1")[0]
-    assert row["profile_id"] == "NSE_BROAD_LIQUID_PIT_V1"
-    assert row["profile_version"] == "LIQUID_V1"
+    row = store.profile_on("2020-01-01", PROFILE_VERSION)[0]
+    assert row["profile_id"] == PROFILE_ID
+    assert row["profile_version"] == PROFILE_VERSION
     assert row["as_of_date"] == date(2020, 1, 1)
     assert row["eligibility_result"] == "ELIGIBLE"
-    assert row["eligibility_reason_codes"] == "PASSED_LIQUID_V1"
+    assert row["eligibility_reason_codes"] == f"PASSED_{PROFILE_VERSION}"
 
 
 def test_profile_on_executes_liquid_v1_when_materialized_flag_is_absent():
@@ -623,7 +623,7 @@ def test_profile_on_executes_liquid_v1_when_materialized_flag_is_absent():
             "median_traded_value_60": 5_000_000,
         },
     ])
-    assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
+    assert [row["security_id"] for row in store.profile_on("2020-01-01", PROFILE_VERSION)] == ["PASS"]
 
 
 def test_profile_on_fails_closed_when_identity_or_status_fields_are_missing():
@@ -653,7 +653,7 @@ def test_profile_on_fails_closed_when_identity_or_status_fields_are_missing():
             "median_traded_value_60": 5_000_000,
         },
     ])
-    assert store.profile_on("2020-01-01", "LIQUID_V1") == []
+    assert store.profile_on("2020-01-01", PROFILE_VERSION) == []
 
 
 def test_ranked_liquid_on_excludes_non_ordinary_or_non_active_status():
@@ -713,7 +713,7 @@ def test_parquet_profile_on_executes_liquid_v1_when_materialized_flag_is_absent(
         path,
     )
     store = ParquetUniverseStore(path)
-    assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
+    assert [row["security_id"] for row in store.profile_on("2020-01-01", PROFILE_VERSION)] == ["PASS"]
 
 
 def test_parquet_profile_on_reads_date_typed_monthly_snapshot(tmp_path):
@@ -733,7 +733,7 @@ def test_parquet_profile_on_reads_date_typed_monthly_snapshot(tmp_path):
         path,
     )
     store = ParquetUniverseStore(path)
-    assert [row["security_id"] for row in store.profile_on("2020-01-01", "LIQUID_V1")] == ["PASS"]
+    assert [row["security_id"] for row in store.profile_on("2020-01-01", PROFILE_VERSION)] == ["PASS"]
 
 
 def test_calendar_returns_only_official_sessions():

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
 
 
 REQUIRED = [
@@ -165,9 +165,9 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
     research_coverage = manifest.get("research_coverage") or {}
     expected_research = {
         "research_verified_start": "2013-01-01",
-        "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
-        "profile_version": "LIQUID_V1",
-        "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+        "universe_profile": PROFILE_ID,
+        "profile_version": PROFILE_VERSION,
+        "priority_scope": PRIORITY_SCOPE,
     }
     for key, expected in expected_research.items():
         if research_coverage.get(key) != expected:
@@ -215,9 +215,9 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     expected_quality = {
         "status": "RESEARCH_HIGH_CONFIDENCE",
         "start": "2013-01-01",
-        "universe_profile": "NSE_BROAD_LIQUID_PIT_V1",
-        "profile_version": "LIQUID_V1",
-        "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+        "universe_profile": PROFILE_ID,
+        "profile_version": PROFILE_VERSION,
+        "priority_scope": PRIORITY_SCOPE,
     }
     for key, expected in expected_quality.items():
         if quality.get(key) != expected:

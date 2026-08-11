@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
-from .profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
+from .profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
 from .storage import iter_jsonl, read_jsonl
 
 
@@ -169,17 +169,17 @@ class UniverseStore:
         ]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
-    def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
+    def profile_on(self, as_of_date: str | date, profile: str = PROFILE_VERSION) -> list[dict[str, Any]]:
         point = _as_date(as_of_date)
-        if profile != "LIQUID_V1":
+        if profile != PROFILE_VERSION:
             raise ValueError(f"Unknown universe profile: {profile}")
         rows = [row for row in self.rows if row.get("date") == point and self._liquid_v1_eligible(row)]
         for row in rows:
-            row.setdefault("profile_id", "NSE_BROAD_LIQUID_PIT_V1")
+            row.setdefault("profile_id", PROFILE_ID)
             row.setdefault("profile_version", profile)
             row.setdefault("as_of_date", point)
             row.setdefault("eligibility_result", "ELIGIBLE")
-            row.setdefault("eligibility_reason_codes", "PASSED_LIQUID_V1")
+            row.setdefault("eligibility_reason_codes", f"PASSED_{PROFILE_VERSION}")
         return rows
 
 
@@ -225,8 +225,8 @@ class ParquetUniverseStore(UniverseStore):
         ]
         return sorted(rows, key=lambda row: row[metric], reverse=True)[:n]
 
-    def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
-        if profile != "LIQUID_V1":
+    def profile_on(self, as_of_date: str | date, profile: str = PROFILE_VERSION) -> list[dict[str, Any]]:
+        if profile != PROFILE_VERSION:
             raise ValueError(f"Unknown universe profile: {profile}")
         point = _as_date(as_of_date)
         import pyarrow.parquet as parquet
@@ -247,11 +247,11 @@ class ParquetUniverseStore(UniverseStore):
                 except Exception:
                     continue
         for row in rows:
-            row.setdefault("profile_id", "NSE_BROAD_LIQUID_PIT_V1")
+            row.setdefault("profile_id", PROFILE_ID)
             row.setdefault("profile_version", profile)
             row.setdefault("as_of_date", point)
             row.setdefault("eligibility_result", "ELIGIBLE")
-            row.setdefault("eligibility_reason_codes", "PASSED_LIQUID_V1")
+            row.setdefault("eligibility_reason_codes", f"PASSED_{PROFILE_VERSION}")
         return rows
 
 
@@ -366,7 +366,7 @@ class DataPlatform:
     def ranked_liquid_on(self, as_of_date: str | date, n: int, **kwargs: Any) -> list[dict[str, Any]]:
         return self.universe.ranked_liquid_on(self._check_date(as_of_date), n, **kwargs)
 
-    def profile_on(self, as_of_date: str | date, profile: str = "LIQUID_V1") -> list[dict[str, Any]]:
+    def profile_on(self, as_of_date: str | date, profile: str = PROFILE_VERSION) -> list[dict[str, Any]]:
         return self.research_universe.profile_on(self._check_date(as_of_date), profile)
 
     def status_on(self, as_of_date: str | date) -> list[dict[str, Any]]:

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
 
 
 def q(path: Path) -> str:
@@ -35,6 +35,8 @@ def main() -> None:
     instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
     trading_status = LIQUID_V1_DEFINITION["trading_status"]
     ranking_metric = TOP_LIQUIDITY_RANKING_METRIC
+    profile_id = PROFILE_ID
+    profile_version = PROFILE_VERSION
     query = f"""
     COPY (
       WITH month_end AS (
@@ -129,12 +131,12 @@ def main() -> None:
         r.{ranking_metric} IS NOT NULL AND r.rank_126 <= 1000 AS top1000_liquidity,
         r.liquid_v1_eligible AS LIQUID_V1_eligible,
         r.liquid_v1_eligible AS NSE_BROAD_LIQUID_PIT_V1_eligible,
-        'NSE_BROAD_LIQUID_PIT_V1' AS profile_id,
-        'LIQUID_V1' AS profile_version,
+        '{profile_id}' AS profile_id,
+        '{profile_version}' AS profile_version,
         r.date AS as_of_date,
         CASE WHEN r.liquid_v1_eligible THEN 'ELIGIBLE' ELSE 'EXCLUDED' END AS eligibility_result,
         CASE
-          WHEN r.liquid_v1_eligible THEN 'PASSED_LIQUID_V1'
+          WHEN r.liquid_v1_eligible THEN 'PASSED_{profile_version}'
           WHEN r.instrument_type <> '{instrument_type}' THEN 'FAILED_INSTRUMENT_TYPE'
           WHEN r.trading_status <> '{trading_status}' THEN 'FAILED_TRADING_STATUS'
           WHEN NOT r.research_identity_ok THEN 'FAILED_RESEARCH_IDENTITY'

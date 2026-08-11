@@ -1,5 +1,9 @@
 """Published universe profile contracts."""
 
+PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"
+PROFILE_VERSION = "LIQUID_V1"
+PRIORITY_SCOPE = "LIQUID_V1_OR_HISTORICAL_TOP750"
+
 LIQUID_V1_DEFINITION = {
     "instrument_type": "ORDINARY_EQUITY",
     "active": True,
