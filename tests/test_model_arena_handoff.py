@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from india_active_universe.api import DataPlatform
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,16 +58,16 @@ def test_model_arena_handoff_reads_profile_history_liquidity_and_execution_price
     handoff_dates.append(platform.coverage_end.isoformat())
 
     for as_of in handoff_dates:
-        universe = sorted(platform.profile_on(as_of, "LIQUID_V1"), key=lambda row: row["liquidity_rank_126"])
+        universe = sorted(platform.profile_on(as_of, PROFILE_VERSION), key=lambda row: row["liquidity_rank_126"])
         assert universe, as_of
 
         candidates = universe[:5]
         for row in candidates:
-            assert row["profile_id"] == "NSE_BROAD_LIQUID_PIT_V1"
-            assert row["profile_version"] == "LIQUID_V1"
+            assert row["profile_id"] == PROFILE_ID
+            assert row["profile_version"] == PROFILE_VERSION
             assert row["eligibility_result"] == "ELIGIBLE"
-            assert row["eligibility_reason_codes"] == "PASSED_LIQUID_V1"
-            assert row["instrument_type"] == "ORDINARY_EQUITY"
+            assert row["eligibility_reason_codes"] == f"PASSED_{PROFILE_VERSION}"
+            assert row["instrument_type"] == LIQUID_V1_DEFINITION["instrument_type"]
             assert row["research_identity_ok"] is True
             assert row["price_adjustment_ok"] is True
             for field in MANDATORY_UNIVERSE_FIELDS:

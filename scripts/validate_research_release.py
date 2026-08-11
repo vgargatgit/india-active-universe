@@ -9,7 +9,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION
 
 
 def main() -> None:
@@ -26,6 +26,7 @@ def main() -> None:
     instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
     trading_status = LIQUID_V1_DEFINITION["trading_status"]
     active = "TRUE" if LIQUID_V1_DEFINITION["active"] else "FALSE"
+    passed_profile_reason = f"PASSED_{PROFILE_VERSION}"
     connection = duckdb.connect()
     try:
         metrics = {
@@ -238,18 +239,18 @@ def main() -> None:
             "eligible_profile_metadata_failures": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
               WHERE NSE_BROAD_LIQUID_PIT_V1_eligible AND NOT (
-                profile_id = 'NSE_BROAD_LIQUID_PIT_V1'
-                AND profile_version = 'LIQUID_V1'
+                profile_id = '{PROFILE_ID}'
+                AND profile_version = '{PROFILE_VERSION}'
                 AND CAST(as_of_date AS DATE) = CAST(date AS DATE)
                 AND eligibility_result = 'ELIGIBLE'
-                AND eligibility_reason_codes = 'PASSED_LIQUID_V1'
+                AND eligibility_reason_codes = '{passed_profile_reason}'
               )
             """).fetchone()[0],
             "excluded_profile_metadata_failures": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
               WHERE NOT NSE_BROAD_LIQUID_PIT_V1_eligible AND (
-                profile_id <> 'NSE_BROAD_LIQUID_PIT_V1'
-                OR profile_version <> 'LIQUID_V1'
+                profile_id <> '{PROFILE_ID}'
+                OR profile_version <> '{PROFILE_VERSION}'
                 OR CAST(as_of_date AS DATE) <> CAST(date AS DATE)
                 OR eligibility_result <> 'EXCLUDED'
                 OR eligibility_reason_codes IS NULL
