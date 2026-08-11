@@ -8,10 +8,10 @@ Maximum configured lookback window: `300` official sessions.
 
 | Candidate start | Material events in candidate or lookback scope | Missing factors | Non-PASS boundaries | Left-censored boundaries | Non-PASS without observed crossing | Contaminating signal-window non-PASS | Gate |
 |---|---:|---:|---:|---:|---:|---:|---|
-| 2011-01-01 | 122 | 0 | 7 | 2 | 2 | 5 | `REVIEW_REQUIRED` |
-| 2009-01-01 | 220 | 0 | 18 | 6 | 6 | 12 | `REVIEW_REQUIRED` |
-| 2007-01-01 | 326 | 0 | 34 | 15 | 15 | 19 | `REVIEW_REQUIRED` |
-| 2006-01-01 | 333 | 0 | 34 | 15 | 15 | 19 | `REVIEW_REQUIRED` |
+| 2011-01-01 | 112 | 0 | 7 | 2 | 2 | 5 | `REVIEW_REQUIRED` |
+| 2009-01-01 | 210 | 0 | 16 | 6 | 6 | 6 | `REVIEW_REQUIRED` |
+| 2007-01-01 | 318 | 0 | 25 | 8 | 8 | 8 | `REVIEW_REQUIRED` |
+| 2006-01-01 | 327 | 0 | 26 | 8 | 8 | 8 | `REVIEW_REQUIRED` |
 
 ## Adjusted one-session return outliers
 

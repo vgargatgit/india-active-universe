@@ -8,7 +8,7 @@ The readiness score is diagnostic only. Hard gates remain authoritative.
 | 2004 | 252 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4/5 | `FAIL` |
 | 2005 | 249 | 201 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5/5 | `PASS` |
 | 2006 | 247 | 247 | 1071 | 454 | 958 | 958 | 0 | 0 | 0 | 4 | 0 | 456 | 0 | 5/5 | `PASS_WITH_SCOPED_LIMITATION` |
-| 2007 | 249 | 249 | 1228 | 507 | 975 | 976 | 0 | 0 | 0 | 3 | 0 | 418 | 0 | 5/5 | `PASS_WITH_SCOPED_LIMITATION` |
+| 2007 | 249 | 249 | 1228 | 507 | 975 | 976 | 0 | 0 | 0 | 2 | 0 | 418 | 0 | 5/5 | `PASS_WITH_SCOPED_LIMITATION` |
 | 2008 | 246 | 246 | 1322 | 540 | 934 | 934 | 0 | 0 | 0 | 4 | 0 | 402 | 0 | 5/5 | `PASS_WITH_SCOPED_LIMITATION` |
 | 2009 | 242 | 242 | 1346 | 576 | 943 | 943 | 0 | 0 | 0 | 3 | 0 | 379 | 0 | 5/5 | `PASS_WITH_SCOPED_LIMITATION` |
 | 2010 | 251 | 251 | 1494 | 742 | 952 | 964 | 0 | 0 | 0 | 5 | 0 | 363 | 0 | 5/5 | `PASS_WITH_SCOPED_LIMITATION` |

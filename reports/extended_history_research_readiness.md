@@ -39,9 +39,9 @@ A missing candidate audit row is an explicit non-pass state.
 | Candidate start | Candidate audit | Decision-window gate | Warmup gate | Session-liquidity gate | Identity gate | Price-action gate | Instrument gate | Status gate | Hard failures | Promotion interpretation |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2011-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=5, price_action.contaminating_signal_window_non_pass_boundaries=5` | `NOT_READY` |
-| 2009-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=12, price_action.contaminating_signal_window_non_pass_boundaries=12` | `NOT_READY` |
-| 2007-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=19, price_action.contaminating_signal_window_non_pass_boundaries=19` | `NOT_READY` |
-| 2006-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=19, price_action.contaminating_signal_window_non_pass_boundaries=19` | `NOT_READY` |
+| 2009-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=6, price_action.contaminating_signal_window_non_pass_boundaries=6` | `NOT_READY` |
+| 2007-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=8, price_action.contaminating_signal_window_non_pass_boundaries=8` | `NOT_READY` |
+| 2006-01-01 | `FAIL` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `PASS` | `contaminating_signal_window_non_pass_boundaries=8, price_action.contaminating_signal_window_non_pass_boundaries=8` | `NOT_READY` |
 
 ## Final promotion rule
 

@@ -1,6 +1,6 @@
 # RAW integrity audit
 
-- Root: `data/raw/nse/bhavcopy`
+- Root: `/Users/vikasgarg/Developer/india-active-universe/data/raw/nse/bhavcopy`
 - Files inspected: 5,585
 - Valid NSE market archives: 5,585
 - Invalid files: 0
