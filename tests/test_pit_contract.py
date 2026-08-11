@@ -427,7 +427,15 @@ def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, caps
             return cls()
 
         def candidate_promotion_decision(self, candidate_start):
-            return {"candidate_start": candidate_start, "candidate_audit_status": "FAIL"}
+            return {
+                "candidate_start": candidate_start,
+                "candidate_audit_status": "FAIL",
+                "feature_readiness": {"feature_warmup_not_ready": True},
+                "refined_earliest_passing_snapshot": "2006-07-31",
+            }
+
+        def refined_earliest_candidate_gate_pass_boundary(self):
+            return date(2006, 7, 31)
 
         def candidate_gate_pass_ready(self, candidate_start):
             return False
@@ -462,6 +470,9 @@ def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, caps
     assert output["verified_start"] == "2013-01-01"
     assert output["candidate_start"] == "2006-01-01"
     assert output["candidate_decision"]["candidate_audit_status"] == "FAIL"
+    assert output["candidate_feature_readiness"] == {"feature_warmup_not_ready": True}
+    assert output["candidate_refined_earliest_passing_snapshot"] == "2006-07-31"
+    assert output["refined_earliest_candidate_gate_pass_boundary"] == "2006-07-31"
     assert output["candidate_gate_pass_ready"] is False
     assert output["research_quality_status"] == RESEARCH_EXPLORATORY_STATUS
     assert output["candidate_research_ready"] is False
@@ -485,6 +496,9 @@ def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
                 "recorded_matches_derived_earliest_candidate_gate_pass_start": True,
                 "candidate_gate_pass_start_dates": [],
                 "candidate_research_ready_start_dates": [],
+                "recorded_refined_earliest_candidate_gate_pass_boundary": None,
+                "refined_earliest_candidate_gate_pass_boundary": None,
+                "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary": True,
                 "candidate_promotion_decisions": [],
             }
 

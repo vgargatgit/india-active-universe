@@ -114,6 +114,8 @@ def main() -> None:
         from .api import DataPlatform
         platform = DataPlatform.from_release(root / "releases" / args.release_id, strict=False)
         if args.candidate_start:
+            candidate_decision = platform.candidate_promotion_decision(args.candidate_start)
+            refined_boundary = platform.refined_earliest_candidate_gate_pass_boundary()
             output = {
                 "release_id": args.release_id,
                 "quality_tier": platform.quality_tier,
@@ -122,7 +124,14 @@ def main() -> None:
                 "verified_start": platform.verified_start.isoformat() if platform.verified_start else None,
                 "verified_end": platform.verified_end.isoformat() if platform.verified_end else None,
                 "candidate_start": args.candidate_start,
-                "candidate_decision": platform.candidate_promotion_decision(args.candidate_start),
+                "candidate_decision": candidate_decision,
+                "candidate_feature_readiness": candidate_decision.get("feature_readiness"),
+                "candidate_refined_earliest_passing_snapshot": candidate_decision.get("refined_earliest_passing_snapshot"),
+                "refined_earliest_candidate_gate_pass_boundary": (
+                    refined_boundary.isoformat()
+                    if refined_boundary
+                    else None
+                ),
                 "candidate_gate_pass_ready": platform.candidate_gate_pass_ready(args.candidate_start),
                 "research_quality_status": platform.research_quality_on(args.candidate_start),
                 "candidate_research_ready": platform.candidate_research_ready(args.candidate_start),
