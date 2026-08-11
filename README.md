@@ -25,7 +25,7 @@ The active Phase 2 target release is `india_equity_data_v2.0.0`: official NSE ob
 
 Published release artifacts are compressed Parquet. JSONL files under `data/` are build intermediates and audit/debug outputs, not the downstream storage contract.
 
-To create a fresh release, use `PYTHONPATH=src .venv/bin/python scripts/build_source_release.py --release-id <new-release> --terminal-events <terminal-events.parquet> --ci-run-id <github-actions-run-id> --start 2006-01-02 --end <last-session>`. Use `--ci-status-report reports/ci_status_<release>.json` instead of `--ci-run-id` only when reusing already captured CI evidence. A cached promotion is not a substitute for this source rebuild.
+To create a fresh release, use `PYTHONPATH=src .venv/bin/python scripts/build_source_release.py --release-id <new-release> --terminal-events <terminal-events.parquet> --suspension-events data/derived/suspension_events_resolved_v1.parquet --ci-run-id <github-actions-run-id> --start 2006-01-02 --end <last-session>`. Use `--ci-status-report reports/ci_status_<release>.json` instead of `--ci-run-id` only when reusing already captured CI evidence. A cached promotion is not a substitute for this source rebuild.
 
 For monthly research consumption, use `platform.profile_on("2018-03-29", "LIQUID_V1")` and record the release ID and manifest hash. Use raw nominal OHLC for execution and the price-return adjusted close for signals.
 

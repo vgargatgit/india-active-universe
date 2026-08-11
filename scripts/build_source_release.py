@@ -35,10 +35,19 @@ def main() -> None:
     release = root / "releases" / args.release_id
     work = root / "data/build" / args.release_id
     terminal = root / args.terminal_events
+    suspension_events = root / args.suspension_events
+    manual_overrides = root / "data/reference/manual_identity_overrides.yaml"
+    source_manifest = root / "data/raw/manifests/source_manifest.json"
     if release.exists() or work.exists():
         raise SystemExit("release or build workspace already exists; immutable build target refused")
     if not terminal.is_file():
         raise SystemExit(f"terminal evidence file does not exist: {terminal}")
+    if not suspension_events.is_file():
+        raise SystemExit(f"suspension evidence file does not exist: {suspension_events}")
+    if not manual_overrides.is_file():
+        raise SystemExit(f"manual override file does not exist: {manual_overrides}")
+    if not source_manifest.is_file():
+        raise SystemExit(f"source manifest does not exist: {source_manifest}")
     if not args.dry_run and not args.ci_run_id and not args.ci_status_report:
         raise SystemExit("build-source-release requires --ci-run-id or --ci-status-report because v2.0 completion audit requires CI evidence")
     if args.ci_run_id and args.ci_status_report:
@@ -48,7 +57,7 @@ def main() -> None:
     reports = root / "reports"
     ci_status_target = reports / f"ci_status_{args.release_id}.json"
     commands = []
-    core = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(raw), "--out", str(work), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")]
+    core = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(raw), "--out", str(work), "--manual-overrides", str(manual_overrides)]
     if args.start:
         core += ["--start", args.start]
     if args.end:
@@ -81,18 +90,16 @@ def main() -> None:
             if command[1].endswith("build_research_universe.py"):
                 command.extend(["--end", args.end])
                 break
-    suspension_events = root / args.suspension_events
-    if suspension_events.is_file():
-        status_index = next(index for index, command in enumerate(commands) if command[1].endswith("build_identity_history_artifacts.py"))
-        commands.insert(status_index, [
-            sys.executable, str(root / "scripts/build_verified_suspension_status.py"),
-            "--events", str(suspension_events),
-            "--master", str(release / "security_master.parquet"),
-            "--base-intervals", str(release / "trading_status_intervals.parquet"),
-            "--prices", str(release / "daily_prices_raw.parquet"),
-            "--events-out", str(release / "suspension_events_resolved.parquet"),
-            "--intervals-out", str(release / "trading_status_intervals.parquet"),
-        ])
+    status_index = next(index for index, command in enumerate(commands) if command[1].endswith("build_identity_history_artifacts.py"))
+    commands.insert(status_index, [
+        sys.executable, str(root / "scripts/build_verified_suspension_status.py"),
+        "--events", str(suspension_events),
+        "--master", str(release / "security_master.parquet"),
+        "--base-intervals", str(release / "trading_status_intervals.parquet"),
+        "--prices", str(release / "daily_prices_raw.parquet"),
+        "--events-out", str(release / "suspension_events_resolved.parquet"),
+        "--intervals-out", str(release / "trading_status_intervals.parquet"),
+    ])
     if args.dry_run:
         for command in commands:
             print(" ".join(command))
@@ -103,11 +110,9 @@ def main() -> None:
         return
     work.mkdir(parents=True)
     release.mkdir(parents=True)
-    manifest_source = root / "data/raw/manifests/source_manifest.json"
-    if manifest_source.exists():
-        target = work / "raw/manifests/source_manifest.json"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(manifest_source, target)
+    target = work / "raw/manifests/source_manifest.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source_manifest, target)
     reports.mkdir(parents=True, exist_ok=True)
     for command in commands:
         if command[1].endswith("build_research_reports.py"):

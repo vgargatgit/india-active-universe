@@ -30,6 +30,7 @@ def main() -> None:
     parser.add_argument("--release-id")
     parser.add_argument("--source-release")
     parser.add_argument("--terminal-events")
+    parser.add_argument("--suspension-events", default="data/derived/suspension_events_resolved_v1.parquet")
     parser.add_argument("--ci-run-id")
     parser.add_argument("--ci-status-report")
     parser.add_argument("--dry-run", action="store_true")
@@ -75,7 +76,7 @@ def main() -> None:
     elif args.command == "build-source-release":
         if not args.release_id or not args.terminal_events:
             raise SystemExit("build-source-release requires --release-id and --terminal-events")
-        command = [sys.executable, str(root / "scripts/build_source_release.py"), "--root", str(root), "--release-id", args.release_id, "--terminal-events", args.terminal_events, "--raw", args.raw, "--corporate-actions", args.corporate_actions]
+        command = [sys.executable, str(root / "scripts/build_source_release.py"), "--root", str(root), "--release-id", args.release_id, "--terminal-events", args.terminal_events, "--suspension-events", args.suspension_events, "--raw", args.raw, "--corporate-actions", args.corporate_actions]
         if args.start:
             command.extend(["--start", args.start])
         if args.end:
