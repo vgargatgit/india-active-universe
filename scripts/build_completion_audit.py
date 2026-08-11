@@ -13,13 +13,16 @@ from pathlib import Path
 import duckdb
 
 from india_active_universe.profiles import (
+    ACTIVE_DEFINITION,
     COMPONENT_QUALITY,
+    DATASET_QUALITY_TIER,
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
     PRIORITY_SCOPE,
     PROFILE_ID,
     PROFILE_VERSION,
+    PARSER_VERSIONS,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_MANIFEST_ARTIFACTS,
@@ -190,14 +193,18 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
     for key, expected in COMPONENT_QUALITY.items():
         if component_quality.get(key) != expected:
             failures.append(f"data manifest component_quality.{key} is not {expected}")
+    if manifest.get("definition") != ACTIVE_DEFINITION:
+        failures.append(f"data manifest definition is not {ACTIVE_DEFINITION}")
+    if manifest.get("quality_tier") != DATASET_QUALITY_TIER:
+        failures.append(f"data manifest quality_tier is not {DATASET_QUALITY_TIER}")
     for key in ("source_manifest_sha256", "config_sha256", "manual_override_sha256"):
         digest = manifest.get(key)
         if not isinstance(digest, str) or len(digest) != 64:
             failures.append(f"data manifest {key} is missing or invalid")
     parser_versions = manifest.get("parser_versions") or {}
-    for key in ("nse_bhavcopy", "canonicalization"):
-        if not parser_versions.get(key):
-            failures.append(f"data manifest parser_versions.{key} is missing")
+    for key, expected in PARSER_VERSIONS.items():
+        if parser_versions.get(key) != expected:
+            failures.append(f"data manifest parser_versions.{key} is not {expected}")
     artifacts = manifest.get("artifacts") or {}
     for name in REQUIRED:
         if name in {"data_release_manifest.json", "research_release_manifest.json"}:

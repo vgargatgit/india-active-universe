@@ -8,13 +8,16 @@ from india_active_universe.identity import apply_manual_overrides, load_manual_o
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
 from india_active_universe.profiles import (
+    ACTIVE_DEFINITION,
     COMPONENT_QUALITY,
+    DATASET_QUALITY_TIER,
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
     PRIORITY_SCOPE,
     PROFILE_ID,
     PROFILE_VERSION,
+    PARSER_VERSIONS,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
@@ -443,7 +446,9 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "source_manifest_sha256": "0" * 64,
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
-        "parser_versions": {"nse_bhavcopy": "nse-bhavcopy-v2", "canonicalization": "identity-v1"},
+        "definition": ACTIVE_DEFINITION,
+        "quality_tier": DATASET_QUALITY_TIER,
+        "parser_versions": PARSER_VERSIONS,
         "artifacts": {f"release/{name}": "0" * 64 for name in REQUIRED if name not in {"data_release_manifest.json", "research_release_manifest.json"}},
     }
 
@@ -459,6 +464,13 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
     }
     failures = data_manifest_contract_failures(release, missing_component_quality)
     assert "data manifest component_quality.research_universe_2013_onward is not RESEARCH_HIGH_CONFIDENCE" in failures
+
+    stale_parser = {
+        **manifest,
+        "parser_versions": {**manifest["parser_versions"], "canonicalization": "identity-old"},
+    }
+    failures = data_manifest_contract_failures(release, stale_parser)
+    assert f"data manifest parser_versions.canonicalization is not {PARSER_VERSIONS['canonicalization']}" in failures
 
     missing_release_hash = {
         **manifest,
