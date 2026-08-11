@@ -346,7 +346,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "test_result_sha256": sha256(test_result_path) if test_result_path.exists() else None,
         "ci_status_sha256": sha256(ci_status_path) if ci_status_path.exists() else None,
         "partitioned_artifacts_manifest_sha256": sha256(partition_manifest_path) if partition_manifest_path.exists() else None,
-        "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet", "suspension_events_resolved.parquet")},
+        "artifacts": {name: sha256(release / name) for name in ("research_universe_monthly.parquet", "required_research_security.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "corporate_actions.parquet", "corporate_action_boundary_validation.parquet", "trading_status_intervals.parquet", "suspension_events_resolved.parquet", "unresolved_observed_trading.parquet")},
         "research_universe_monthly_contract": [
             "date",
             "security_id",

@@ -303,6 +303,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "corporate_action_boundary_validation.parquet": "0" * 64,
             "trading_status_intervals.parquet": "0" * 64,
             "suspension_events_resolved.parquet": "0" * 64,
+            "unresolved_observed_trading.parquet": "0" * 64,
         },
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
@@ -330,6 +331,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_artifact_contract = {**valid_manifest, "liquidity_artifact": "research_universe_monthly.parquet"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_artifact_contract)
     assert "research manifest liquidity_artifact is not liquidity_features.parquet" in failures
+
+    missing_unresolved_artifact_hash = {
+        **valid_manifest,
+        "artifacts": {
+            name: digest for name, digest in valid_manifest["artifacts"].items()
+            if name != "unresolved_observed_trading.parquet"
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_unresolved_artifact_hash)
+    assert "research manifest artifact hash missing for unresolved_observed_trading.parquet" in failures
 
     stale_coverage = {
         **valid_manifest,

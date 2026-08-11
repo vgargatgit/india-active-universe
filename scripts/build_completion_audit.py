@@ -240,6 +240,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         "corporate_action_boundary_validation.parquet",
         "trading_status_intervals.parquet",
         "suspension_events_resolved.parquet",
+        "unresolved_observed_trading.parquet",
     }
     artifacts = research_manifest.get("artifacts") or {}
     for name in required_artifacts:
