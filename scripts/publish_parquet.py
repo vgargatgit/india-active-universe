@@ -34,6 +34,8 @@ def infer_schema(rows: list[dict]) -> pa.Schema:
             dtype = pa.int64()
         elif isinstance(sample, float):
             dtype = pa.float64()
+        elif isinstance(sample, list):
+            dtype = pa.list_(pa.string())
         else:
             dtype = pa.string()
         fields.append(pa.field(name, dtype, nullable=True))
