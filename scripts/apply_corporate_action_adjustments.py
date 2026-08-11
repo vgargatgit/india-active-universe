@@ -47,7 +47,16 @@ def main() -> None:
             dividends.setdefault(security_id, []).append((event_date, (close + amount) / close, event_id))
     for values in dividends.values():
         values.sort()
-    schema = pa.schema([pa.field("date", pa.string()), pa.field("security_id", pa.string()), pa.field("listing_episode_id", pa.string()), pa.field("symbol_at_date", pa.string()), pa.field("raw_close", pa.float64()), pa.field("research_adjusted_close", pa.float64()), pa.field("research_adjustment_factor", pa.float64()), pa.field("adjustment_quality", pa.string()), pa.field("source_event_ids", pa.list_(pa.string())), pa.field("research_adjusted_close_total_return", pa.float64()), pa.field("research_total_return_factor", pa.float64()), pa.field("total_return_quality", pa.string()), pa.field("total_return_event_ids", pa.list_(pa.string()))])
+    schema = pa.schema([
+        pa.field("date", pa.string()), pa.field("security_id", pa.string()), pa.field("listing_episode_id", pa.string()), pa.field("symbol_at_date", pa.string()),
+        pa.field("raw_close", pa.float64()),
+        pa.field("research_adjusted_close", pa.float64()), pa.field("research_adjustment_factor", pa.float64()),
+        pa.field("price_return_adjusted_close", pa.float64()), pa.field("price_return_adjustment_factor", pa.float64()),
+        pa.field("adjustment_quality", pa.string()), pa.field("source_event_ids", pa.list_(pa.string())),
+        pa.field("research_adjusted_close_total_return", pa.float64()), pa.field("research_total_return_factor", pa.float64()),
+        pa.field("total_return_adjusted_close", pa.float64()), pa.field("total_return_factor", pa.float64()),
+        pa.field("total_return_quality", pa.string()), pa.field("total_return_event_ids", pa.list_(pa.string())),
+    ])
     target = Path(args.out)
     temp = target.with_suffix(target.suffix + ".tmp")
     writer = pq.ParquetWriter(temp, schema, compression="zstd", use_dictionary=True)
@@ -69,7 +78,9 @@ def main() -> None:
             total_quality = "TOTAL_RETURN_PARTIAL"
             counts[quality] += 1
             raw = row.get("raw_close")
-            batch.append({"date": row["date"], "security_id": row["security_id"], "listing_episode_id": row["listing_episode_id"], "symbol_at_date": row["symbol_at_date"], "raw_close": raw, "research_adjusted_close": raw * factor if raw is not None else None, "research_adjustment_factor": factor, "adjustment_quality": quality, "source_event_ids": [item[2] for item in applicable], "research_adjusted_close_total_return": raw * factor * total_factor if raw is not None else None, "research_total_return_factor": factor * total_factor, "total_return_quality": total_quality, "total_return_event_ids": [item[2] for item in applicable_dividends]})
+            price_return_close = raw * factor if raw is not None else None
+            total_return_close = raw * factor * total_factor if raw is not None else None
+            batch.append({"date": row["date"], "security_id": row["security_id"], "listing_episode_id": row["listing_episode_id"], "symbol_at_date": row["symbol_at_date"], "raw_close": raw, "research_adjusted_close": price_return_close, "research_adjustment_factor": factor, "price_return_adjusted_close": price_return_close, "price_return_adjustment_factor": factor, "adjustment_quality": quality, "source_event_ids": [item[2] for item in applicable], "research_adjusted_close_total_return": total_return_close, "research_total_return_factor": factor * total_factor, "total_return_adjusted_close": total_return_close, "total_return_factor": factor * total_factor, "total_return_quality": total_quality, "total_return_event_ids": [item[2] for item in applicable_dividends]})
             if len(batch) >= 25_000:
                 writer.write_table(pa.Table.from_pylist(batch, schema=schema))
                 batch = []

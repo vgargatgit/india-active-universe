@@ -440,7 +440,7 @@ def test_raw_and_adjusted_history_are_separate():
 
 def test_adjusted_history_series_is_explicit():
     platform = DataPlatform()
-    platform.adjusted_prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-01", "research_adjusted_close": 50.0, "research_adjusted_close_total_return": 55.0, "adjustment_quality": "PRICE_ACTION_ADJUSTED_VERIFIED", "total_return_quality": "TOTAL_RETURN_PARTIAL"}])
+    platform.adjusted_prices = PriceStore([{"security_id": "SEC1", "date": "2020-01-01", "price_return_adjusted_close": 50.0, "total_return_adjusted_close": 55.0, "adjustment_quality": "PRICE_ACTION_ADJUSTED_VERIFIED", "total_return_quality": "TOTAL_RETURN_PARTIAL"}])
     assert platform.adjusted_history("SEC1", "2020-01-01", "2020-01-01", series="PRICE_RETURN")[0]["adjusted_close"] == 50.0
     assert platform.adjusted_history("SEC1", "2020-01-01", "2020-01-01", series="TOTAL_RETURN")[0]["adjusted_close"] == 55.0
 

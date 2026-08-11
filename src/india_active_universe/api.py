@@ -399,9 +399,10 @@ class DataPlatform:
             raise ValueError(f"Unknown adjusted-price series: {series}")
         begin, finish = self._check_date(start), self._check_date(end)
         rows = self.adjusted_prices.history(security_id, begin, finish)
-        value_field = "research_adjusted_close" if series == "PRICE_RETURN" else "research_adjusted_close_total_return"
+        value_field = "price_return_adjusted_close" if series == "PRICE_RETURN" else "total_return_adjusted_close"
+        fallback_value_field = "research_adjusted_close" if series == "PRICE_RETURN" else "research_adjusted_close_total_return"
         quality_field = "adjustment_quality" if series == "PRICE_RETURN" else "total_return_quality"
-        return [{**row, "adjusted_close": row.get(value_field), "adjusted_series": series, "adjusted_quality": row.get(quality_field)} for row in rows]
+        return [{**row, "adjusted_close": row.get(value_field, row.get(fallback_value_field)), "adjusted_series": series, "adjusted_quality": row.get(quality_field)} for row in rows]
 
     def terminal_recovery_scenarios(self, security_id: str) -> list[dict[str, Any]]:
         last_price = None
