@@ -127,6 +127,11 @@ def main() -> None:
           FROM read_parquet('{r}/research_universe_monthly.parquet')
         """).fetchall()
         identity_priority_rows = connection.execute(f"""
+          WITH required_monthly AS (
+            SELECT *
+            FROM read_parquet('{r}/research_universe_monthly.parquet')
+            WHERE NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity
+          )
           SELECT q.security_id,
             MIN(m.symbol) AS symbol,
             MIN(m.company_name) AS company_name,
@@ -139,10 +144,10 @@ def main() -> None:
             COUNT(DISTINCT m.company_name) AS company_name_count,
             COUNT(DISTINCT m.symbol) AS symbol_count,
             MAX(u.absent_observation_days_60) AS max_absent_days_60,
-            MAX(CASE WHEN u.research_identity_ok THEN 1 ELSE 0 END)::BOOLEAN AS research_identity_ok
+            MIN(CASE WHEN u.research_identity_ok THEN 1 ELSE 0 END)::BOOLEAN AS research_identity_ok
           FROM read_parquet('{r}/required_research_security.parquet') q
           JOIN read_parquet('{r}/security_master.parquet') m USING (security_id)
-          LEFT JOIN read_parquet('{r}/research_universe_monthly.parquet') u USING (security_id)
+          LEFT JOIN required_monthly u USING (security_id)
           GROUP BY q.security_id
           ORDER BY max_liquidity_rank_126 NULLS LAST, q.security_id
         """).fetchall()
