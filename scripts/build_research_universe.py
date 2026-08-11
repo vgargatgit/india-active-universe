@@ -84,13 +84,11 @@ def main() -> None:
           ON f.security_id = a.security_id AND CAST(f.date AS DATE) = CAST(a.date AS DATE)
         LEFT JOIN read_parquet('{out}/daily_prices_adjusted.parquet') adj
           ON adj.security_id = a.security_id AND CAST(adj.date AS DATE) = CAST(a.date AS DATE)
-        LEFT JOIN (
-          SELECT security_id, MIN(identity_quality) AS identity_quality,
-                 MIN(instrument_type_quality) AS instrument_type_quality,
-                 MIN(instrument_type_source) AS instrument_type_source
-          FROM read_parquet('{out}/security_master.parquet')
-          GROUP BY security_id
-        ) m ON m.security_id = a.security_id
+        LEFT JOIN read_parquet('{out}/security_master.parquet') m
+          ON m.security_id = a.security_id
+         AND m.listing_episode_id = a.listing_episode_id
+         AND CAST(a.date AS DATE) >= CAST(m.effective_from AS DATE)
+         AND (m.effective_to IS NULL OR CAST(a.date AS DATE) <= CAST(m.effective_to AS DATE))
         LEFT JOIN identity_checks i ON i.security_id = a.security_id
         LEFT JOIN read_parquet('{out}/trading_status_intervals.parquet') s
           ON s.security_id = a.security_id
