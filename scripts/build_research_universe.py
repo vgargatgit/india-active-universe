@@ -159,7 +159,13 @@ def main() -> None:
                    WHEN (liquid_v1_eligible OR top750_liquidity) AND price_adjustment_ok THEN 1
                    WHEN (liquid_v1_eligible OR top750_liquidity) THEN 0
                    ELSE NULL
-                 END)::BOOLEAN AS price_adjustment_ok
+                 END)::BOOLEAN AS price_adjustment_ok,
+                 MIN(status_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS status_quality,
+                 MIN(CASE
+                   WHEN (liquid_v1_eligible OR top750_liquidity) AND trading_status = 'ACTIVE_TRADING' THEN 1
+                   WHEN (liquid_v1_eligible OR top750_liquidity) THEN 0
+                   ELSE NULL
+                 END)::BOOLEAN AS active_trading_ok
           FROM read_parquet('{monthly}')
           GROUP BY security_id
           HAVING enters_liquid_v1 OR enters_top750

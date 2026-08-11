@@ -58,6 +58,8 @@ def _write_release(release, required_security_ids):
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY" for _ in required_security_ids],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED" for _ in required_security_ids],
                 "price_adjustment_ok": [True for _ in required_security_ids],
+                "status_quality": ["OBSERVED_OFFICIAL_TRADE" for _ in required_security_ids],
+                "active_trading_ok": [True for _ in required_security_ids],
             }
         ),
         release / "required_research_security.parquet",
@@ -101,6 +103,7 @@ def test_research_release_validator_accepts_matching_required_artifact(tmp_path)
     assert metrics["required_artifact_flag_failures"] == 0
     assert metrics["required_artifact_identity_quality_failures"] == 0
     assert metrics["required_artifact_price_adjustment_failures"] == 0
+    assert metrics["required_artifact_status_failures"] == 0
     assert metrics["status"] == "PASS"
 
 
@@ -136,6 +139,8 @@ def test_research_release_validator_fails_when_required_artifact_flags_mismatch_
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
+                "status_quality": ["OBSERVED_OFFICIAL_TRADE"],
+                "active_trading_ok": [True],
             }
         ),
         release / "required_research_security.parquet",
@@ -169,6 +174,8 @@ def test_research_release_validator_fails_when_required_artifact_date_range_mism
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
+                "status_quality": ["OBSERVED_OFFICIAL_TRADE"],
+                "active_trading_ok": [True],
             }
         ),
         release / "required_research_security.parquet",
@@ -202,6 +209,8 @@ def test_research_release_validator_fails_when_required_artifact_identity_qualit
                 "research_identity_quality": ["PARTIAL"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
+                "status_quality": ["OBSERVED_OFFICIAL_TRADE"],
+                "active_trading_ok": [True],
             }
         ),
         release / "required_research_security.parquet",
@@ -235,6 +244,8 @@ def test_research_release_validator_fails_when_required_artifact_price_adjustmen
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["UNRESOLVED_CORPORATE_ACTION"],
                 "price_adjustment_ok": [False],
+                "status_quality": ["OBSERVED_OFFICIAL_TRADE"],
+                "active_trading_ok": [True],
             }
         ),
         release / "required_research_security.parquet",
@@ -251,4 +262,39 @@ def test_research_release_validator_fails_when_required_artifact_price_adjustmen
     assert result.returncode != 0
     metrics = json.loads(out.read_text(encoding="utf-8"))
     assert metrics["required_artifact_price_adjustment_failures"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def test_research_release_validator_fails_when_required_artifact_status_is_not_active(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    pq.write_table(
+        pa.table(
+            {
+                "security_id": ["SEC1"],
+                "enters_liquid_v1": [True],
+                "enters_top750": [True],
+                "first_research_date": ["2020-03-31"],
+                "last_research_date": ["2020-03-31"],
+                "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
+                "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
+                "price_adjustment_ok": [True],
+                "status_quality": ["UNKNOWN_STATUS"],
+                "active_trading_ok": [False],
+            }
+        ),
+        release / "required_research_security.parquet",
+    )
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["required_artifact_status_failures"] == 1
     assert metrics["status"] == "FAIL"
