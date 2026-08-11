@@ -72,6 +72,46 @@ def main() -> None:
                   OR status_quality IS NULL
                 )
             """).fetchone()[0],
+            "required_scope_missing_from_required_artifact": connection.execute(f"""
+              WITH monthly_required AS (
+                SELECT DISTINCT security_id
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                   OR COALESCE(top750_liquidity, FALSE)
+              )
+              SELECT COUNT(*)
+              FROM monthly_required m
+              LEFT JOIN read_parquet('{r}/required_research_security.parquet') rrs
+                ON m.security_id = rrs.security_id
+              WHERE rrs.security_id IS NULL
+            """).fetchone()[0],
+            "required_artifact_security_without_monthly_scope": connection.execute(f"""
+              WITH monthly_required AS (
+                SELECT DISTINCT security_id
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE)
+                   OR COALESCE(top750_liquidity, FALSE)
+              )
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              LEFT JOIN monthly_required m
+                ON m.security_id = rrs.security_id
+              WHERE m.security_id IS NULL
+            """).fetchone()[0],
+            "required_artifact_flag_failures": connection.execute(f"""
+              WITH monthly_flags AS (
+                SELECT security_id,
+                       MAX(CASE WHEN COALESCE(LIQUID_V1_eligible, NSE_BROAD_LIQUID_PIT_V1_eligible, FALSE) THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
+                       MAX(CASE WHEN COALESCE(top750_liquidity, FALSE) THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                GROUP BY security_id
+              )
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet') rrs
+              JOIN monthly_flags m USING (security_id)
+              WHERE rrs.enters_liquid_v1 IS DISTINCT FROM m.enters_liquid_v1
+                 OR rrs.enters_top750 IS DISTINCT FROM m.enters_top750
+            """).fetchone()[0],
             "future_listing_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') u
               JOIN (SELECT security_id, MIN(CAST(date AS DATE)) AS first_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) p USING (security_id)
