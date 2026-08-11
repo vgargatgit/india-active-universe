@@ -148,8 +148,8 @@ def main() -> None:
         connection.execute(f"""
         COPY (
           SELECT security_id,
-                 MIN(date) AS first_research_date,
-                 MAX(date) AS last_research_date,
+                 MIN(date) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS first_research_date,
+                 MAX(date) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS last_research_date,
                  MAX(CASE WHEN liquid_v1_eligible THEN 1 ELSE 0 END)::BOOLEAN AS enters_liquid_v1,
                  MAX(CASE WHEN top750_liquidity THEN 1 ELSE 0 END)::BOOLEAN AS enters_top750,
                  MIN(rank_126) FILTER (WHERE (liquid_v1_eligible OR top750_liquidity) AND rank_126 IS NOT NULL) AS best_rank_126,
@@ -157,7 +157,7 @@ def main() -> None:
                  MAX(median_traded_value_60) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS max_median_traded_value_60,
                  MAX(median_traded_value_126) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS max_median_traded_value_126,
                  MAX(positive_volume_days_60) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS max_positive_volume_days_60,
-                 MIN(research_identity_quality) AS research_identity_quality,
+                 MIN(research_identity_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS research_identity_quality,
                  MIN(price_adjustment_quality) FILTER (WHERE liquid_v1_eligible OR top750_liquidity) AS price_adjustment_quality,
                  MIN(CASE
                    WHEN (liquid_v1_eligible OR top750_liquidity) AND price_adjustment_ok THEN 1
