@@ -8,6 +8,7 @@ from india_active_universe.identity import apply_manual_overrides, load_manual_o
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
 from india_active_universe.profiles import (
+    COMPONENT_QUALITY,
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
@@ -445,13 +446,7 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
             "profile_version": PROFILE_VERSION,
             "priority_scope": PRIORITY_SCOPE,
         },
-        "component_quality": {
-            "raw_source": "SOURCE_HIGH_CONFIDENCE",
-            "raw_ohlcv": "RESEARCH_HIGH_CONFIDENCE",
-            "research_universe_2013_onward": "RESEARCH_HIGH_CONFIDENCE",
-            "terminal_events": "PARTIAL",
-            "total_return": "PARTIAL",
-        },
+        "component_quality": COMPONENT_QUALITY,
         "source_manifest_sha256": "0" * 64,
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
