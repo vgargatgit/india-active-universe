@@ -328,7 +328,14 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     if missing_required_security_contract:
         failures.append(f"research manifest required_research_security_contract misses {missing_required_security_contract}")
 
-    for key in ("config_sha256", "manual_override_sha256", "research_invariant_validation_sha256", "test_result_sha256", "ci_status_sha256"):
+    for key in (
+        "config_sha256",
+        "manual_override_sha256",
+        "partitioned_artifacts_manifest_sha256",
+        "research_invariant_validation_sha256",
+        "test_result_sha256",
+        "ci_status_sha256",
+    ):
         if not research_manifest.get(key):
             failures.append(f"research manifest {key} is missing")
     quality_reports = research_manifest.get("quality_reports") or {}

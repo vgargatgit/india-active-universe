@@ -311,6 +311,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         },
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
+        "partitioned_artifacts_manifest_sha256": "0" * 64,
         "research_invariant_validation_sha256": "0" * 64,
         "test_result_sha256": "0" * 64,
         "ci_status_sha256": "0" * 64,
@@ -356,6 +357,10 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_ci_status_hash = {key: value for key, value in valid_manifest.items() if key != "ci_status_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)
     assert "research manifest ci_status_sha256 is missing" in failures
+
+    missing_partition_hash = {key: value for key, value in valid_manifest.items() if key != "partitioned_artifacts_manifest_sha256"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_partition_hash)
+    assert "research manifest partitioned_artifacts_manifest_sha256 is missing" in failures
 
     unresolved_price_action = {**valid_manifest, "material_price_action_unresolved_boundaries": 1}
     failures = research_manifest_contract_failures(release, data_manifest, unresolved_price_action)
