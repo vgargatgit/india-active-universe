@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from datetime import date
@@ -10,7 +11,7 @@ COMMANDS = [
     "download-nse-history", "download-nse-reference-data", "normalize-market-data",
     "build-security-master", "resolve-identities", "build-listing-episodes",
     "build-corporate-actions", "build-raw-prices", "build-adjusted-prices",
-    "build-active-universe", "build-liquidity-features", "build-source-release", "audit-data", "publish-release", "build",
+    "build-active-universe", "build-liquidity-features", "build-source-release", "candidate-readiness", "audit-data", "publish-release", "build",
 ]
 CORE_SOURCE_STAGES = {
     "build-security-master", "resolve-identities", "build-listing-episodes",
@@ -28,6 +29,7 @@ def main() -> None:
     parser.add_argument("--corporate-actions", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
     parser.add_argument("--adjusted-out", default="data/derived/daily_prices_adjusted.parquet")
     parser.add_argument("--release-id")
+    parser.add_argument("--candidate-start")
     parser.add_argument("--source-release")
     parser.add_argument("--terminal-events")
     parser.add_argument("--suspension-events", default="data/derived/suspension_events_resolved_v1.parquet")
@@ -105,6 +107,22 @@ def main() -> None:
         if not args.release_id:
             raise SystemExit("audit-data requires --release-id")
         audit_release(args.release_id)
+    elif args.command == "candidate-readiness":
+        if not args.release_id:
+            raise SystemExit("candidate-readiness requires --release-id")
+        from .api import DataPlatform
+        platform = DataPlatform.from_release(root / "releases" / args.release_id, strict=False)
+        if args.candidate_start:
+            output = {
+                "candidate_start": args.candidate_start,
+                "candidate_decision": platform.candidate_promotion_decision(args.candidate_start),
+                "candidate_gate_pass_ready": platform.candidate_gate_pass_ready(args.candidate_start),
+                "research_quality_status": platform.research_quality_on(args.candidate_start),
+                "candidate_research_ready": platform.candidate_research_ready(args.candidate_start),
+            }
+        else:
+            output = platform.candidate_promotion_summary()
+        print(json.dumps(output, indent=2, sort_keys=True))
     elif args.command == "publish-release":
         if not args.release_id:
             raise SystemExit("publish-release requires --release-id")

@@ -7,3 +7,5 @@ The v2.0 release has complete official daily observation coverage for its downlo
 Scanned delisting notices remain in the immutable raw layer and inventory. OCR is an optional evidence-enrichment step and requires external `pdftoppm` and `tesseract` tools; without them the workflow fails explicitly with `OCR_UNAVAILABLE` and does not create canonical identities.
 
 The manual identity override file is empty in the current release. Non-empty overrides require the optional PyYAML dependency and pass the evidence-backed validator before use.
+
+Phase 3 early-history extension evidence is candidate-scoped. `candidate_promotion_decisions` and `earliest_candidate_gate_pass_start` describe whether 2011, 2009, 2007, or 2006 candidate starts pass configured gates. They do not by themselves promote an interval to `RESEARCH_HIGH_CONFIDENCE`; only `research_quality_intervals` defines the trusted research range for downstream use.

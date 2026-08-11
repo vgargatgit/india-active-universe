@@ -9,13 +9,21 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION
+from india_active_universe.profiles import (
+    LIQUID_V1_DEFINITION,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    RESEARCH_MONTHLY_SNAPSHOT_START,
+    RESEARCH_START_DATE,
+)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--release", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--research-start", default=RESEARCH_START_DATE)
+    parser.add_argument("--monthly-start", default=RESEARCH_MONTHLY_SNAPSHOT_START)
     args = parser.parse_args()
     release = Path(args.release).resolve()
     r = str(release).replace("'", "''")
@@ -27,9 +35,40 @@ def main() -> None:
     trading_status = LIQUID_V1_DEFINITION["trading_status"]
     active = "TRUE" if LIQUID_V1_DEFINITION["active"] else "FALSE"
     passed_profile_reason = f"PASSED_{PROFILE_VERSION}"
+    research_start = args.research_start
+    monthly_start = args.monthly_start
     connection = duckdb.connect()
     try:
         metrics = {
+            "monthly_snapshot_start_mismatch": connection.execute(f"""
+              SELECT COUNT(*) FROM (
+                SELECT MIN(CAST(date AS DATE)) AS first_snapshot
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+              )
+              WHERE first_snapshot IS DISTINCT FROM DATE '{monthly_start}'
+            """).fetchone()[0],
+            "pre_research_start_rows": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE CAST(date AS DATE) < DATE '{monthly_start}'
+            """).fetchone()[0],
+            "non_month_final_session_dates": connection.execute(f"""
+              WITH expected_month_end AS (
+                SELECT DATE_TRUNC('month', CAST(date AS DATE)) AS month,
+                       MAX(CAST(date AS DATE)) AS expected_date
+                FROM read_parquet('{r}/trading_calendar.parquet')
+                WHERE CAST(date AS DATE) >= DATE '{monthly_start}'
+                GROUP BY 1
+              ),
+              actual_dates AS (
+                SELECT DISTINCT DATE_TRUNC('month', CAST(date AS DATE)) AS month,
+                       CAST(date AS DATE) AS actual_date
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+              )
+              SELECT COUNT(*)
+              FROM actual_dates a
+              JOIN expected_month_end e USING (month)
+              WHERE a.actual_date IS DISTINCT FROM e.expected_date
+            """).fetchone()[0],
             "duplicate_month_security_rows": connection.execute(f"""
               SELECT COUNT(*) FROM (
                 SELECT date, security_id, COUNT(*) AS n
@@ -69,6 +108,10 @@ def main() -> None:
                   OR symbol_at_date IS NULL
                   OR instrument_type IS NULL
                   OR identity_quality IS NULL
+                  OR listing_date_quality IS NULL
+                  OR observed_history_start IS NULL
+                  OR listing_age_sessions_quality IS NULL
+                  OR listing_history_left_censored IS NULL
                   OR price IS NULL
                   OR history_sessions IS NULL
                   OR positive_volume_days_60 IS NULL
@@ -80,6 +123,12 @@ def main() -> None:
                   OR research_identity_ok IS NULL
                   OR price_adjustment_quality IS NULL
                   OR status_quality IS NULL
+                  OR feature_ready_60 IS NULL
+                  OR feature_ready_126 IS NULL
+                  OR signal_history_ready_252 IS NULL
+                  OR signal_history_ready_273 IS NULL
+                  OR model_handoff_history_ready_300 IS NULL
+                  OR feature_readiness_source IS NULL
                 )
             """).fetchone()[0],
             "top_liquidity_null_metric_failures": connection.execute(f"""

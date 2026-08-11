@@ -12,17 +12,20 @@ from pathlib import Path
 
 from india_active_universe.profiles import (
     ADJUSTED_PRICE_ARTIFACT,
+    CANDIDATE_MONTHLY_SNAPSHOT_START,
     CORPORATE_ACTION_BOUNDARY_ARTIFACT,
     CORPORATE_ACTIONS_ARTIFACT,
     LIQUIDITY_ARTIFACT,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RESEARCH_START_DATE,
     SECURITY_MASTER_ARTIFACT,
+    SOURCE_OBSERVED_START_DATE,
     SOURCE_MANIFEST_ARTIFACT,
     SUSPENSION_EVENTS_ARTIFACT,
     TERMINAL_EVENTS_ARTIFACT,
     TRADING_CALENDAR_ARTIFACT,
     TRADING_STATUS_INTERVALS_ARTIFACT,
+    RESEARCH_MONTHLY_SNAPSHOT_START,
 )
 
 
@@ -36,8 +39,11 @@ def main() -> None:
     parser.add_argument("--root", default=".")
     parser.add_argument("--release-id", required=True)
     parser.add_argument("--terminal-events", required=True)
-    parser.add_argument("--start")
+    parser.add_argument("--start", default=SOURCE_OBSERVED_START_DATE)
     parser.add_argument("--end")
+    parser.add_argument("--research-start", default=RESEARCH_START_DATE)
+    parser.add_argument("--research-monthly-start", default=CANDIDATE_MONTHLY_SNAPSHOT_START)
+    parser.add_argument("--baseline-release", default="releases/india_equity_data_v2.0.1")
     parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
     parser.add_argument("--corporate-actions", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
     parser.add_argument("--suspension-events", default="data/derived/suspension_events_resolved_v1.parquet")
@@ -72,9 +78,7 @@ def main() -> None:
     reports = root / "reports"
     ci_status_target = reports / f"ci_status_{args.release_id}.json"
     commands = []
-    core = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(raw), "--out", str(work), "--manual-overrides", str(manual_overrides)]
-    if args.start:
-        core += ["--start", args.start]
+    core = [sys.executable, str(root / "scripts/build_nse_universe.py"), "--raw", str(raw), "--out", str(work), "--manual-overrides", str(manual_overrides), "--start", args.start]
     if args.end:
         core += ["--end", args.end]
     commands.append(core)
@@ -92,14 +96,16 @@ def main() -> None:
         [sys.executable, str(root / "scripts/validate_corporate_action_boundaries.py"), "--events", str(release / CORPORATE_ACTIONS_ARTIFACT), "--prices", str(raw_prices), "--calendar", str(release / TRADING_CALENDAR_ARTIFACT), "--out", str(release / CORPORATE_ACTION_BOUNDARY_ARTIFACT)],
         [sys.executable, str(root / "scripts/build_status_intervals.py"), "--master", str(work / "canonical/security_master.jsonl"), "--terminal-events", str(release / TERMINAL_EVENTS_ARTIFACT), "--out", str(release / TRADING_STATUS_INTERVALS_ARTIFACT)],
         [sys.executable, str(root / "scripts/build_identity_history_artifacts.py"), "--master", str(release / SECURITY_MASTER_ARTIFACT), "--out-dir", str(release)],
-        [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", RESEARCH_START_DATE],
+        [sys.executable, str(root / "scripts/build_research_universe.py"), "--release", str(release), "--start", args.research_monthly_start],
         [sys.executable, str(root / "scripts/build_partitioned_release_artifacts.py"), "--release", str(release)],
-        [sys.executable, str(root / "scripts/report_universe.py"), "--root", str(work), "--release-id", args.release_id, "--release-dir", str(release), "--reports-dir", str(root / "reports"), "--config", str(root / "config/default.yaml")],
-        [sys.executable, str(root / "scripts/validate_research_release.py"), "--release", str(release), "--out", str(root / "reports" / f"research_invariant_validation_{args.release_id}.json")],
+        [sys.executable, str(root / "scripts/report_universe.py"), "--root", str(work), "--release-id", args.release_id, "--release-dir", str(release), "--reports-dir", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--research-start", args.research_start, "--research-monthly-start", args.research_monthly_start],
+        [sys.executable, str(root / "scripts/validate_research_release.py"), "--release", str(release), "--out", str(root / "reports" / f"research_invariant_validation_{args.release_id}.json"), "--research-start", args.research_start, "--monthly-start", args.research_monthly_start],
+        [sys.executable, str(root / "scripts/build_candidate_promotion_audits.py"), "--release", str(release), "--out", str(root / "reports" / f"candidate_promotion_audit_{args.release_id}.json"), "--control-start", args.research_start],
         [sys.executable, "-m", "pytest", "-q", "--junitxml", str(root / "reports" / f"test_results_{args.release_id}.xml")],
         [sys.executable, str(root / "scripts/audit_raw_integrity.py"), "--root", str(raw), "--out", str(root / "reports" / "raw_integrity_audit.md")],
         [sys.executable, str(root / "scripts/build_source_coverage_audit.py"), "--release", str(release), "--manifest", str(source_manifest), "--out", str(root / "reports/data_source_coverage.md")],
-        [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
+        [sys.executable, str(root / "scripts/recon_pre2006_sources.py"), "--report", str(root / "reports/pre2006_source_reconnaissance.md")],
+        [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--baseline-release", str(root / args.baseline_release), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
     ])
     if args.end:

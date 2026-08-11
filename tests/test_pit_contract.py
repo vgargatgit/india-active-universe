@@ -4,16 +4,23 @@ from datetime import date
 import pytest
 
 from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, CoverageError, DataPlatform, IsinHistoryStore, ParquetUniverseStore, PriceStore, SecurityMaster, StatusStore, TerminalEventStore, UniverseStore
-from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
+from india_active_universe.identity import apply_manual_overrides, build_identity_rows, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
 from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     ACTIVE_UNIVERSE_ARTIFACT,
+    CANDIDATE_MONTHLY_SNAPSHOT_START,
+    CANDIDATE_PROMOTION_SUMMARY_FIELDS,
+    CANDIDATE_RESEARCH_START_DATES,
     COMPONENT_QUALITY,
+    CANDIDATE_GATE_PASS_INTERPRETATION,
+    CANDIDATE_NOT_READY_INTERPRETATION,
     DATA_RELEASE_MANIFEST_ARTIFACT,
     DATASET_QUALITY_TIER,
     EXECUTION_POLICY,
+    FEATURE_READINESS_WINDOWS,
+    FEATURE_WARMUP_STATUS,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
     PRIORITY_SCOPE,
@@ -22,6 +29,7 @@ from india_active_universe.profiles import (
     PARSER_VERSIONS,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
@@ -39,7 +47,7 @@ from india_active_universe.profiles import (
     TERMINAL_VALUE_POLICY_REQUIREMENT,
     TOP_LIQUIDITY_RANKING_METRIC,
 )
-from scripts.build_completion_audit import REQUIRED, REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
+from scripts.build_completion_audit import EXPECTED_CANDIDATE_HARD_FAILURE_KEYS, EXPECTED_INVARIANT_VALIDATION_METRICS, REQUIRED, REQUIRED_RESEARCH_REPORTS, candidate_manifest_audit_consistency_failures, candidate_promotion_audit_summary, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -65,6 +73,20 @@ def test_effective_company_and_isin_histories_are_date_sensitive():
     assert names.name_at("ISS1", "2017-01-01") == "NEW NAME"
     assert isins.isin_at("SEC1", "2014-01-01") == "OLDISIN"
     assert isins.isin_at("SEC1", "2017-01-01") == "NEWISIN"
+
+
+def test_source_start_identity_rows_are_left_censored_not_ipos():
+    identities = build_identity_rows([
+        {"exchange": "NSE", "symbol": "OLDCO", "series": "EQ", "first_seen": date(2006, 1, 2), "last_seen": date(2008, 1, 1), "candidate_isin": None, "company_name": "OLD CO", "instrument_type": "ORDINARY_EQUITY"},
+        {"exchange": "NSE", "symbol": "NEWCO", "series": "EQ", "first_seen": date(2007, 1, 2), "last_seen": date(2008, 1, 1), "candidate_isin": None, "company_name": "NEW CO", "instrument_type": "ORDINARY_EQUITY"},
+    ])
+    by_symbol = {row["symbol"]: row for row in identities}
+
+    assert by_symbol["OLDCO"]["listing_history_left_censored"] is True
+    assert by_symbol["OLDCO"]["listing_age_sessions_quality"] == "LISTING_HISTORY_LEFT_CENSORED"
+    assert by_symbol["OLDCO"]["listing_date_quality"] == "UNKNOWN_LEFT_CENSORED"
+    assert by_symbol["NEWCO"]["listing_history_left_censored"] is False
+    assert by_symbol["NEWCO"]["listing_age_sessions_quality"] == "FIRST_OBSERVED_TRADE_DATE"
 
 
 def test_approved_manual_override_is_explicitly_applied():
@@ -200,6 +222,557 @@ def test_strict_platform_rejects_out_of_range_dates():
         platform.active_on("2009-12-31")
 
 
+def test_platform_research_quality_is_interval_aware():
+    platform = DataPlatform()
+    platform.coverage_start = date(2006, 1, 2)
+    platform.coverage_end = date(2026, 8, 10)
+    platform.warmup_coverage = {"earliest_fully_warmed_date": "2007-03-15"}
+    platform.research_quality_intervals = [
+        {"start": "2013-01-01", "end": "2026-08-10", "status": RESEARCH_HIGH_CONFIDENCE_STATUS}
+    ]
+
+    assert platform.research_quality_on("2006-06-30") == FEATURE_WARMUP_STATUS
+    assert platform.research_quality_on("2008-01-31") == RESEARCH_EXPLORATORY_STATUS
+    assert platform.research_quality_on("2018-03-28") == RESEARCH_HIGH_CONFIDENCE_STATUS
+    with pytest.raises(CoverageError):
+        platform.research_quality_on("2005-12-30")
+
+
+def test_platform_feature_readiness_uses_prior_official_sessions():
+    sessions = [{"date": f"2020-01-{day:02d}"} for day in range(1, 31)]
+    platform = DataPlatform()
+    platform.coverage_start = date(2020, 1, 1)
+    platform.calendar = CalendarStore(sessions)
+
+    readiness = platform.feature_readiness("2020-01-25")
+
+    assert readiness["prior_official_sessions"] == 24
+    assert readiness["ready"]["liquidity_20"] is True
+    assert readiness["ready"]["liquidity_60"] is False
+    assert readiness["all_ready"] is False
+
+
+def test_platform_exposes_candidate_promotion_decisions():
+    platform = DataPlatform()
+    platform.candidate_promotion_decisions = [
+        {
+            "candidate_start": "2009-01-01",
+            "candidate_audit_status": "FAIL",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+        }
+    ]
+    platform.earliest_candidate_gate_pass_start = date(2009, 1, 1)
+
+    decision = platform.candidate_promotion_decision("2009-01-01")
+
+    assert decision["warmup_gate"] == "PASS"
+    assert platform.earliest_candidate_gate_pass_date() == date(2009, 1, 1)
+    assert platform.candidate_promotion_summary()["recorded_earliest_candidate_gate_pass_start"] == "2009-01-01"
+    assert platform.candidate_promotion_summary()["earliest_candidate_gate_pass_start"] is None
+    assert platform.candidate_promotion_summary()["recorded_matches_derived_earliest_candidate_gate_pass_start"] is False
+    assert platform.candidate_promotion_summary()["candidate_gate_pass_start_dates"] == []
+    assert platform.candidate_promotion_summary()["candidate_research_ready_start_dates"] == []
+    assert platform.candidate_promotion_status()[0]["candidate_start"] == "2009-01-01"
+    with pytest.raises(LookupError):
+        platform.candidate_promotion_decision("2007-01-01")
+
+
+def test_platform_exposes_candidate_gate_pass_start_dates():
+    platform = DataPlatform()
+    platform.candidate_promotion_decisions = [
+        {
+            "candidate_start": "2011-01-01",
+            "candidate_audit_status": "PASS",
+        },
+        {
+            "candidate_start": "2010-01-01",
+            "candidate_audit_status": "PASS",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "PASS",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+        },
+        {
+            "candidate_start": "2007-01-01",
+            "candidate_audit_status": "PASS",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "PASS",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+        },
+        {
+            "candidate_start": "2009-01-01",
+            "candidate_audit_status": "PASS",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "PASS",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+        },
+        {
+            "candidate_start": "2006-01-01",
+            "candidate_audit_status": "FAIL",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "FAIL",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+        },
+    ]
+
+    assert platform.candidate_gate_pass_start_dates() == [date(2009, 1, 1), date(2007, 1, 1)]
+    assert platform.candidate_promotion_summary()["earliest_candidate_gate_pass_start"] == "2009-01-01"
+    assert platform.candidate_promotion_summary()["recorded_matches_derived_earliest_candidate_gate_pass_start"] is False
+    assert platform.candidate_gate_pass_ready("2009-01-01") is True
+    assert platform.candidate_gate_pass_ready("2006-01-01") is False
+    platform.coverage_start = date(2006, 1, 2)
+    platform.coverage_end = date(2026, 8, 10)
+    assert platform.candidate_research_ready("2009-01-01") is False
+    assert platform.candidate_research_ready_start_dates() == []
+    platform.research_quality_intervals = [
+        {"start": "2009-01-01", "end": "2009-12-31", "status": RESEARCH_HIGH_CONFIDENCE_STATUS}
+    ]
+    assert platform.candidate_research_ready("2009-01-01") is True
+    assert platform.candidate_research_ready_start_dates() == [date(2009, 1, 1)]
+    with pytest.raises(ValueError, match="candidate_start is not configured"):
+        platform.candidate_gate_pass_ready("2010-01-01")
+    with pytest.raises(ValueError, match="candidate_start is not configured"):
+        platform.candidate_research_ready("2010-01-01")
+
+
+def test_platform_exposes_machine_readable_candidate_promotion_contract():
+    from india_active_universe import (
+        CANDIDATE_AUDIT_STATUS_VALUES,
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_DECISION_GATE_KEYS,
+        CANDIDATE_DECISION_GATE_VALUES,
+        CANDIDATE_DECISION_REQUIRED_FIELDS,
+        CANDIDATE_FAIL_VALUE,
+        CANDIDATE_GATE_PASS_INTERPRETATION,
+        CANDIDATE_HARD_FAILURE_KEYS,
+        CANDIDATE_NOT_RECORDED_VALUE,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+        CANDIDATE_PASS_VALUE,
+        CANDIDATE_PROMOTION_API_METHODS,
+        CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
+        CANDIDATE_PROMOTION_SUMMARY_FIELDS,
+        CANDIDATE_RESEARCH_START_DATES,
+    )
+
+    contract = DataPlatform().candidate_promotion_contract()
+
+    assert tuple(contract["candidate_research_start_dates"]) == CANDIDATE_RESEARCH_START_DATES
+    assert tuple(contract["candidate_promotion_api_methods"]) == CANDIDATE_PROMOTION_API_METHODS
+    assert tuple(contract["candidate_decision_required_fields"]) == CANDIDATE_DECISION_REQUIRED_FIELDS
+    assert tuple(contract["candidate_promotion_summary_fields"]) == CANDIDATE_PROMOTION_SUMMARY_FIELDS
+    assert tuple(contract["candidate_decision_gate_keys"]) == CANDIDATE_DECISION_GATE_KEYS
+    assert tuple(contract["candidate_hard_failure_keys"]) == CANDIDATE_HARD_FAILURE_KEYS
+    assert tuple(contract["candidate_boolean_hard_failure_keys"]) == CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS
+    assert tuple(contract["candidate_numeric_hard_failure_keys"]) == CANDIDATE_NUMERIC_HARD_FAILURE_KEYS
+    assert tuple(contract["candidate_audit_status_values"]) == CANDIDATE_AUDIT_STATUS_VALUES
+    assert tuple(contract["candidate_decision_gate_values"]) == CANDIDATE_DECISION_GATE_VALUES
+    assert tuple(contract["candidate_promotion_interpretation_values"]) == CANDIDATE_PROMOTION_INTERPRETATION_VALUES
+    assert contract["candidate_pass_value"] == CANDIDATE_PASS_VALUE
+    assert contract["candidate_fail_value"] == CANDIDATE_FAIL_VALUE
+    assert contract["candidate_not_recorded_value"] == CANDIDATE_NOT_RECORDED_VALUE
+    assert contract["candidate_gate_pass_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
+
+
+def test_candidate_promotion_summary_matches_published_field_contract():
+    summary = DataPlatform().candidate_promotion_summary()
+
+    assert tuple(summary.keys()) == CANDIDATE_PROMOTION_SUMMARY_FIELDS
+
+
+def test_candidate_readiness_cli_prints_candidate_start_status(monkeypatch, capsys):
+    from india_active_universe import cli
+    from india_active_universe import api
+
+    class FakePlatform:
+        @classmethod
+        def from_release(cls, release, *, strict=False):
+            assert str(release).endswith("releases/india_equity_data_test")
+            assert strict is False
+            return cls()
+
+        def candidate_promotion_decision(self, candidate_start):
+            return {"candidate_start": candidate_start, "candidate_audit_status": "FAIL"}
+
+        def candidate_gate_pass_ready(self, candidate_start):
+            return False
+
+        def research_quality_on(self, candidate_start):
+            return RESEARCH_EXPLORATORY_STATUS
+
+        def candidate_research_ready(self, candidate_start):
+            return False
+
+    monkeypatch.setattr(api, "DataPlatform", FakePlatform)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "india-equity-data",
+            "candidate-readiness",
+            "--root",
+            "/tmp/project",
+            "--release-id",
+            "india_equity_data_test",
+            "--candidate-start",
+            "2006-01-01",
+        ],
+    )
+
+    cli.main()
+
+    output = json.loads(capsys.readouterr().out)
+    assert output["candidate_start"] == "2006-01-01"
+    assert output["candidate_decision"]["candidate_audit_status"] == "FAIL"
+    assert output["candidate_gate_pass_ready"] is False
+    assert output["research_quality_status"] == RESEARCH_EXPLORATORY_STATUS
+    assert output["candidate_research_ready"] is False
+
+
+def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
+    from india_active_universe import cli
+    from india_active_universe import api
+
+    class FakePlatform:
+        @classmethod
+        def from_release(cls, release, *, strict=False):
+            assert str(release).endswith("releases/india_equity_data_test")
+            assert strict is False
+            return cls()
+
+        def candidate_promotion_summary(self):
+            return {
+                "recorded_earliest_candidate_gate_pass_start": None,
+                "earliest_candidate_gate_pass_start": None,
+                "recorded_matches_derived_earliest_candidate_gate_pass_start": True,
+                "candidate_gate_pass_start_dates": [],
+                "candidate_research_ready_start_dates": [],
+                "candidate_promotion_decisions": [],
+            }
+
+    monkeypatch.setattr(api, "DataPlatform", FakePlatform)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "india-equity-data",
+            "candidate-readiness",
+            "--root",
+            "/tmp/project",
+            "--release-id",
+            "india_equity_data_test",
+        ],
+    )
+
+    cli.main()
+
+    output = json.loads(capsys.readouterr().out)
+    assert tuple(output.keys()) == CANDIDATE_PROMOTION_SUMMARY_FIELDS
+    assert output["candidate_gate_pass_start_dates"] == []
+
+
+def test_candidate_promotion_loader_rejects_duplicate_candidate_starts():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    hard_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+    }
+    row = {
+        "candidate_start": "2009-01-01",
+        "candidate_audit_status": "FAIL",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "FAIL",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": {**hard_failures, "identity_failures": 1},
+        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+    }
+
+    with pytest.raises(ValueError, match="duplicate candidate_start"):
+        _normalize_candidate_promotion_decisions([row, row])
+
+
+def test_candidate_promotion_loader_rejects_partial_candidate_start_sets():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    hard_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+    }
+    row = {
+        "candidate_start": "2009-01-01",
+        "candidate_audit_status": "FAIL",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "FAIL",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": {**hard_failures, "identity_failures": 1},
+        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+    }
+
+    assert _normalize_candidate_promotion_decisions([]) == []
+    with pytest.raises(ValueError, match="missing configured candidate starts"):
+        _normalize_candidate_promotion_decisions([row])
+
+
+def test_candidate_promotion_loader_returns_configured_candidate_order():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    hard_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+        "identity_failures": 1,
+    }
+    row_template = {
+        "candidate_audit_status": "FAIL",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "FAIL",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": hard_failures,
+        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+    }
+    rows = [
+        {**row_template, "candidate_start": candidate_start}
+        for candidate_start in reversed(CANDIDATE_RESEARCH_START_DATES)
+    ]
+
+    normalized = _normalize_candidate_promotion_decisions(rows)
+
+    assert [row["candidate_start"] for row in normalized] == list(CANDIDATE_RESEARCH_START_DATES)
+
+
+def test_candidate_promotion_loader_rejects_invalid_candidate_values():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    hard_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+    }
+    row = {
+        "candidate_start": "2009-01-01",
+        "candidate_audit_status": "FAIL",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "FAIL",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": {**hard_failures, "identity_failures": 1},
+        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+    }
+
+    invalid_cases = (
+        ({**row, "candidate_start": "2010-01-01"}, "candidate_start is not configured"),
+        ({**row, "candidate_audit_status": "UNKNOWN"}, "candidate_audit_status is invalid"),
+        ({**row, "identity_gate": "UNKNOWN"}, "identity_gate is invalid"),
+        ({**row, "promotion_interpretation": "UNKNOWN"}, "promotion_interpretation is invalid"),
+    )
+    for invalid_row, message in invalid_cases:
+        with pytest.raises(ValueError, match=message):
+            _normalize_candidate_promotion_decisions([invalid_row])
+
+
+def test_candidate_promotion_loader_rejects_extra_hard_failure_keys():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    hard_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+        "identity_failures": 1,
+        "unexpected_failure": 1,
+    }
+    row_template = {
+        "candidate_audit_status": "FAIL",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "FAIL",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": hard_failures,
+        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+    }
+    rows = [
+        {**row_template, "candidate_start": candidate_start}
+        for candidate_start in CANDIDATE_RESEARCH_START_DATES
+    ]
+
+    with pytest.raises(ValueError, match="unexpected fields"):
+        _normalize_candidate_promotion_decisions(rows)
+
+
+def test_candidate_promotion_loader_rejects_audit_status_hard_failure_contradictions():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    no_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+    }
+    row = {
+        "candidate_start": "2009-01-01",
+        "candidate_audit_status": "FAIL",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "FAIL",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": no_failures,
+        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+    }
+
+    with pytest.raises(ValueError, match="FAIL without active hard failures"):
+        _normalize_candidate_promotion_decisions([row])
+
+    with pytest.raises(ValueError, match="PASS with active hard failures"):
+        _normalize_candidate_promotion_decisions([
+            {
+                **row,
+                "candidate_audit_status": "PASS",
+                "identity_gate": "PASS",
+                "hard_failures": {**no_failures, "identity_failures": 1},
+            }
+        ])
+
+
+def test_candidate_promotion_loader_rejects_gate_pass_interpretation_contradictions():
+    from india_active_universe.api import _normalize_candidate_promotion_decisions
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    no_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+    }
+    gate_pass_row = {
+        "candidate_start": "2009-01-01",
+        "candidate_audit_status": "PASS",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "PASS",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": no_failures,
+        "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+    }
+
+    with pytest.raises(ValueError, match="gate-pass interpretation without PASS audit status and all PASS gates"):
+        _normalize_candidate_promotion_decisions([
+            {
+                **gate_pass_row,
+                "candidate_audit_status": "FAIL",
+                "identity_gate": "FAIL",
+                "hard_failures": {**no_failures, "identity_failures": 1},
+            }
+        ])
+
+    with pytest.raises(ValueError, match="gate-pass but has non-gate-pass interpretation"):
+        _normalize_candidate_promotion_decisions([
+            {
+                **gate_pass_row,
+                "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+            }
+        ])
+
+
+def test_candidate_promotion_loader_validates_earliest_candidate_gate_pass_start():
+    from india_active_universe.api import _normalize_earliest_candidate_gate_pass_start
+    from india_active_universe.profiles import (
+        CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+        CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    )
+
+    no_failures = {
+        **{key: False for key in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS},
+        **{key: 0 for key in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS},
+    }
+    gate_pass = {
+        "candidate_start": "2009-01-01",
+        "candidate_audit_status": "PASS",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "PASS",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+        "status_gate": "PASS",
+        "hard_failures": no_failures,
+        "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+    }
+    earlier_gate_pass = {**gate_pass, "candidate_start": "2011-01-01"}
+
+    assert _normalize_earliest_candidate_gate_pass_start("2009-01-01", [gate_pass]).isoformat() == "2009-01-01"
+    assert _normalize_earliest_candidate_gate_pass_start(None, []) is None
+    with pytest.raises(ValueError, match="null despite gate-pass candidate decisions"):
+        _normalize_earliest_candidate_gate_pass_start(None, [gate_pass])
+    with pytest.raises(ValueError, match="is not configured"):
+        _normalize_earliest_candidate_gate_pass_start("2010-01-01", [gate_pass])
+    with pytest.raises(ValueError, match="set without gate-pass candidate decisions"):
+        _normalize_earliest_candidate_gate_pass_start("2009-01-01", [])
+    with pytest.raises(ValueError, match="must be earliest gate-pass candidate"):
+        _normalize_earliest_candidate_gate_pass_start("2011-01-01", [earlier_gate_pass, gate_pass])
+
+
 def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
     import json
     import pyarrow as pa
@@ -225,7 +798,32 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
                     "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
                     "start": RESEARCH_START_DATE,
                     "end": "2026-08-10",
-                }
+                },
+                "candidate_promotion_decisions": [
+                    {
+                        "candidate_start": candidate_start,
+                        "candidate_audit_status": "FAIL",
+                        "decision_window_gate": "PASS",
+                        "warmup_gate": "PASS",
+                        "session_liquidity_gate": "PASS",
+                        "identity_gate": "FAIL",
+                        "price_action_gate": "PASS",
+                        "instrument_gate": "PASS",
+
+                        "status_gate": "PASS",
+                        "hard_failures": {
+                            **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+                            "not_materialized": False,
+                            "candidate_start_snapshot_missing": False,
+                            "decision_window_snapshots_missing": False,
+                            "warmup_not_ready": False,
+                            "identity_failures": 1,
+                        },
+                        "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+                    }
+                    for candidate_start in CANDIDATE_RESEARCH_START_DATES
+                ],
+                "earliest_candidate_gate_pass_start": None,
             }
         ),
         encoding="utf-8",
@@ -237,8 +835,169 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
     platform = DataPlatform.from_release(release, strict=True)
     assert platform.verified_start == date.fromisoformat(RESEARCH_START_DATE)
     assert platform.quality_tier == RESEARCH_HIGH_CONFIDENCE_STATUS
+    assert platform.candidate_promotion_decision("2009-01-01")["identity_gate"] == "FAIL"
     with pytest.raises(CoverageError):
         platform.active_on("2012-12-31")
+
+
+def test_release_loader_preserves_data_manifest_candidate_state_when_research_manifest_omits_candidate_fields(tmp_path):
+    import json
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    hard_failures = {
+        **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+        "not_materialized": False,
+        "candidate_start_snapshot_missing": False,
+        "decision_window_snapshots_missing": False,
+        "warmup_not_ready": False,
+        "identity_failures": 1,
+    }
+    candidate_rows = [
+        {
+            "candidate_start": candidate_start,
+            "candidate_audit_status": "FAIL",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "FAIL",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "hard_failures": hard_failures,
+            "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+        }
+        for candidate_start in CANDIDATE_RESEARCH_START_DATES
+    ]
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "candidate_promotion_decisions": candidate_rows,
+                "earliest_candidate_gate_pass_start": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "research_quality": {
+                    "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    "start": RESEARCH_START_DATE,
+                    "end": "2026-08-10",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    pq.write_table(pa.table({"security_id": []}), release / SECURITY_MASTER_ARTIFACT)
+    for name in (ACTIVE_UNIVERSE_ARTIFACT, LIQUIDITY_ARTIFACT, RAW_EXECUTION_PRICE_ARTIFACT):
+        pq.write_table(pa.table({"date": [], "security_id": []}), release / name)
+
+    platform = DataPlatform.from_release(release, strict=True)
+
+    assert platform.candidate_promotion_decision("2006-01-01")["identity_gate"] == "FAIL"
+    assert platform.earliest_candidate_gate_pass_date() is None
+
+
+def test_release_loader_requires_earliest_candidate_when_research_manifest_overrides_candidate_decisions(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps({"candidate_promotion_decisions": []}),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="must be provided together"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_requires_candidate_decisions_when_research_manifest_overrides_earliest_candidate(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps({"earliest_candidate_gate_pass_start": None}),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="must be provided together"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_requires_earliest_candidate_when_data_manifest_publishes_candidate_decisions(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "candidate_promotion_decisions": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="must be provided together"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_requires_candidate_decisions_when_data_manifest_publishes_earliest_candidate(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "earliest_candidate_gate_pass_start": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="must be provided together"):
+        DataPlatform.from_release(release, strict=True)
 
 
 def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
@@ -249,6 +1008,14 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "git_commit": "abc123",
         "build_mode": SOURCE_BUILD_MODE,
         "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+        "research_coverage": {
+            "research_verified_start": RESEARCH_START_DATE,
+            "research_verified_end": "2026-08-10",
+            "monthly_snapshot_start": CANDIDATE_MONTHLY_SNAPSHOT_START,
+            "universe_profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "priority_scope": PRIORITY_SCOPE,
+        },
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
     }
@@ -259,7 +1026,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
             "start": RESEARCH_START_DATE,
             "end": "2026-08-10",
-            "monthly_snapshot_start": RESEARCH_MONTHLY_SNAPSHOT_START,
+            "monthly_snapshot_start": CANDIDATE_MONTHLY_SNAPSHOT_START,
             "universe_profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
             "priority_scope": PRIORITY_SCOPE,
@@ -270,6 +1037,46 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "research_start": RESEARCH_START_DATE,
             "research_end": "2026-08-10",
         },
+        "warmup_coverage": {
+            "feature_readiness_windows": FEATURE_READINESS_WINDOWS,
+            "feature_ready_dates": {"model_arena_handoff_history": "2007-03-15"},
+            "required_prior_sessions_for_full_readiness": max(FEATURE_READINESS_WINDOWS.values()),
+            "earliest_fully_warmed_date": "2007-03-15",
+        },
+        "research_quality_intervals": [
+            {
+                "start": RESEARCH_START_DATE,
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+            }
+        ],
+        "candidate_promotion_decisions": [
+            {
+                "candidate_start": candidate_start,
+                "candidate_audit_status": "FAIL",
+                "decision_window_gate": "PASS",
+                "warmup_gate": "FAIL",
+                "session_liquidity_gate": "PASS",
+                "identity_gate": "PASS",
+                "price_action_gate": "PASS",
+                "instrument_gate": "PASS",
+
+                "status_gate": "PASS",
+                "hard_failures": {
+                    **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+                    "not_materialized": False,
+                    "candidate_start_snapshot_missing": False,
+                    "decision_window_snapshots_missing": False,
+                    "warmup_not_ready": True,
+                },
+                "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+            }
+            for candidate_start in CANDIDATE_RESEARCH_START_DATES
+        ],
+        "earliest_candidate_gate_pass_start": None,
         "known_policy": {
             "signals": SIGNAL_POLICY,
             "execution": EXECUTION_POLICY,
@@ -283,6 +1090,9 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "liquid_v1_definition": LIQUID_V1_DEFINITION,
         "terminal_value_policy_requirement": TERMINAL_VALUE_POLICY_REQUIREMENT,
         "required_research_securities": 10,
+        "candidate_required_research_securities": 14,
+        "liquid_v1_securities": 8,
+        "candidate_liquid_v1_securities": 11,
         "identity_failures": 0,
         "material_price_action_missing_factors": 0,
         "material_price_action_unresolved_boundaries": 0,
@@ -293,6 +1103,11 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "symbol_at_date",
             "instrument_type",
             "identity_quality",
+            "known_listing_date",
+            "listing_date_quality",
+            "observed_history_start",
+            "listing_age_sessions_quality",
+            "listing_history_left_censored",
             "price",
             "history_sessions",
             "positive_volume_days_60",
@@ -309,6 +1124,12 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "price_adjustment_quality",
             "price_adjustment_ok",
             "status_quality",
+            "feature_ready_60",
+            "feature_ready_126",
+            "signal_history_ready_252",
+            "signal_history_ready_273",
+            "model_handoff_history_ready_300",
+            "feature_readiness_source",
             "profile_id",
             "profile_version",
             "as_of_date",
@@ -339,6 +1160,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "manual_override_sha256": "0" * 64,
         "partitioned_artifacts_manifest_sha256": "0" * 64,
         "research_invariant_validation_sha256": "0" * 64,
+        "candidate_promotion_audit_sha256": "0" * 64,
         "test_result_sha256": "0" * 64,
         "ci_status_sha256": "0" * 64,
         "quality_reports": {name: "0" * 64 for name in REQUIRED_RESEARCH_REPORTS},
@@ -395,9 +1217,375 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)
     assert "research manifest ci_status_sha256 is missing or invalid" in failures
 
+    missing_candidate_decisions = {key: value for key, value in valid_manifest.items() if key != "candidate_promotion_decisions"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_candidate_decisions)
+    assert "research manifest candidate_promotion_decisions is missing or not a list" in failures
+
+    stale_candidate_decisions = {
+        **valid_manifest,
+        "candidate_promotion_decisions": valid_manifest["candidate_promotion_decisions"][:-1],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, stale_candidate_decisions)
+    assert any("candidate_promotion_decisions misses" in failure for failure in failures)
+
+    duplicate_candidate_decisions = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            *valid_manifest["candidate_promotion_decisions"],
+            valid_manifest["candidate_promotion_decisions"][0],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, duplicate_candidate_decisions)
+    assert any("candidate_promotion_decisions has duplicate starts" in failure for failure in failures)
+
+    malformed_candidate_decision = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                key: value for key, value in valid_manifest["candidate_promotion_decisions"][0].items()
+                if key != "hard_failures"
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, malformed_candidate_decision)
+    assert any("decision misses" in failure and "hard_failures" in failure for failure in failures)
+
+    missing_decision_window_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                key: value for key, value in valid_manifest["candidate_promotion_decisions"][0].items()
+                if key != "decision_window_gate"
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_decision_window_gate)
+    assert any("decision misses" in failure and "decision_window_gate" in failure for failure in failures)
+
+    invalid_decision_window_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "decision_window_gate": "UNKNOWN",
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, invalid_decision_window_gate)
+    assert any("invalid decision_window_gate" in failure for failure in failures)
+
+    missing_status_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                key: value for key, value in valid_manifest["candidate_promotion_decisions"][0].items()
+                if key != "status_gate"
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_status_gate)
+    assert any("decision misses" in failure and "status_gate" in failure for failure in failures)
+
+    invalid_status_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "status_gate": "UNKNOWN",
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, invalid_status_gate)
+    assert any("invalid status_gate" in failure for failure in failures)
+
+    incomplete_candidate_hard_failures = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "hard_failures": {"warmup_not_ready": True},
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, incomplete_candidate_hard_failures)
+    assert any("hard_failures keys do not match" in failure for failure in failures)
+
+    mistyped_candidate_hard_failures = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "warmup_not_ready": 0,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, mistyped_candidate_hard_failures)
+    assert any("hard_failures value types do not match" in failure for failure in failures)
+
+    pass_candidate_audit_with_active_hard_failure = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "candidate_audit_status": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "candidate_start_snapshot_missing": True,
+                    "warmup_not_ready": False,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, pass_candidate_audit_with_active_hard_failure)
+    assert any("claims PASS candidate audit with active hard_failures" in failure for failure in failures)
+
+    fail_candidate_audit_without_active_hard_failure = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "candidate_audit_status": "FAIL",
+                "warmup_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "warmup_not_ready": False,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, fail_candidate_audit_without_active_hard_failure)
+    assert any("claims FAIL candidate audit without active hard_failures" in failure for failure in failures)
+
+    contradictory_decision_window_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "decision_window_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "decision_window_snapshots_missing": True,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_decision_window_gate)
+    assert any("decision_window_gate contradicts hard_failures" in failure for failure in failures)
+
+    contradictory_warmup_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "warmup_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "warmup_not_ready": True,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_warmup_gate)
+    assert any("warmup_gate contradicts hard_failures" in failure for failure in failures)
+
+    contradictory_session_liquidity_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "session_liquidity_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "session_liquidity_window_failures": 1,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_session_liquidity_gate)
+    assert any("session_liquidity_gate contradicts hard_failures" in failure for failure in failures)
+
+    contradictory_identity_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "identity_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "identity_failures": 1,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_identity_gate)
+    assert any("identity_gate contradicts hard_failures" in failure for failure in failures)
+
+    contradictory_price_action_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "price_action_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "signal_window_non_pass_boundaries": 1,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_price_action_gate)
+    assert any("price_action_gate contradicts hard_failures" in failure for failure in failures)
+
+    contradictory_instrument_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "instrument_gate": "PASS",
+
+                "status_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "instrument_failures": 1,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_instrument_gate)
+    assert any("instrument_gate contradicts hard_failures" in failure for failure in failures)
+
+    contradictory_status_gate = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "status_gate": "PASS",
+                "hard_failures": {
+                    **valid_manifest["candidate_promotion_decisions"][0]["hard_failures"],
+                    "status_failures": 1,
+                },
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_status_gate)
+    assert any("status_gate contradicts hard_failures" in failure for failure in failures)
+
+    invalid_candidate_interpretation = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "promotion_interpretation": "PASS",
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, invalid_candidate_interpretation)
+    assert any("invalid promotion_interpretation" in failure for failure in failures)
+
+    contradictory_candidate_pass = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {
+                **valid_manifest["candidate_promotion_decisions"][0],
+                "candidate_audit_status": "PASS",
+                "decision_window_gate": "PASS",
+                "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+            },
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, contradictory_candidate_pass)
+    assert any("claims gate pass with non-PASS gates" in failure for failure in failures)
+
+    invalid_earliest_candidate = {**valid_manifest, "earliest_candidate_gate_pass_start": "2010-01-01"}
+    failures = research_manifest_contract_failures(release, data_manifest, invalid_earliest_candidate)
+    assert "research manifest earliest_candidate_gate_pass_start is not a configured candidate start" in failures
+
+    unmatched_earliest_candidate = {**valid_manifest, "earliest_candidate_gate_pass_start": CANDIDATE_RESEARCH_START_DATES[0]}
+    failures = research_manifest_contract_failures(release, data_manifest, unmatched_earliest_candidate)
+    assert "research manifest earliest_candidate_gate_pass_start does not match exactly one gate-pass candidate decision" in failures
+
+    gate_pass_decision = {
+        "candidate_audit_status": "PASS",
+        "decision_window_gate": "PASS",
+        "warmup_gate": "PASS",
+        "session_liquidity_gate": "PASS",
+        "identity_gate": "PASS",
+        "price_action_gate": "PASS",
+        "instrument_gate": "PASS",
+
+        "status_gate": "PASS",
+        "hard_failures": {
+            **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+            "not_materialized": False,
+            "candidate_start_snapshot_missing": False,
+            "decision_window_snapshots_missing": False,
+            "warmup_not_ready": False,
+        },
+        "promotion_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+    }
+    non_earliest_gate_pass = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {**valid_manifest["candidate_promotion_decisions"][0], **gate_pass_decision},
+            {**valid_manifest["candidate_promotion_decisions"][1], **gate_pass_decision},
+            *valid_manifest["candidate_promotion_decisions"][2:],
+        ],
+        "earliest_candidate_gate_pass_start": valid_manifest["candidate_promotion_decisions"][1]["candidate_start"],
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, non_earliest_gate_pass)
+    assert "research manifest earliest_candidate_gate_pass_start is not the earliest gate-pass candidate" in failures
+
+    missing_gate_pass_start = {
+        **valid_manifest,
+        "candidate_promotion_decisions": [
+            {**valid_manifest["candidate_promotion_decisions"][0], **gate_pass_decision},
+            *valid_manifest["candidate_promotion_decisions"][1:],
+        ],
+        "earliest_candidate_gate_pass_start": None,
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_gate_pass_start)
+    assert "research manifest earliest_candidate_gate_pass_start is null despite gate-pass candidate decisions" in failures
+
+    missing_earliest_candidate = {key: value for key, value in valid_manifest.items() if key != "earliest_candidate_gate_pass_start"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_earliest_candidate)
+    assert "research manifest earliest_candidate_gate_pass_start is missing" in failures
+
     missing_partition_hash = {key: value for key, value in valid_manifest.items() if key != "partitioned_artifacts_manifest_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_partition_hash)
     assert "research manifest partitioned_artifacts_manifest_sha256 is missing or invalid" in failures
+
+    missing_candidate_audit_hash = {key: value for key, value in valid_manifest.items() if key != "candidate_promotion_audit_sha256"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_candidate_audit_hash)
+    assert "research manifest candidate_promotion_audit_sha256 is missing or invalid" in failures
+
+    missing_candidate_count = {key: value for key, value in valid_manifest.items() if key != "candidate_required_research_securities"}
+    failures = research_manifest_contract_failures(release, data_manifest, missing_candidate_count)
+    assert "research manifest candidate_required_research_securities is missing or not an integer" in failures
+
+    inconsistent_candidate_count = {**valid_manifest, "candidate_required_research_securities": 9}
+    failures = research_manifest_contract_failures(release, data_manifest, inconsistent_candidate_count)
+    assert "research manifest candidate_required_research_securities is smaller than required_research_securities" in failures
 
     unresolved_price_action = {**valid_manifest, "material_price_action_unresolved_boundaries": 1}
     failures = research_manifest_contract_failures(release, data_manifest, unresolved_price_action)
@@ -454,10 +1642,27 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "research_coverage": {
             "research_verified_start": RESEARCH_START_DATE,
             "research_verified_end": "2026-08-10",
+            "monthly_snapshot_start": CANDIDATE_MONTHLY_SNAPSHOT_START,
             "universe_profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
             "priority_scope": PRIORITY_SCOPE,
         },
+        "warmup_coverage": {
+            "feature_readiness_windows": FEATURE_READINESS_WINDOWS,
+            "feature_ready_dates": {"model_arena_handoff_history": "2007-03-15"},
+            "required_prior_sessions_for_full_readiness": max(FEATURE_READINESS_WINDOWS.values()),
+            "earliest_fully_warmed_date": "2007-03-15",
+        },
+        "research_quality_intervals": [
+            {
+                "start": RESEARCH_START_DATE,
+                "end": "2026-08-10",
+                "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                "profile": PROFILE_ID,
+                "profile_version": PROFILE_VERSION,
+                "priority_scope": PRIORITY_SCOPE,
+            }
+        ],
         "component_quality": COMPONENT_QUALITY,
         "source_manifest_sha256": "0" * 64,
         "config_sha256": "0" * 64,
@@ -483,6 +1688,16 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
     }
     failures = data_manifest_contract_failures(release, missing_component_quality)
     assert "data manifest component_quality.research_universe_2013_onward is not RESEARCH_HIGH_CONFIDENCE" in failures
+
+    missing_monthly_snapshot_start = {
+        **manifest,
+        "research_coverage": {
+            key: value for key, value in manifest["research_coverage"].items()
+            if key != "monthly_snapshot_start"
+        },
+    }
+    failures = data_manifest_contract_failures(release, missing_monthly_snapshot_start)
+    assert "data manifest research_coverage.monthly_snapshot_start is missing" in failures
 
     stale_parser = {
         **manifest,
@@ -518,8 +1733,191 @@ def test_invariant_validation_summary_reports_nonzero_metrics_as_failures(tmp_pa
     summary = invariant_validation_summary(report)
 
     assert summary["status"] == "FAIL"
-    assert summary["failure_count"] == 1
+    assert summary["failure_count"] == 1 + len(EXPECTED_INVARIANT_VALIDATION_METRICS - {"duplicate_month_security_rows", "required_artifact_identity_quality_failures"})
     assert summary["failures"] == {"required_artifact_identity_quality_failures": 2}
+    assert "monthly_snapshot_start_mismatch" in summary["missing_metrics"]
+
+
+def test_candidate_promotion_audit_summary_requires_warmup_evidence():
+    valid_row = {
+        "candidate_start": "2011-01-01",
+        "profile": PROFILE_ID,
+        "profile_version": PROFILE_VERSION,
+        "priority_scope": PRIORITY_SCOPE,
+        "control_start": RESEARCH_START_DATE,
+        "required_prior_sessions_for_full_readiness": max(FEATURE_READINESS_WINDOWS.values()),
+        "status": "PASS",
+        "required_rows": 10,
+        "fully_warmed_required_rows": 10,
+        "monthly_snapshots_after_decision": 1,
+        "hard_failures": {key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+    }
+    valid_row["hard_failures"]["not_materialized"] = False
+    valid_row["hard_failures"]["candidate_start_snapshot_missing"] = False
+    valid_row["hard_failures"]["decision_window_snapshots_missing"] = False
+    valid_row["hard_failures"]["warmup_not_ready"] = False
+
+    stale_row = {**valid_row, "candidate_start": "2009-01-01", "fully_warmed_required_rows": 9}
+    missing_evidence_row = {key: value for key, value in {**valid_row, "candidate_start": "2007-01-01"}.items() if key != "required_rows"}
+    valid_2006_row = {**valid_row, "candidate_start": "2006-01-01"}
+
+    valid_report = {
+        "profile": PROFILE_ID,
+        "profile_version": PROFILE_VERSION,
+        "priority_scope": PRIORITY_SCOPE,
+        "control_start": RESEARCH_START_DATE,
+        "candidate_start_dates": list(CANDIDATE_RESEARCH_START_DATES),
+        "required_prior_sessions_for_full_readiness": max(FEATURE_READINESS_WINDOWS.values()),
+        "candidate_audits": [valid_row, stale_row, missing_evidence_row, valid_2006_row],
+    }
+
+    summary = candidate_promotion_audit_summary(valid_report)
+
+    assert summary["missing_candidate_starts"] == []
+    assert summary["unexpected_candidate_starts"] == []
+    assert summary["duplicate_candidate_starts"] == []
+    assert summary["malformed_candidate_audits"] == ["2009-01-01", "2007-01-01"]
+    assert summary["malformed_candidate_report"] == []
+
+    duplicate_summary = candidate_promotion_audit_summary({**valid_report, "candidate_audits": [valid_row, {**valid_row}]})
+    assert duplicate_summary["duplicate_candidate_starts"] == ["2011-01-01"]
+
+    unexpected_summary = candidate_promotion_audit_summary({**valid_report, "candidate_audits": [valid_row, {**valid_row, "candidate_start": "2010-01-01"}]})
+    assert unexpected_summary["unexpected_candidate_starts"] == ["2010-01-01"]
+
+    wrong_control_summary = candidate_promotion_audit_summary({**valid_report, "candidate_audits": [valid_row, {**valid_row, "candidate_start": "2009-01-01", "control_start": "2012-01-01"}, {**valid_row, "candidate_start": "2007-01-01"}, {**valid_row, "candidate_start": "2006-01-01"}]})
+    assert wrong_control_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    contradictory_decision_window = {
+        **valid_row,
+        "candidate_start": "2009-01-01",
+        "status": "FAIL",
+        "monthly_snapshots_after_decision": 0,
+        "hard_failures": {
+            **valid_row["hard_failures"],
+            "decision_window_snapshots_missing": False,
+        },
+    }
+    contradictory_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "candidate_audits": [
+            valid_row,
+            contradictory_decision_window,
+            {**valid_row, "candidate_start": "2007-01-01"},
+            {**valid_row, "candidate_start": "2006-01-01"},
+        ],
+    })
+    assert contradictory_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    pass_with_active_failure = {
+        **valid_row,
+        "candidate_start": "2009-01-01",
+        "status": "PASS",
+        "hard_failures": {
+            **valid_row["hard_failures"],
+            "identity_failures": 1,
+        },
+    }
+    active_failure_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "candidate_audits": [
+            valid_row,
+            pass_with_active_failure,
+            {**valid_row, "candidate_start": "2007-01-01"},
+            {**valid_row, "candidate_start": "2006-01-01"},
+        ],
+    })
+    assert active_failure_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    fail_without_active_failure = {
+        **valid_row,
+        "candidate_start": "2009-01-01",
+        "status": "FAIL",
+    }
+    inactive_failure_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "candidate_audits": [
+            valid_row,
+            fail_without_active_failure,
+            {**valid_row, "candidate_start": "2007-01-01"},
+            {**valid_row, "candidate_start": "2006-01-01"},
+        ],
+    })
+    assert inactive_failure_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    mistyped_hard_failure_row = {
+        **valid_row,
+        "candidate_start": "2009-01-01",
+        "hard_failures": {
+            **valid_row["hard_failures"],
+            "identity_failures": False,
+        },
+    }
+    mistyped_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "candidate_audits": [
+            valid_row,
+            mistyped_hard_failure_row,
+            {**valid_row, "candidate_start": "2007-01-01"},
+            {**valid_row, "candidate_start": "2006-01-01"},
+        ],
+    })
+    assert mistyped_summary["malformed_candidate_audits"] == ["2009-01-01"]
+
+    stale_report_summary = candidate_promotion_audit_summary({**valid_report, "candidate_start_dates": ["2011-01-01"]})
+    assert stale_report_summary["malformed_candidate_report"] == ["candidate_start_dates"]
+
+
+def test_candidate_manifest_decisions_match_candidate_audit_report():
+    hard_failures = {key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS}
+    hard_failures["not_materialized"] = False
+    hard_failures["candidate_start_snapshot_missing"] = False
+    hard_failures["decision_window_snapshots_missing"] = False
+    hard_failures["warmup_not_ready"] = False
+    manifest = {
+        "candidate_promotion_decisions": [
+            {
+                "candidate_start": "2011-01-01",
+                "candidate_audit_status": "PASS",
+                "hard_failures": hard_failures,
+            }
+        ]
+    }
+    report = {
+        "candidate_audits": [
+            {
+                "candidate_start": "2011-01-01",
+                "status": "PASS",
+                "hard_failures": hard_failures,
+            }
+        ]
+    }
+
+    assert candidate_manifest_audit_consistency_failures(manifest, report) == []
+
+    stale_manifest = {
+        "candidate_promotion_decisions": [
+            {
+                **manifest["candidate_promotion_decisions"][0],
+                "candidate_audit_status": "FAIL",
+            }
+        ]
+    }
+    assert candidate_manifest_audit_consistency_failures(stale_manifest, report) == [
+        "candidate 2011-01-01 decision status does not match candidate audit report"
+    ]
+
+    stale_hard_failures = {
+        "candidate_promotion_decisions": [
+            {
+                **manifest["candidate_promotion_decisions"][0],
+                "hard_failures": {**hard_failures, "identity_failures": 1},
+            }
+        ]
+    }
+    assert candidate_manifest_audit_consistency_failures(stale_hard_failures, report) == [
+        "candidate 2011-01-01 decision hard_failures do not match candidate audit report"
+    ]
 
 
 def test_raw_and_adjusted_history_are_separate():

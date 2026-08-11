@@ -4,7 +4,34 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
-from .profiles import DATA_RELEASE_MANIFEST_ARTIFACT, LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, RESEARCH_HIGH_CONFIDENCE_STATUS, RESEARCH_RELEASE_MANIFEST_ARTIFACT, TOP_LIQUIDITY_RANKING_METRIC
+from .profiles import (
+    CANDIDATE_AUDIT_STATUS_VALUES,
+    CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+    CANDIDATE_DECISION_GATE_KEYS,
+    CANDIDATE_DECISION_GATE_VALUES,
+    CANDIDATE_DECISION_REQUIRED_FIELDS,
+    CANDIDATE_FAIL_VALUE,
+    CANDIDATE_GATE_PASS_INTERPRETATION,
+    CANDIDATE_HARD_FAILURE_KEYS,
+    CANDIDATE_NOT_RECORDED_VALUE,
+    CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    CANDIDATE_PASS_VALUE,
+    CANDIDATE_PROMOTION_API_METHODS,
+    CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
+    CANDIDATE_PROMOTION_SUMMARY_FIELDS,
+    CANDIDATE_RESEARCH_START_DATES,
+    DATA_RELEASE_MANIFEST_ARTIFACT,
+    FEATURE_READINESS_WINDOWS,
+    FEATURE_WARMUP_STATUS,
+    LIQUID_V1_DEFINITION,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    RESEARCH_EXPLORATORY_STATUS,
+    RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_RELEASE_MANIFEST_ARTIFACT,
+    SOURCE_ONLY_STATUS,
+    TOP_LIQUIDITY_RANKING_METRIC,
+)
 from .storage import iter_jsonl, read_jsonl
 
 
@@ -14,6 +41,124 @@ def _as_date(value: str | date) -> date:
 
 class CoverageError(ValueError):
     """The requested date is outside the trusted release coverage."""
+
+
+def _normalize_candidate_promotion_decisions(rows: Any) -> list[dict[str, Any]]:
+    if rows is None:
+        return []
+    if not isinstance(rows, list):
+        raise ValueError("candidate_promotion_decisions must be a list")
+    decisions: list[dict[str, Any]] = []
+    candidate_starts: set[str] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"candidate_promotion_decisions[{index}] must be an object")
+        missing = [field for field in CANDIDATE_DECISION_REQUIRED_FIELDS if field not in row]
+        if missing:
+            raise ValueError(f"candidate_promotion_decisions[{index}] missing required fields: {missing}")
+        candidate_start = _as_date(row["candidate_start"]).isoformat()
+        if candidate_start not in CANDIDATE_RESEARCH_START_DATES:
+            raise ValueError(f"candidate_promotion_decisions[{index}] candidate_start is not configured: {candidate_start}")
+        audit_status = row["candidate_audit_status"]
+        if audit_status not in CANDIDATE_AUDIT_STATUS_VALUES:
+            raise ValueError(f"candidate_promotion_decisions[{index}].candidate_audit_status is invalid: {audit_status}")
+        for field in CANDIDATE_DECISION_GATE_KEYS:
+            gate_value = row[field]
+            if gate_value not in CANDIDATE_DECISION_GATE_VALUES:
+                raise ValueError(f"candidate_promotion_decisions[{index}].{field} is invalid: {gate_value}")
+        promotion_interpretation = row["promotion_interpretation"]
+        if promotion_interpretation not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}].promotion_interpretation is invalid: "
+                f"{promotion_interpretation}"
+            )
+        hard_failures = row["hard_failures"]
+        if not isinstance(hard_failures, dict):
+            raise ValueError(f"candidate_promotion_decisions[{index}].hard_failures must be an object")
+        missing_hard_failures = [field for field in CANDIDATE_HARD_FAILURE_KEYS if field not in hard_failures]
+        if missing_hard_failures:
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}].hard_failures missing required fields: "
+                f"{missing_hard_failures}"
+            )
+        extra_hard_failures = [field for field in hard_failures if field not in CANDIDATE_HARD_FAILURE_KEYS]
+        if extra_hard_failures:
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}].hard_failures has unexpected fields: "
+                f"{extra_hard_failures}"
+            )
+        for field in CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS:
+            if type(hard_failures[field]) is not bool:
+                raise ValueError(f"candidate_promotion_decisions[{index}].hard_failures.{field} must be bool")
+        for field in CANDIDATE_NUMERIC_HARD_FAILURE_KEYS:
+            if type(hard_failures[field]) is not int:
+                raise ValueError(f"candidate_promotion_decisions[{index}].hard_failures.{field} must be int")
+        active_hard_failures = [
+            field for field in CANDIDATE_HARD_FAILURE_KEYS
+            if hard_failures[field]
+        ]
+        if audit_status == CANDIDATE_PASS_VALUE and active_hard_failures:
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}] is PASS with active hard failures: "
+                f"{active_hard_failures}"
+            )
+        if audit_status == CANDIDATE_FAIL_VALUE and not active_hard_failures:
+            raise ValueError(f"candidate_promotion_decisions[{index}] is FAIL without active hard failures")
+        gate_failures = [
+            field for field in CANDIDATE_DECISION_GATE_KEYS
+            if row[field] != CANDIDATE_PASS_VALUE
+        ]
+        if promotion_interpretation == CANDIDATE_GATE_PASS_INTERPRETATION:
+            if audit_status != CANDIDATE_PASS_VALUE or gate_failures:
+                raise ValueError(
+                    f"candidate_promotion_decisions[{index}] has gate-pass interpretation without "
+                    f"PASS audit status and all PASS gates"
+                )
+        if audit_status == CANDIDATE_PASS_VALUE and not gate_failures and promotion_interpretation != CANDIDATE_GATE_PASS_INTERPRETATION:
+            raise ValueError(
+                f"candidate_promotion_decisions[{index}] is gate-pass but has non-gate-pass interpretation: "
+                f"{promotion_interpretation}"
+            )
+        if candidate_start in candidate_starts:
+            raise ValueError(f"candidate_promotion_decisions duplicate candidate_start: {candidate_start}")
+        candidate_starts.add(candidate_start)
+        decisions.append({**row, "candidate_start": candidate_start})
+    missing_candidate_starts = [
+        candidate_start for candidate_start in CANDIDATE_RESEARCH_START_DATES
+        if candidate_start not in candidate_starts
+    ]
+    if decisions and missing_candidate_starts:
+        raise ValueError(f"candidate_promotion_decisions missing configured candidate starts: {missing_candidate_starts}")
+    candidate_start_order = {
+        candidate_start: index
+        for index, candidate_start in enumerate(CANDIDATE_RESEARCH_START_DATES)
+    }
+    return sorted(decisions, key=lambda row: candidate_start_order[row["candidate_start"]])
+
+
+def _normalize_earliest_candidate_gate_pass_start(value: Any, decisions: list[dict[str, Any]]) -> date | None:
+    gate_pass_starts = sorted(
+        row["candidate_start"]
+        for row in decisions
+        if row["candidate_audit_status"] == CANDIDATE_PASS_VALUE
+        and all(row[field] == CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS)
+        and row["promotion_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
+    )
+    if value is None:
+        if gate_pass_starts:
+            raise ValueError("earliest_candidate_gate_pass_start is null despite gate-pass candidate decisions")
+        return None
+    point = _as_date(value).isoformat()
+    if point not in CANDIDATE_RESEARCH_START_DATES:
+        raise ValueError(f"earliest_candidate_gate_pass_start is not configured: {point}")
+    if not gate_pass_starts:
+        raise ValueError("earliest_candidate_gate_pass_start is set without gate-pass candidate decisions")
+    if point != gate_pass_starts[0]:
+        raise ValueError(
+            f"earliest_candidate_gate_pass_start must be earliest gate-pass candidate: "
+            f"{gate_pass_starts[0]}"
+        )
+    return _as_date(point)
 
 
 class SecurityMaster:
@@ -338,6 +483,10 @@ class DataPlatform:
         self.verified_start: date | None = None
         self.verified_end: date | None = None
         self.quality_tier: str | None = None
+        self.warmup_coverage: dict[str, Any] = {}
+        self.research_quality_intervals: list[dict[str, Any]] = []
+        self.candidate_promotion_decisions: list[dict[str, Any]] = []
+        self.earliest_candidate_gate_pass_start: date | None = None
         self.security_master = SecurityMaster()
         self.company_names = CompanyNameHistoryStore()
         self.isins = IsinHistoryStore()
@@ -431,6 +580,144 @@ class DataPlatform:
         begin, finish = self._check_date(start), self._check_date(end)
         return self.calendar.sessions_between(begin, finish)
 
+    def research_quality_on(self, as_of_date: str | date) -> str:
+        point = _as_date(as_of_date)
+        for interval in self.research_quality_intervals:
+            start = _as_date(interval["start"]) if interval.get("start") else None
+            end = _as_date(interval["end"]) if interval.get("end") else None
+            if (start is None or start <= point) and (end is None or point <= end):
+                return interval.get("status", RESEARCH_EXPLORATORY_STATUS)
+        if self.coverage_start and point < self.coverage_start:
+            raise CoverageError(f"Date {point} is before observed source coverage {self.coverage_start}")
+        if self.coverage_end and point > self.coverage_end:
+            raise CoverageError(f"Date {point} is after observed source coverage {self.coverage_end}")
+        fully_warmed = self.warmup_coverage.get("earliest_fully_warmed_date")
+        if fully_warmed and point < _as_date(fully_warmed):
+            return FEATURE_WARMUP_STATUS
+        if self.coverage_start and self.coverage_end and self.coverage_start <= point <= self.coverage_end:
+            return RESEARCH_EXPLORATORY_STATUS
+        return SOURCE_ONLY_STATUS
+
+    def feature_readiness(self, as_of_date: str | date) -> dict[str, Any]:
+        point = _as_date(as_of_date)
+        sessions = self.calendar.sessions_between(self.coverage_start or point, point)
+        prior_sessions = sum(1 for row in sessions if row.get("date") < point)
+        ready = {name: prior_sessions >= sessions_required for name, sessions_required in FEATURE_READINESS_WINDOWS.items()}
+        return {
+            "date": point,
+            "prior_official_sessions": prior_sessions,
+            "feature_readiness_windows": FEATURE_READINESS_WINDOWS,
+            "ready": ready,
+            "all_ready": all(ready.values()) if ready else False,
+            "source": "OFFICIAL_NSE_TRADING_CALENDAR",
+        }
+
+    def candidate_promotion_status(self) -> list[dict[str, Any]]:
+        """Return configured early-history candidate-start promotion decisions."""
+        return [dict(row) for row in self.candidate_promotion_decisions]
+
+    def candidate_promotion_summary(self) -> dict[str, Any]:
+        """Return the release-level early-history candidate promotion summary."""
+        gate_pass_start_dates = [
+            value.isoformat()
+            for value in self.candidate_gate_pass_start_dates()
+        ]
+        recorded_earliest = (
+            self.earliest_candidate_gate_pass_start.isoformat()
+            if self.earliest_candidate_gate_pass_start
+            else None
+        )
+        derived_earliest = gate_pass_start_dates[0] if gate_pass_start_dates else None
+        return {
+            "recorded_earliest_candidate_gate_pass_start": recorded_earliest,
+            "earliest_candidate_gate_pass_start": derived_earliest,
+            "recorded_matches_derived_earliest_candidate_gate_pass_start": recorded_earliest == derived_earliest,
+            "candidate_gate_pass_start_dates": gate_pass_start_dates,
+            "candidate_research_ready_start_dates": [
+                value.isoformat()
+                for value in self.candidate_research_ready_start_dates()
+            ],
+            "candidate_promotion_decisions": self.candidate_promotion_status(),
+        }
+
+    def candidate_promotion_contract(self) -> dict[str, Any]:
+        """Return the machine-readable early-history candidate promotion schema."""
+        return {
+            "candidate_research_start_dates": CANDIDATE_RESEARCH_START_DATES,
+            "candidate_promotion_api_methods": CANDIDATE_PROMOTION_API_METHODS,
+            "candidate_decision_required_fields": CANDIDATE_DECISION_REQUIRED_FIELDS,
+            "candidate_promotion_summary_fields": CANDIDATE_PROMOTION_SUMMARY_FIELDS,
+            "candidate_decision_gate_keys": CANDIDATE_DECISION_GATE_KEYS,
+            "candidate_hard_failure_keys": CANDIDATE_HARD_FAILURE_KEYS,
+            "candidate_boolean_hard_failure_keys": CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+            "candidate_numeric_hard_failure_keys": CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+            "candidate_audit_status_values": CANDIDATE_AUDIT_STATUS_VALUES,
+            "candidate_decision_gate_values": CANDIDATE_DECISION_GATE_VALUES,
+            "candidate_promotion_interpretation_values": CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
+            "candidate_pass_value": CANDIDATE_PASS_VALUE,
+            "candidate_fail_value": CANDIDATE_FAIL_VALUE,
+            "candidate_not_recorded_value": CANDIDATE_NOT_RECORDED_VALUE,
+            "candidate_gate_pass_interpretation": CANDIDATE_GATE_PASS_INTERPRETATION,
+        }
+
+    def candidate_promotion_decision(self, candidate_start: str | date) -> dict[str, Any]:
+        point = _as_date(candidate_start).isoformat()
+        matches = [
+            row for row in self.candidate_promotion_decisions
+            if row.get("candidate_start") == point
+        ]
+        if len(matches) != 1:
+            raise LookupError(f"Expected one candidate promotion decision for {point}, found {len(matches)}")
+        return dict(matches[0])
+
+    def earliest_candidate_gate_pass_date(self) -> date | None:
+        """Return the earliest candidate start whose candidate gates pass, if any."""
+        return self.earliest_candidate_gate_pass_start
+
+    def candidate_gate_pass_start_dates(self) -> list[date]:
+        """Return configured candidate starts whose candidate promotion gates pass."""
+        candidate_start_order = {
+            _as_date(candidate_start): index
+            for index, candidate_start in enumerate(CANDIDATE_RESEARCH_START_DATES)
+        }
+        gate_pass_start_dates = []
+        for row in self.candidate_promotion_decisions:
+            if "candidate_start" not in row:
+                continue
+            candidate_start = _as_date(row["candidate_start"])
+            if candidate_start not in candidate_start_order:
+                continue
+            if row.get("candidate_audit_status") != CANDIDATE_PASS_VALUE:
+                continue
+            if any(row.get(field) != CANDIDATE_PASS_VALUE for field in CANDIDATE_DECISION_GATE_KEYS):
+                continue
+            if row.get("promotion_interpretation") != CANDIDATE_GATE_PASS_INTERPRETATION:
+                continue
+            gate_pass_start_dates.append(candidate_start)
+        return sorted(gate_pass_start_dates, key=lambda value: candidate_start_order[value])
+
+    def candidate_gate_pass_ready(self, candidate_start: str | date) -> bool:
+        """Return whether one configured candidate start has passing promotion gates."""
+        point = _as_date(candidate_start)
+        if point.isoformat() not in CANDIDATE_RESEARCH_START_DATES:
+            raise ValueError(f"candidate_start is not configured: {point.isoformat()}")
+        return point in set(self.candidate_gate_pass_start_dates())
+
+    def candidate_research_ready(self, candidate_start: str | date) -> bool:
+        """Return whether one candidate start is both gate-pass and research-high-confidence."""
+        return (
+            self.candidate_gate_pass_ready(candidate_start)
+            and self.research_quality_on(candidate_start) == RESEARCH_HIGH_CONFIDENCE_STATUS
+        )
+
+    def candidate_research_ready_start_dates(self) -> list[date]:
+        """Return configured candidate starts that are both gate-pass and research-high-confidence."""
+        return [
+            candidate_start
+            for candidate_start in self.candidate_gate_pass_start_dates()
+            if self.candidate_research_ready(candidate_start)
+        ]
+
     def get_active_universe(self, as_of_date: str | date) -> list[dict[str, Any]]:
         return self.active_on(as_of_date)
 
@@ -472,6 +759,22 @@ class DataPlatform:
             platform.verified_start = _as_date(manifest["verified_start_date"]) if manifest.get("verified_start_date") else None
             platform.verified_end = _as_date(manifest["verified_end_date"]) if manifest.get("verified_end_date") else None
             platform.quality_tier = manifest.get("quality_tier")
+            platform.warmup_coverage = manifest.get("warmup_coverage") or {}
+            platform.research_quality_intervals = manifest.get("research_quality_intervals") or []
+            has_data_candidate_decisions = "candidate_promotion_decisions" in manifest
+            has_data_earliest_candidate = "earliest_candidate_gate_pass_start" in manifest
+            if has_data_candidate_decisions != has_data_earliest_candidate:
+                raise ValueError(
+                    "data manifest candidate_promotion_decisions and "
+                    "earliest_candidate_gate_pass_start must be provided together"
+                )
+            platform.candidate_promotion_decisions = _normalize_candidate_promotion_decisions(
+                manifest.get("candidate_promotion_decisions")
+            )
+            platform.earliest_candidate_gate_pass_start = _normalize_earliest_candidate_gate_pass_start(
+                manifest.get("earliest_candidate_gate_pass_start"),
+                platform.candidate_promotion_decisions,
+            )
         research_manifest_path = base / RESEARCH_RELEASE_MANIFEST_ARTIFACT
         if research_manifest_path.exists():
             import json
@@ -481,6 +784,23 @@ class DataPlatform:
                 platform.verified_start = _as_date(research_quality["start"]) if research_quality.get("start") else platform.verified_start
                 platform.verified_end = _as_date(research_quality["end"]) if research_quality.get("end") else platform.verified_end
                 platform.quality_tier = research_quality["status"]
+            platform.warmup_coverage = research_manifest.get("warmup_coverage") or platform.warmup_coverage
+            platform.research_quality_intervals = research_manifest.get("research_quality_intervals") or platform.research_quality_intervals
+            has_research_candidate_decisions = "candidate_promotion_decisions" in research_manifest
+            has_research_earliest_candidate = "earliest_candidate_gate_pass_start" in research_manifest
+            if has_research_candidate_decisions != has_research_earliest_candidate:
+                raise ValueError(
+                    "research manifest candidate_promotion_decisions and "
+                    "earliest_candidate_gate_pass_start must be provided together"
+                )
+            if has_research_candidate_decisions:
+                platform.candidate_promotion_decisions = _normalize_candidate_promotion_decisions(
+                    research_manifest.get("candidate_promotion_decisions")
+                )
+                platform.earliest_candidate_gate_pass_start = _normalize_earliest_candidate_gate_pass_start(
+                    research_manifest.get("earliest_candidate_gate_pass_start"),
+                    platform.candidate_promotion_decisions,
+                )
         import pyarrow.parquet as parquet
         master = parquet.read_table(base / "security_master.parquet").to_pylist()
         platform.security_master = SecurityMaster(master)

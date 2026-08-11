@@ -10,6 +10,7 @@ from pathlib import Path
 import duckdb
 
 from india_active_universe.profiles import (
+    FEATURE_READINESS_WINDOWS,
     LIQUID_V1_DEFINITION,
     PROFILE_ID,
     PROFILE_VERSION,
@@ -41,6 +42,11 @@ def main() -> None:
     instrument_type = LIQUID_V1_DEFINITION["instrument_type"]
     trading_status = LIQUID_V1_DEFINITION["trading_status"]
     ranking_metric = TOP_LIQUIDITY_RANKING_METRIC
+    ready_60 = FEATURE_READINESS_WINDOWS["liquidity_60"]
+    ready_126 = FEATURE_READINESS_WINDOWS["liquidity_rank_126"]
+    ready_252 = FEATURE_READINESS_WINDOWS["standard_research_252"]
+    ready_273 = FEATURE_READINESS_WINDOWS["momentum_12_1"]
+    ready_300 = FEATURE_READINESS_WINDOWS["model_arena_handoff_history"]
     profile_id = PROFILE_ID
     profile_version = PROFILE_VERSION
     query = f"""
@@ -64,6 +70,8 @@ def main() -> None:
         SELECT CAST(a.date AS DATE) AS date,
           a.security_id, a.listing_episode_id, a.symbol_at_date,
           a.instrument_type, m.instrument_type_quality, m.instrument_type_source, m.identity_quality, a.company_name, a.isin,
+          m.known_listing_date, m.listing_date_quality, m.observed_history_start,
+          m.listing_age_sessions_quality, m.listing_history_left_censored,
           COALESCE(s.trading_status, a.trading_status) AS trading_status,
           a.observation_status, a.active,
           f.price, f.history_sessions, f.observed_history_sessions,
@@ -137,6 +145,12 @@ def main() -> None:
         r.{ranking_metric} IS NOT NULL AND r.rank_126 <= 1000 AS top1000_liquidity,
         r.liquid_v1_eligible AS LIQUID_V1_eligible,
         r.liquid_v1_eligible AS NSE_BROAD_LIQUID_PIT_V1_eligible,
+        COALESCE(r.observed_history_sessions, 0) >= {ready_60} AS feature_ready_60,
+        COALESCE(r.observed_history_sessions, 0) >= {ready_126} AS feature_ready_126,
+        COALESCE(r.observed_history_sessions, 0) >= {ready_252} AS signal_history_ready_252,
+        COALESCE(r.observed_history_sessions, 0) >= {ready_273} AS signal_history_ready_273,
+        COALESCE(r.observed_history_sessions, 0) >= {ready_300} AS model_handoff_history_ready_300,
+        'OBSERVED_OFFICIAL_NSE_SESSION_HISTORY' AS feature_readiness_source,
         '{profile_id}' AS profile_id,
         '{profile_version}' AS profile_version,
         r.date AS as_of_date,

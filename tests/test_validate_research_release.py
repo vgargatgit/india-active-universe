@@ -16,18 +16,29 @@ def _write_release(release, required_security_ids):
     release.mkdir()
     monthly = pa.table(
         {
-            "date": ["2020-03-31"],
+            "date": ["2013-01-31"],
             "security_id": ["SEC1"],
             "listing_episode_id": ["LE1"],
             "symbol_at_date": ["ABC"],
             "instrument_type": ["ORDINARY_EQUITY"],
             "identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
+            "known_listing_date": [None],
+            "listing_date_quality": ["UNKNOWN_FIRST_OBSERVED"],
+            "observed_history_start": ["2013-01-01"],
+            "listing_age_sessions_quality": ["FIRST_OBSERVED_TRADE_DATE"],
+            "listing_history_left_censored": [False],
             "active": [True],
             "trading_status": ["ACTIVE_TRADING"],
             "research_identity_ok": [True],
             "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
             "price_adjustment_ok": [True],
             "status_quality": ["OBSERVED_OFFICIAL_TRADE"],
+            "feature_ready_60": [True],
+            "feature_ready_126": [True],
+            "signal_history_ready_252": [True],
+            "signal_history_ready_273": [True],
+            "model_handoff_history_ready_300": [True],
+            "feature_readiness_source": ["OBSERVED_OFFICIAL_NSE_SESSION_HISTORY"],
             "price": [100.0],
             "history_sessions": [300],
             "listing_age_sessions": [300],
@@ -45,22 +56,22 @@ def _write_release(release, required_security_ids):
             "top1000_liquidity": [True],
             "profile_id": ["NSE_BROAD_LIQUID_PIT_V1"],
             "profile_version": ["LIQUID_V1"],
-            "as_of_date": ["2020-03-31"],
+            "as_of_date": ["2013-01-31"],
             "eligibility_result": ["ELIGIBLE"],
             "eligibility_reason_codes": ["PASSED_LIQUID_V1"],
         }
     )
     pq.write_table(monthly, release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT)
-    pq.write_table(pa.table({"security_id": ["SEC1"], "date": ["2020-01-01"]}), release / RAW_EXECUTION_PRICE_ARTIFACT)
-    pq.write_table(pa.table({"date": ["2020-03-31"]}), release / TRADING_CALENDAR_ARTIFACT)
+    pq.write_table(pa.table({"security_id": ["SEC1"], "date": ["2013-01-01"]}), release / RAW_EXECUTION_PRICE_ARTIFACT)
+    pq.write_table(pa.table({"date": ["2013-01-31"]}), release / TRADING_CALENDAR_ARTIFACT)
     pq.write_table(
         pa.table(
             {
                 "security_id": required_security_ids,
                 "enters_liquid_v1": [True for _ in required_security_ids],
                 "enters_top750": [True for _ in required_security_ids],
-                "first_research_date": ["2020-03-31" for _ in required_security_ids],
-                "last_research_date": ["2020-03-31" for _ in required_security_ids],
+                "first_research_date": ["2013-01-31" for _ in required_security_ids],
+                "last_research_date": ["2013-01-31" for _ in required_security_ids],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY" for _ in required_security_ids],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED" for _ in required_security_ids],
                 "price_adjustment_ok": [True for _ in required_security_ids],
@@ -150,8 +161,8 @@ def test_research_release_validator_fails_when_required_artifact_flags_mismatch_
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [False],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -192,8 +203,8 @@ def test_research_release_validator_fails_when_required_artifact_date_range_mism
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-01-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-02-28"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -234,8 +245,8 @@ def test_research_release_validator_fails_when_required_artifact_identity_qualit
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["PARTIAL"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -276,8 +287,8 @@ def test_research_release_validator_fails_when_required_artifact_price_adjustmen
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["UNRESOLVED_CORPORATE_ACTION"],
                 "price_adjustment_ok": [False],
@@ -318,8 +329,8 @@ def test_research_release_validator_fails_when_required_artifact_status_is_not_a
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -360,8 +371,8 @@ def test_research_release_validator_fails_when_required_artifact_instrument_clas
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -402,8 +413,8 @@ def test_research_release_validator_fails_when_required_artifact_rank_evidence_m
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -444,8 +455,8 @@ def test_research_release_validator_fails_when_required_artifact_liquidity_evide
                 "security_id": ["SEC1"],
                 "enters_liquid_v1": [True],
                 "enters_top750": [True],
-                "first_research_date": ["2020-03-31"],
-                "last_research_date": ["2020-03-31"],
+                "first_research_date": ["2013-01-31"],
+                "last_research_date": ["2013-01-31"],
                 "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
                 "price_adjustment_quality": ["NO_ADJUSTMENT_REQUIRED"],
                 "price_adjustment_ok": [True],
@@ -474,4 +485,73 @@ def test_research_release_validator_fails_when_required_artifact_liquidity_evide
     assert result.returncode != 0
     metrics = json.loads(out.read_text(encoding="utf-8"))
     assert metrics["required_artifact_liquidity_evidence_failures"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def _rewrite_single_column_parquet(path, column_name, value):
+    table = pq.read_table(path)
+    data = {name: table[name].to_pylist() for name in table.column_names}
+    data[column_name] = [value for _ in data[column_name]]
+    pq.write_table(pa.table(data), path)
+
+
+def test_research_release_validator_fails_when_monthly_snapshot_start_is_wrong(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    _rewrite_single_column_parquet(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, "date", "2013-02-28")
+    _rewrite_single_column_parquet(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, "as_of_date", "2013-02-28")
+    pq.write_table(pa.table({"date": ["2013-02-28"]}), release / TRADING_CALENDAR_ARTIFACT)
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["monthly_snapshot_start_mismatch"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def test_research_release_validator_fails_for_rows_before_research_start(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    _rewrite_single_column_parquet(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, "date", "2012-12-31")
+    _rewrite_single_column_parquet(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, "as_of_date", "2012-12-31")
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["pre_research_start_rows"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def test_research_release_validator_fails_when_snapshot_is_not_month_final_session(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    _rewrite_single_column_parquet(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, "date", "2013-01-30")
+    _rewrite_single_column_parquet(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT, "as_of_date", "2013-01-30")
+    pq.write_table(pa.table({"date": ["2013-01-30", "2013-01-31"]}), release / TRADING_CALENDAR_ARTIFACT)
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["non_month_final_session_dates"] == 1
     assert metrics["status"] == "FAIL"

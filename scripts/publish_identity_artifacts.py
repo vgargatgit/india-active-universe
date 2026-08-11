@@ -21,13 +21,16 @@ def main() -> None:
         issuers[row["issuer_id"]].append(row)
         episodes[row["listing_episode_id"]].append(row)
     issuer_rows = []
+    source_start = min((row["first_seen"] for row in rows), default=None)
     for issuer_id, values in sorted(issuers.items()):
         names = sorted({row.get("company_name") for row in values if row.get("company_name")})
         issuer_rows.append({"issuer_id": issuer_id, "company_names": names, "first_observed_date": min(row["first_seen"] for row in values), "last_observed_date": max(row["last_seen"] for row in values), "identity_quality": "SINGLE_OFFICIAL_SOURCE" if any(row.get("isin") for row in values) else "PARTIAL", "source": "NSE_HISTORICAL_OBSERVATIONS"})
     episode_rows = []
     for episode_id, values in sorted(episodes.items()):
         first = min(values, key=lambda row: row["first_seen"])
-        episode_rows.append({"listing_episode_id": episode_id, "security_id": first["security_id"], "exchange": first["exchange"], "start_date": min(row["first_seen"] for row in values), "end_date": max(row["last_seen"] for row in values), "start_reason": "FIRST_OBSERVED_TRADE", "end_reason": "LAST_OBSERVED_TRADE_OR_UNKNOWN", "source": "NSE_HISTORICAL_OBSERVATIONS"})
+        start_date = min(row["first_seen"] for row in values)
+        left_censored = bool(source_start and start_date == source_start)
+        episode_rows.append({"listing_episode_id": episode_id, "security_id": first["security_id"], "exchange": first["exchange"], "start_date": start_date, "end_date": max(row["last_seen"] for row in values), "start_reason": "LISTING_HISTORY_LEFT_CENSORED" if left_censored else "FIRST_OBSERVED_TRADE", "end_reason": "LAST_OBSERVED_TRADE_OR_UNKNOWN", "known_listing_date": None, "listing_date_quality": "UNKNOWN_LEFT_CENSORED" if left_censored else "UNKNOWN_FIRST_OBSERVED", "observed_history_start": start_date, "listing_age_sessions_quality": "LISTING_HISTORY_LEFT_CENSORED" if left_censored else "FIRST_OBSERVED_TRADE_DATE", "listing_history_left_censored": left_censored, "source": "NSE_HISTORICAL_OBSERVATIONS"})
     release = Path(args.release)
     pq.write_table(pa.Table.from_pylist(issuer_rows), release / "issuer_master.parquet", compression="zstd", use_dictionary=True)
     pq.write_table(pa.Table.from_pylist(episode_rows), release / "listing_episodes.parquet", compression="zstd", use_dictionary=True)

@@ -15,12 +15,26 @@ import duckdb
 from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     ADJUSTED_PRICE_ARTIFACT,
+    CANDIDATE_AUDIT_STATUS_VALUES,
+    CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS,
+    CANDIDATE_DECISION_GATE_KEYS,
+    CANDIDATE_DECISION_REQUIRED_FIELDS,
+    CANDIDATE_DECISION_GATE_VALUES,
+    CANDIDATE_GATE_PASS_INTERPRETATION,
+    CANDIDATE_HARD_FAILURE_KEYS,
+    CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
+    CANDIDATE_FAIL_VALUE,
+    CANDIDATE_NOT_RECORDED_VALUE,
+    CANDIDATE_PASS_VALUE,
+    CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
+    CANDIDATE_RESEARCH_START_DATES,
     COMPONENT_QUALITY,
     CORPORATE_ACTIONS_ARTIFACT,
     CORPORATE_ACTION_BOUNDARY_ARTIFACT,
     DATASET_QUALITY_TIER,
     DATA_RELEASE_MANIFEST_ARTIFACT,
     EXECUTION_POLICY,
+    FEATURE_READINESS_WINDOWS,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
     PARTITIONED_RELEASE_ARTIFACTS,
@@ -31,12 +45,12 @@ from india_active_universe.profiles import (
     PARTITIONED_ARTIFACTS_MANIFEST,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
-    REQUIRED_RESEARCH_SECURITY_ARTIFACT,
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_MONTHLY_SNAPSHOT_START,
     RESEARCH_START_DATE,
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
     REQUIRED_RELEASE_ARTIFACTS,
     REQUIRED_RESEARCH_REPORTS,
     REQUIRED_QUALITY_THRESHOLD,
@@ -56,6 +70,40 @@ from india_active_universe.profiles import (
 REQUIRED = list(REQUIRED_RELEASE_ARTIFACTS)
 
 REQUIRED_PARTITIONED_ARTIFACTS = set(PARTITIONED_RELEASE_ARTIFACTS)
+
+EXPECTED_INVARIANT_VALIDATION_METRICS = {
+    "monthly_snapshot_start_mismatch",
+    "pre_research_start_rows",
+    "non_month_final_session_dates",
+    "duplicate_month_security_rows",
+    "non_ordinary_rows",
+    "non_active_trading_rows",
+    "missing_quality_fields",
+    "required_scope_quality_failures",
+    "required_scope_missing_research_fields",
+    "top_liquidity_null_metric_failures",
+    "required_scope_missing_from_required_artifact",
+    "required_artifact_security_without_monthly_scope",
+    "required_artifact_flag_failures",
+    "required_artifact_date_range_failures",
+    "required_artifact_rank_evidence_failures",
+    "required_artifact_liquidity_evidence_failures",
+    "required_artifact_identity_quality_failures",
+    "required_artifact_price_adjustment_failures",
+    "required_artifact_status_failures",
+    "required_artifact_instrument_classification_failures",
+    "future_listing_rows",
+    "non_calendar_dates",
+    "liquid_predicate_failures",
+    "artifact_alias_failures",
+    "eligible_profile_metadata_failures",
+    "excluded_profile_metadata_failures",
+    "top_liquidity_flag_failures",
+}
+
+EXPECTED_CANDIDATE_HARD_FAILURE_KEYS = set(CANDIDATE_HARD_FAILURE_KEYS)
+EXPECTED_CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS = set(CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS)
+EXPECTED_CANDIDATE_NUMERIC_HARD_FAILURE_KEYS = set(CANDIDATE_NUMERIC_HARD_FAILURE_KEYS)
 
 
 def sha256(path: Path) -> str:
@@ -105,11 +153,120 @@ def invariant_validation_summary(path: Path) -> dict:
         key: value for key, value in report.items()
         if key != "status" and isinstance(value, (int, float)) and value != 0
     }
+    missing_metrics = sorted(EXPECTED_INVARIANT_VALIDATION_METRICS - set(report))
     return {
         "status": report.get("status"),
-        "failure_count": len(failures),
+        "failure_count": len(failures) + len(missing_metrics),
         "failures": failures,
+        "missing_metrics": missing_metrics,
     }
+
+
+def candidate_hard_failure_type_failures(hard_failures: dict) -> list[str]:
+    failures = []
+    for key in sorted(EXPECTED_CANDIDATE_BOOLEAN_HARD_FAILURE_KEYS):
+        if type(hard_failures.get(key)) is not bool:
+            failures.append(key)
+    for key in sorted(EXPECTED_CANDIDATE_NUMERIC_HARD_FAILURE_KEYS):
+        if type(hard_failures.get(key)) is not int:
+            failures.append(key)
+    return failures
+
+
+def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
+    malformed_candidate_report = []
+    if candidate_promotion_report.get("profile") != PROFILE_ID:
+        malformed_candidate_report.append("profile")
+    if candidate_promotion_report.get("profile_version") != PROFILE_VERSION:
+        malformed_candidate_report.append("profile_version")
+    if candidate_promotion_report.get("priority_scope") != PRIORITY_SCOPE:
+        malformed_candidate_report.append("priority_scope")
+    if candidate_promotion_report.get("control_start") != RESEARCH_START_DATE:
+        malformed_candidate_report.append("control_start")
+    if candidate_promotion_report.get("candidate_start_dates") != list(CANDIDATE_RESEARCH_START_DATES):
+        malformed_candidate_report.append("candidate_start_dates")
+    if candidate_promotion_report.get("required_prior_sessions_for_full_readiness") != max(FEATURE_READINESS_WINDOWS.values()):
+        malformed_candidate_report.append("required_prior_sessions_for_full_readiness")
+    candidate_audits = candidate_promotion_report.get("candidate_audits") or []
+    candidate_start_values = [item.get("candidate_start") for item in candidate_audits if isinstance(item, dict)]
+    candidate_starts = set(candidate_start_values)
+    missing_candidate_starts = sorted(set(CANDIDATE_RESEARCH_START_DATES) - candidate_starts)
+    unexpected_candidate_starts = sorted(candidate_starts - set(CANDIDATE_RESEARCH_START_DATES))
+    duplicate_candidate_starts = sorted(
+        candidate_start
+        for candidate_start in candidate_starts
+        if candidate_start_values.count(candidate_start) > 1
+    )
+    malformed_candidate_audits = []
+    for item in candidate_audits:
+        if not isinstance(item, dict):
+            malformed_candidate_audits.append(None)
+            continue
+        hard_failures = item.get("hard_failures")
+        hard_failure_keys = set(hard_failures or {}) if isinstance(hard_failures, dict) else set()
+        required_rows = item.get("required_rows")
+        fully_warmed_required_rows = item.get("fully_warmed_required_rows")
+        monthly_snapshots_after_decision = item.get("monthly_snapshots_after_decision")
+        active_hard_failures = (
+            [
+                value for value in hard_failures.values()
+                if value is True or (isinstance(value, int) and value != 0)
+            ]
+            if isinstance(hard_failures, dict)
+            else []
+        )
+        if (
+            item.get("profile") != PROFILE_ID
+            or item.get("profile_version") != PROFILE_VERSION
+            or item.get("priority_scope") != PRIORITY_SCOPE
+            or item.get("control_start") != RESEARCH_START_DATE
+            or item.get("required_prior_sessions_for_full_readiness") != max(FEATURE_READINESS_WINDOWS.values())
+            or item.get("status") not in {"PASS", "FAIL"}
+            or not isinstance(hard_failures, dict)
+            or hard_failure_keys != EXPECTED_CANDIDATE_HARD_FAILURE_KEYS
+            or bool(candidate_hard_failure_type_failures(hard_failures))
+            or not isinstance(required_rows, int)
+            or not isinstance(fully_warmed_required_rows, int)
+            or not isinstance(monthly_snapshots_after_decision, int)
+            or fully_warmed_required_rows > required_rows
+            or (item.get("status") == CANDIDATE_PASS_VALUE and bool(active_hard_failures))
+            or (item.get("status") == CANDIDATE_FAIL_VALUE and not active_hard_failures)
+            or (item.get("status") == CANDIDATE_PASS_VALUE and fully_warmed_required_rows != required_rows)
+            or (item.get("status") == CANDIDATE_PASS_VALUE and monthly_snapshots_after_decision <= 0)
+            or (monthly_snapshots_after_decision <= 0 and hard_failures.get("decision_window_snapshots_missing") is False)
+            or (monthly_snapshots_after_decision > 0 and hard_failures.get("decision_window_snapshots_missing") is True)
+        ):
+            malformed_candidate_audits.append(item.get("candidate_start"))
+    return {
+        "candidate_count": len(candidate_audits),
+        "missing_candidate_starts": missing_candidate_starts,
+        "unexpected_candidate_starts": unexpected_candidate_starts,
+        "duplicate_candidate_starts": duplicate_candidate_starts,
+        "malformed_candidate_audits": malformed_candidate_audits,
+        "malformed_candidate_report": malformed_candidate_report,
+    }
+
+
+def candidate_manifest_audit_consistency_failures(research_manifest: dict, candidate_promotion_report: dict) -> list[str]:
+    failures: list[str] = []
+    candidate_audits = candidate_promotion_report.get("candidate_audits") or []
+    audit_by_start = {
+        item.get("candidate_start"): item
+        for item in candidate_audits
+        if isinstance(item, dict)
+    }
+    for decision in research_manifest.get("candidate_promotion_decisions") or []:
+        if not isinstance(decision, dict):
+            continue
+        candidate_start = decision.get("candidate_start")
+        audit = audit_by_start.get(candidate_start)
+        if not audit:
+            continue
+        if decision.get("candidate_audit_status") != audit.get("status"):
+            failures.append(f"candidate {candidate_start} decision status does not match candidate audit report")
+        if decision.get("hard_failures") != audit.get("hard_failures"):
+            failures.append(f"candidate {candidate_start} decision hard_failures do not match candidate audit report")
+    return failures
 
 
 def source_coverage_summary(path: Path) -> dict:
@@ -193,8 +350,10 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
     if source_coverage.get("source_verified_end") != coverage.get("observed_end"):
         failures.append("data manifest source_coverage.source_verified_end does not match coverage.observed_end")
     research_coverage = manifest.get("research_coverage") or {}
+    allowed_research_starts = set(CANDIDATE_RESEARCH_START_DATES) | {RESEARCH_START_DATE}
+    if research_coverage.get("research_verified_start") not in allowed_research_starts:
+        failures.append(f"data manifest research_coverage.research_verified_start is not one of {sorted(allowed_research_starts)}")
     expected_research = {
-        "research_verified_start": RESEARCH_START_DATE,
         "universe_profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
         "priority_scope": PRIORITY_SCOPE,
@@ -202,8 +361,31 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
     for key, expected in expected_research.items():
         if research_coverage.get(key) != expected:
             failures.append(f"data manifest research_coverage.{key} is not {expected}")
+    if not research_coverage.get("monthly_snapshot_start"):
+        failures.append("data manifest research_coverage.monthly_snapshot_start is missing")
     if not research_coverage.get("research_verified_end"):
         failures.append("data manifest research_coverage.research_verified_end is missing")
+    warmup = manifest.get("warmup_coverage") or {}
+    if warmup.get("feature_readiness_windows") != FEATURE_READINESS_WINDOWS:
+        failures.append("data manifest warmup_coverage.feature_readiness_windows is not the published readiness contract")
+    if not isinstance(warmup.get("feature_ready_dates"), dict):
+        failures.append("data manifest warmup_coverage.feature_ready_dates is missing or not an object")
+    if warmup.get("required_prior_sessions_for_full_readiness") != max(FEATURE_READINESS_WINDOWS.values()):
+        failures.append("data manifest warmup_coverage.required_prior_sessions_for_full_readiness is not the maximum readiness window")
+    if "earliest_fully_warmed_date" not in warmup:
+        failures.append("data manifest warmup_coverage.earliest_fully_warmed_date is missing")
+    intervals = manifest.get("research_quality_intervals")
+    if not isinstance(intervals, list) or not intervals:
+        failures.append("data manifest research_quality_intervals is missing or empty")
+    elif not any(
+        item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+        and item.get("profile") == PROFILE_ID
+        and item.get("profile_version") == PROFILE_VERSION
+        and item.get("priority_scope") == PRIORITY_SCOPE
+        for item in intervals
+        if isinstance(item, dict)
+    ):
+        failures.append("data manifest research_quality_intervals has no scoped RESEARCH_HIGH_CONFIDENCE interval")
     component_quality = manifest.get("component_quality") or {}
     for key, expected in COMPONENT_QUALITY.items():
         if component_quality.get(key) != expected:
@@ -244,7 +426,6 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     quality = research_manifest.get("research_quality") or {}
     expected_quality = {
         "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
-        "start": RESEARCH_START_DATE,
         "universe_profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
         "priority_scope": PRIORITY_SCOPE,
@@ -252,10 +433,14 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key, expected in expected_quality.items():
         if quality.get(key) != expected:
             failures.append(f"research_quality.{key} is not {expected}")
+    data_research_coverage = manifest.get("research_coverage") or {}
+    if quality.get("start") != data_research_coverage.get("research_verified_start"):
+        failures.append("research_quality.start does not match data manifest research_coverage.research_verified_start")
     if not quality.get("end"):
         failures.append("research_quality.end is missing")
-    if quality.get("monthly_snapshot_start") != RESEARCH_MONTHLY_SNAPSHOT_START:
-        failures.append(f"research_quality.monthly_snapshot_start is not {RESEARCH_MONTHLY_SNAPSHOT_START}")
+    expected_monthly_start = data_research_coverage.get("monthly_snapshot_start") or RESEARCH_MONTHLY_SNAPSHOT_START
+    if quality.get("monthly_snapshot_start") != expected_monthly_start:
+        failures.append(f"research_quality.monthly_snapshot_start is not {expected_monthly_start}")
 
     coverage = research_manifest.get("source_coverage") or {}
     for key in ("observed_start", "observed_end", "research_start", "research_end"):
@@ -271,6 +456,152 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key in ("observed_start", "observed_end"):
         if data_coverage.get(key) and coverage.get(key) != data_coverage.get(key):
             failures.append(f"source_coverage.{key} does not match data manifest coverage")
+
+    warmup = research_manifest.get("warmup_coverage") or {}
+    if warmup.get("feature_readiness_windows") != FEATURE_READINESS_WINDOWS:
+        failures.append("research manifest warmup_coverage.feature_readiness_windows is not the published readiness contract")
+    if not isinstance(warmup.get("feature_ready_dates"), dict):
+        failures.append("research manifest warmup_coverage.feature_ready_dates is missing or not an object")
+    if warmup.get("required_prior_sessions_for_full_readiness") != max(FEATURE_READINESS_WINDOWS.values()):
+        failures.append("research manifest warmup_coverage.required_prior_sessions_for_full_readiness is not the maximum readiness window")
+    if "earliest_fully_warmed_date" not in warmup:
+        failures.append("research manifest warmup_coverage.earliest_fully_warmed_date is missing")
+
+    intervals = research_manifest.get("research_quality_intervals")
+    if not isinstance(intervals, list) or not intervals:
+        failures.append("research manifest research_quality_intervals is missing or empty")
+    elif not any(
+        item.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+        and item.get("profile") == PROFILE_ID
+        and item.get("profile_version") == PROFILE_VERSION
+        and item.get("priority_scope") == PRIORITY_SCOPE
+        for item in intervals
+        if isinstance(item, dict)
+    ):
+        failures.append("research manifest research_quality_intervals has no scoped RESEARCH_HIGH_CONFIDENCE interval")
+    candidate_decisions = research_manifest.get("candidate_promotion_decisions")
+    if not isinstance(candidate_decisions, list):
+        failures.append("research manifest candidate_promotion_decisions is missing or not a list")
+    else:
+        earliest_candidate_gate_pass_start = research_manifest.get("earliest_candidate_gate_pass_start")
+        if "earliest_candidate_gate_pass_start" not in research_manifest:
+            failures.append("research manifest earliest_candidate_gate_pass_start is missing")
+        candidate_decision_start_values = [
+            item.get("candidate_start") for item in candidate_decisions
+            if isinstance(item, dict)
+        ]
+        candidate_decision_starts = set(candidate_decision_start_values)
+        duplicate_candidate_decisions = sorted(
+            candidate_start
+            for candidate_start in candidate_decision_starts
+            if candidate_decision_start_values.count(candidate_start) > 1
+        )
+        required_decision_fields = set(CANDIDATE_DECISION_REQUIRED_FIELDS)
+        pass_interpretation = CANDIDATE_GATE_PASS_INTERPRETATION
+        missing_candidate_decisions = sorted(set(CANDIDATE_RESEARCH_START_DATES) - candidate_decision_starts)
+        unexpected_candidate_decisions = sorted(candidate_decision_starts - set(CANDIDATE_RESEARCH_START_DATES))
+        if missing_candidate_decisions:
+            failures.append(f"research manifest candidate_promotion_decisions misses {missing_candidate_decisions}")
+        if unexpected_candidate_decisions:
+            failures.append(f"research manifest candidate_promotion_decisions has unexpected starts {unexpected_candidate_decisions}")
+        if duplicate_candidate_decisions:
+            failures.append(f"research manifest candidate_promotion_decisions has duplicate starts {duplicate_candidate_decisions}")
+        if earliest_candidate_gate_pass_start is not None and earliest_candidate_gate_pass_start not in set(CANDIDATE_RESEARCH_START_DATES):
+            failures.append("research manifest earliest_candidate_gate_pass_start is not a configured candidate start")
+        for item in candidate_decisions:
+            if not isinstance(item, dict):
+                failures.append("research manifest candidate_promotion_decisions contains a non-object item")
+                continue
+            missing_fields = sorted(required_decision_fields - set(item))
+            if missing_fields:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} decision misses {missing_fields}")
+            if item.get("candidate_audit_status") not in CANDIDATE_AUDIT_STATUS_VALUES:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid candidate_audit_status")
+            for gate_key in CANDIDATE_DECISION_GATE_KEYS:
+                if item.get(gate_key) not in CANDIDATE_DECISION_GATE_VALUES:
+                    failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid {gate_key}")
+            hard_failures = item.get("hard_failures")
+            if not isinstance(hard_failures, dict):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures is not an object")
+            elif set(hard_failures) != EXPECTED_CANDIDATE_HARD_FAILURE_KEYS:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures keys do not match the candidate audit contract")
+            elif candidate_hard_failure_type_failures(hard_failures):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} hard_failures value types do not match the candidate audit contract")
+            elif item.get("candidate_audit_status") == CANDIDATE_PASS_VALUE and any(
+                value is True or (isinstance(value, int) and value != 0)
+                for value in hard_failures.values()
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} claims PASS candidate audit with active hard_failures")
+            elif item.get("candidate_audit_status") == CANDIDATE_FAIL_VALUE and not any(
+                value is True or (isinstance(value, int) and value != 0)
+                for value in hard_failures.values()
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} claims FAIL candidate audit without active hard_failures")
+            elif (
+                (item.get("decision_window_gate") == CANDIDATE_PASS_VALUE and hard_failures.get("decision_window_snapshots_missing") is not False)
+                or (item.get("decision_window_gate") == CANDIDATE_FAIL_VALUE and hard_failures.get("decision_window_snapshots_missing") is not True)
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} decision_window_gate contradicts hard_failures")
+            elif (
+                (item.get("warmup_gate") == CANDIDATE_PASS_VALUE and (
+                    hard_failures.get("warmup_not_ready") is not False
+                    or hard_failures.get("decision_window_snapshots_missing") is not False
+                ))
+                or (item.get("warmup_gate") == CANDIDATE_FAIL_VALUE and (
+                    hard_failures.get("warmup_not_ready") is False
+                    and hard_failures.get("decision_window_snapshots_missing") is False
+                ))
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} warmup_gate contradicts hard_failures")
+            elif (
+                (item.get("session_liquidity_gate") == CANDIDATE_PASS_VALUE and int(hard_failures.get("session_liquidity_window_failures") or 0) != 0)
+                or (item.get("session_liquidity_gate") == CANDIDATE_FAIL_VALUE and int(hard_failures.get("session_liquidity_window_failures") or 0) == 0)
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} session_liquidity_gate contradicts hard_failures")
+            elif item.get("identity_gate") == CANDIDATE_PASS_VALUE and int(hard_failures.get("identity_failures") or 0) != 0:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} identity_gate contradicts hard_failures")
+            elif item.get("price_action_gate") == CANDIDATE_PASS_VALUE and (
+                int(hard_failures.get("price_adjustment_failures") or 0) != 0
+                or int(hard_failures.get("material_missing_factors") or 0) != 0
+                or int(hard_failures.get("signal_window_non_pass_boundaries") or 0) != 0
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} price_action_gate contradicts hard_failures")
+            elif item.get("instrument_gate") == CANDIDATE_PASS_VALUE and int(hard_failures.get("instrument_failures") or 0) != 0:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} instrument_gate contradicts hard_failures")
+            elif (
+                (item.get("status_gate") == CANDIDATE_PASS_VALUE and int(hard_failures.get("status_failures") or 0) != 0)
+                or (item.get("status_gate") == CANDIDATE_FAIL_VALUE and int(hard_failures.get("status_failures") or 0) == 0)
+            ):
+                failures.append(f"research manifest candidate {item.get('candidate_start')} status_gate contradicts hard_failures")
+            if item.get("promotion_interpretation") not in CANDIDATE_PROMOTION_INTERPRETATION_VALUES:
+                failures.append(f"research manifest candidate {item.get('candidate_start')} has invalid promotion_interpretation")
+            if item.get("promotion_interpretation") == pass_interpretation:
+                non_pass_gates = [
+                    gate_key for gate_key in CANDIDATE_DECISION_GATE_KEYS
+                    if item.get(gate_key) != CANDIDATE_PASS_VALUE
+                ]
+                if item.get("candidate_audit_status") != CANDIDATE_PASS_VALUE:
+                    failures.append(f"research manifest candidate {item.get('candidate_start')} claims gate pass without PASS candidate audit")
+                if non_pass_gates:
+                    failures.append(f"research manifest candidate {item.get('candidate_start')} claims gate pass with non-PASS gates {non_pass_gates}")
+        gate_pass_candidate_starts = sorted(
+            item.get("candidate_start") for item in candidate_decisions
+            if isinstance(item, dict)
+            and item.get("promotion_interpretation") == pass_interpretation
+        )
+        if earliest_candidate_gate_pass_start is None and gate_pass_candidate_starts:
+            failures.append("research manifest earliest_candidate_gate_pass_start is null despite gate-pass candidate decisions")
+        if earliest_candidate_gate_pass_start is not None:
+            matching_decisions = [
+                item for item in candidate_decisions
+                if isinstance(item, dict)
+                and item.get("candidate_start") == earliest_candidate_gate_pass_start
+                and item.get("promotion_interpretation") == pass_interpretation
+            ]
+            if len(matching_decisions) != 1:
+                failures.append("research manifest earliest_candidate_gate_pass_start does not match exactly one gate-pass candidate decision")
+            elif gate_pass_candidate_starts and earliest_candidate_gate_pass_start != gate_pass_candidate_starts[0]:
+                failures.append("research manifest earliest_candidate_gate_pass_start is not the earliest gate-pass candidate")
 
     policy = research_manifest.get("known_policy") or {}
     expected_policy = {
@@ -296,6 +627,9 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         failures.append("research manifest liquid_v1_definition is not the published LIQUID_V1 contract")
     required_numeric_metrics = (
         "required_research_securities",
+        "candidate_required_research_securities",
+        "liquid_v1_securities",
+        "candidate_liquid_v1_securities",
         "identity_failures",
         "material_price_action_missing_factors",
         "material_price_action_unresolved_boundaries",
@@ -303,6 +637,18 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key in required_numeric_metrics:
         if not isinstance(research_manifest.get(key), int):
             failures.append(f"research manifest {key} is missing or not an integer")
+    if (
+        isinstance(research_manifest.get("candidate_required_research_securities"), int)
+        and isinstance(research_manifest.get("required_research_securities"), int)
+        and research_manifest["candidate_required_research_securities"] < research_manifest["required_research_securities"]
+    ):
+        failures.append("research manifest candidate_required_research_securities is smaller than required_research_securities")
+    if (
+        isinstance(research_manifest.get("candidate_liquid_v1_securities"), int)
+        and isinstance(research_manifest.get("liquid_v1_securities"), int)
+        and research_manifest["candidate_liquid_v1_securities"] < research_manifest["liquid_v1_securities"]
+    ):
+        failures.append("research manifest candidate_liquid_v1_securities is smaller than liquid_v1_securities")
     for key in ("identity_failures", "material_price_action_missing_factors", "material_price_action_unresolved_boundaries"):
         if isinstance(research_manifest.get(key), int) and research_manifest[key] != 0:
             failures.append(f"research manifest {key} is not zero")
@@ -318,6 +664,11 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         "symbol_at_date",
         "instrument_type",
         "identity_quality",
+        "known_listing_date",
+        "listing_date_quality",
+        "observed_history_start",
+        "listing_age_sessions_quality",
+        "listing_history_left_censored",
         "price",
         "history_sessions",
         "positive_volume_days_60",
@@ -334,6 +685,12 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         "price_adjustment_quality",
         "price_adjustment_ok",
         "status_quality",
+        "feature_ready_60",
+        "feature_ready_126",
+        "signal_history_ready_252",
+        "signal_history_ready_273",
+        "model_handoff_history_ready_300",
+        "feature_readiness_source",
         "profile_id",
         "profile_version",
         "as_of_date",
@@ -373,6 +730,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         "manual_override_sha256",
         "partitioned_artifacts_manifest_sha256",
         "research_invariant_validation_sha256",
+        "candidate_promotion_audit_sha256",
         "test_result_sha256",
         "ci_status_sha256",
     ):
@@ -420,11 +778,19 @@ def main() -> None:
     manifest = json.loads((release / DATA_RELEASE_MANIFEST_ARTIFACT).read_text(encoding="utf-8"))
     research_manifest_path = release / RESEARCH_RELEASE_MANIFEST_ARTIFACT
     research_manifest = json.loads(research_manifest_path.read_text(encoding="utf-8")) if research_manifest_path.exists() else {}
+    promoted_research_start = (
+        (research_manifest.get("research_quality") or {}).get("start")
+        or (manifest.get("research_coverage") or {}).get("research_verified_start")
+        or RESEARCH_START_DATE
+    )
     missing = [name for name in REQUIRED if not (release / name).exists()]
     missing_reports = [name for name in REQUIRED_RESEARCH_REPORTS if not (report_dir / name).exists()]
     validation_report = report_dir / f"research_invariant_validation_{release.name}.json"
     if not validation_report.exists():
         missing_reports.append(validation_report.name)
+    candidate_promotion_audit_report = report_dir / f"candidate_promotion_audit_{release.name}.json"
+    if not candidate_promotion_audit_report.exists():
+        missing_reports.append(candidate_promotion_audit_report.name)
     test_result_report = report_dir / f"test_results_{release.name}.xml"
     if not test_result_report.exists():
         missing_reports.append(test_result_report.name)
@@ -469,6 +835,9 @@ def main() -> None:
     validation_path = report_dir / f"research_invariant_validation_{release.name}.json"
     if validation_expected and (not is_sha256_digest(validation_expected) or not validation_path.is_file() or sha256(validation_path) != validation_expected):
         hash_mismatches.append(f"report/{validation_path.name}")
+    candidate_expected = research_manifest.get("candidate_promotion_audit_sha256")
+    if candidate_expected and (not is_sha256_digest(candidate_expected) or not candidate_promotion_audit_report.is_file() or sha256(candidate_promotion_audit_report) != candidate_expected):
+        hash_mismatches.append(f"report/{candidate_promotion_audit_report.name}")
     test_expected = research_manifest.get("test_result_sha256")
     if test_expected and (not is_sha256_digest(test_expected) or not test_result_report.is_file() or sha256(test_result_report) != test_expected):
         hash_mismatches.append(f"report/{test_result_report.name}")
@@ -488,6 +857,15 @@ def main() -> None:
             print(f"- artifact hash mismatch: {key}")
         raise SystemExit(1)
     invariant_summary = invariant_validation_summary(validation_path)
+    candidate_promotion_summary = json.loads(candidate_promotion_audit_report.read_text(encoding="utf-8"))
+    candidate_audit_summary = candidate_promotion_audit_summary(candidate_promotion_summary)
+    candidate_manifest_audit_failures = candidate_manifest_audit_consistency_failures(research_manifest, candidate_promotion_summary)
+    candidate_audits = candidate_promotion_summary.get("candidate_audits") or []
+    missing_candidate_starts = candidate_audit_summary["missing_candidate_starts"]
+    unexpected_candidate_starts = candidate_audit_summary["unexpected_candidate_starts"]
+    duplicate_candidate_starts = candidate_audit_summary["duplicate_candidate_starts"]
+    malformed_candidate_audits = candidate_audit_summary["malformed_candidate_audits"]
+    malformed_candidate_report = candidate_audit_summary["malformed_candidate_report"]
     source_summary = source_coverage_summary(report_dir / "data_source_coverage.md")
     raw_summary = raw_integrity_summary(report_dir / "raw_integrity_audit.md")
     test_summary = junit_summary(test_result_report)
@@ -542,9 +920,15 @@ def main() -> None:
     if boundary_path.exists():
         boundary_quality = dict(con.execute("SELECT validation_status, count(*) FROM read_parquet(?) GROUP BY 1", [str(boundary_path)]).fetchall())
         unresolved_required_boundaries = con.execute("""
+            WITH promoted_required AS (
+                SELECT DISTINCT security_id
+                FROM read_parquet(?)
+                WHERE CAST(date AS DATE) >= CAST(? AS DATE)
+                  AND (NSE_BROAD_LIQUID_PIT_V1_eligible OR top750_liquidity)
+            )
             SELECT COUNT(DISTINCT v.event_id)
             FROM read_parquet(?) v
-            JOIN read_parquet(?) q USING (security_id)
+            JOIN promoted_required q USING (security_id)
             WHERE CAST(v.ex_date AS DATE) >= CAST(? AS DATE)
               AND v.validation_status IN (
                 'WARNING_LARGE_BOUNDARY_MOVE',
@@ -552,7 +936,7 @@ def main() -> None:
                 'NO_BOUNDARY_OBSERVATIONS',
                 'NO_LOCAL_BOUNDARY_OBSERVATION'
               )
-        """, [str(boundary_path), str(release / REQUIRED_RESEARCH_SECURITY_ARTIFACT), RESEARCH_START_DATE]).fetchone()[0]
+        """, [str(release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT), promoted_research_start, str(boundary_path), promoted_research_start]).fetchone()[0]
 
     rows = [
         f"# Release completion audit: `{manifest['release_id']}`",
@@ -577,6 +961,7 @@ def main() -> None:
         f"- RAW integrity validation: `{json.dumps(raw_summary, sort_keys=True)}`.",
         f"- Source coverage validation: `{json.dumps(source_summary, sort_keys=True)}`.",
         f"- Research invariant validation: `{json.dumps(invariant_summary, sort_keys=True)}`.",
+        f"- Candidate promotion audits: `{json.dumps(candidate_audit_summary, sort_keys=True)}`.",
         f"- Test results: `{json.dumps(test_summary, sort_keys=True)}`.",
         f"- GitHub Actions CI: `{json.dumps(ci, sort_keys=True)}`.",
         f"- Partitioned sidecar layout: `{json.dumps(partitions, sort_keys=True)}`.",
@@ -594,6 +979,9 @@ def main() -> None:
     failures.extend(f"missing required research report: {name}" for name in missing_reports)
     if invariant_summary["status"] != "PASS" or invariant_summary["failure_count"]:
         failures.append(f"research invariant validation is not clean: {json.dumps(invariant_summary, sort_keys=True)}")
+    if missing_candidate_starts or unexpected_candidate_starts or duplicate_candidate_starts or malformed_candidate_audits or malformed_candidate_report:
+        failures.append(f"candidate promotion audit evidence is incomplete: {json.dumps({'missing_candidate_starts': missing_candidate_starts, 'unexpected_candidate_starts': unexpected_candidate_starts, 'duplicate_candidate_starts': duplicate_candidate_starts, 'malformed_candidate_audits': malformed_candidate_audits, 'malformed_candidate_report': malformed_candidate_report}, sort_keys=True)}")
+    failures.extend(candidate_manifest_audit_failures)
     if source_summary["status"] != "PASS":
         failures.append(f"source coverage validation is not clean: {json.dumps(source_summary, sort_keys=True)}")
     if raw_summary["status"] != "PASS":
@@ -623,7 +1011,7 @@ def main() -> None:
         "",
         "## Explicit limitations",
         "",
-        "- The complete 2006 onward archive is exploratory; the scoped 2013 onward research universe is RESEARCH_HIGH_CONFIDENCE.",
+        f"- The complete 2006 onward archive is exploratory unless covered by a manifest research-quality interval; the scoped `{promoted_research_start}` onward research universe is RESEARCH_HIGH_CONFIDENCE.",
         "- Scanned delisting notices require external OCR tooling and remain evidence-only.",
         "- Many terminal-event identities, merger events, insolvency outcomes, and terminal values remain unresolved.",
         "- Cash-dividend and total-return adjustment coverage is partial.",

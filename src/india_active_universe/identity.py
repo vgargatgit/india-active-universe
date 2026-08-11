@@ -19,8 +19,10 @@ def build_identity_rows(discovered: Iterable[dict[str, Any]], *, canonicalizatio
     Provisional IDs are stable for the observed listing episode but remain PARTIAL
     until official evidence or a reviewed override supplies stronger identity.
     """
+    discovered_rows = list(discovered)
+    source_start = min((row["first_seen"] for row in discovered_rows), default=None)
     output = []
-    for row in discovered:
+    for row in discovered_rows:
         exchange, symbol, series = row["exchange"], row["symbol"], row["series"]
         identity_basis = row.get("candidate_isin")
         episode = stable_id("EP", exchange, identity_basis or symbol, series)
@@ -28,7 +30,9 @@ def build_identity_rows(discovered: Iterable[dict[str, Any]], *, canonicalizatio
         issuer = stable_id("ISSUER", exchange, identity_basis or row.get("company_name") or symbol)
         quality = IdentityQuality.SINGLE_OFFICIAL_SOURCE.value if identity_basis else IdentityQuality.PARTIAL.value
         instrument_quality = "HEURISTIC_HIGH_CONFIDENCE" if row.get("instrument_type") == "ORDINARY_EQUITY" else "EXPLICIT_EXCHANGE_MARKER"
-        output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "identity_quality": quality, "identity_source": "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None, "instrument_type_quality": instrument_quality, "instrument_type_source": "NSE_EQ_SERIES_AND_HISTORICAL_SYMBOL_COMPANY_MARKER", "review_status": "REVIEW_REQUIRED" if not identity_basis else "UNREVIEWED", "canonicalization_version": canonicalization_version})
+        left_censored = bool(source_start and row["first_seen"] == source_start)
+        listing_age_quality = "LISTING_HISTORY_LEFT_CENSORED" if left_censored else "FIRST_OBSERVED_TRADE_DATE"
+        output.append({**row, "isin": identity_basis, "issuer_id": issuer, "security_id": security, "listing_episode_id": episode, "effective_from": row["first_seen"], "effective_to": row["last_seen"], "known_listing_date": None, "listing_date_quality": "UNKNOWN_LEFT_CENSORED" if left_censored else "UNKNOWN_FIRST_OBSERVED", "observed_history_start": row["first_seen"], "listing_age_sessions_quality": listing_age_quality, "listing_history_left_censored": left_censored, "identity_quality": quality, "identity_source": "NSE_OFFICIAL_BHAVCOPY_ISIN" if identity_basis else None, "instrument_type_quality": instrument_quality, "instrument_type_source": "NSE_EQ_SERIES_AND_HISTORICAL_SYMBOL_COMPANY_MARKER", "review_status": "REVIEW_REQUIRED" if not identity_basis else "UNREVIEWED", "canonicalization_version": canonicalization_version})
     return output
 
 
