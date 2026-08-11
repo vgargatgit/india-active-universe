@@ -726,17 +726,17 @@ class DataPlatform:
         return self._refined_earliest_candidate_gate_pass_boundary
 
     def candidate_gate_pass_start_dates(self) -> list[date]:
-        """Return configured candidate starts whose candidate promotion gates pass."""
-        candidate_start_order = {
-            _as_date(candidate_start): index
-            for index, candidate_start in enumerate(CANDIDATE_RESEARCH_START_DATES)
+        """Return candidate starts whose promotion gates pass, sorted chronologically."""
+        configured_candidate_starts = {
+            _as_date(candidate_start)
+            for candidate_start in CANDIDATE_RESEARCH_START_DATES
         }
         gate_pass_start_dates = []
         for row in self.candidate_promotion_decisions:
             if "candidate_start" not in row:
                 continue
             candidate_start = _as_date(row["candidate_start"])
-            if candidate_start not in candidate_start_order:
+            if candidate_start not in configured_candidate_starts:
                 continue
             if row.get("candidate_audit_status") != CANDIDATE_PASS_VALUE:
                 continue
@@ -745,7 +745,7 @@ class DataPlatform:
             if row.get("promotion_interpretation") != CANDIDATE_GATE_PASS_INTERPRETATION:
                 continue
             gate_pass_start_dates.append(candidate_start)
-        return sorted(gate_pass_start_dates, key=lambda value: candidate_start_order[value])
+        return sorted(gate_pass_start_dates)
 
     def candidate_gate_pass_ready(self, candidate_start: str | date) -> bool:
         """Return whether one configured candidate start has passing promotion gates."""

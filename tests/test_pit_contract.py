@@ -345,8 +345,8 @@ def test_platform_exposes_candidate_gate_pass_start_dates():
         },
     ]
 
-    assert platform.candidate_gate_pass_start_dates() == [date(2009, 1, 1), date(2007, 1, 1)]
-    assert platform.candidate_promotion_summary()["earliest_candidate_gate_pass_start"] == "2009-01-01"
+    assert platform.candidate_gate_pass_start_dates() == [date(2007, 1, 1), date(2009, 1, 1)]
+    assert platform.candidate_promotion_summary()["earliest_candidate_gate_pass_start"] == "2007-01-01"
     assert platform.candidate_promotion_summary()["recorded_matches_derived_earliest_candidate_gate_pass_start"] is False
     assert platform.candidate_gate_pass_ready("2009-01-01") is True
     assert platform.candidate_gate_pass_ready("2006-01-01") is False

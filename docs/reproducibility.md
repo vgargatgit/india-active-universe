@@ -17,7 +17,7 @@ The candidate promotion evidence records:
 - `recorded_earliest_candidate_gate_pass_start`: the API summary copy of the manifest-recorded earliest candidate start.
 - Derived `earliest_candidate_gate_pass_start`: the API summary value computed from row-level candidate evidence.
 - `recorded_matches_derived_earliest_candidate_gate_pass_start`: whether the manifest-recorded earliest candidate start matches the row-derived value.
-- `candidate_gate_pass_start_dates`: the full derived list of configured starts whose audit status, first-class gates, and promotion interpretation pass.
+- `candidate_gate_pass_start_dates`: the full derived chronological list of configured starts whose audit status, first-class gates, and promotion interpretation pass.
 - `candidate_research_ready_start_dates`: the derived list of configured starts that also have `RESEARCH_HIGH_CONFIDENCE`.
 - `candidate_gate_pass_ready(candidate_start)`: the API helper for checking whether one configured candidate start is in the derived gate-pass set. It rejects unconfigured candidate dates instead of returning `False` for a typo.
 - `candidate_research_ready_start_dates()`: the API helper that returns configured starts with both candidate gate-pass evidence and `RESEARCH_HIGH_CONFIDENCE`.
