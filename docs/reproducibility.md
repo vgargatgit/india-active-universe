@@ -41,7 +41,7 @@ Shared primitive candidate values are published as `CANDIDATE_PASS_VALUE`, `CAND
 
 Candidate evidence is all-or-empty at the configured-start level. If `candidate_promotion_decisions` is present and non-empty, it must contain exactly one row for each start in `CANDIDATE_RESEARCH_START_DATES`, including `2006-01-01`. The API normalizes these rows into configured-start order so downstream reproducibility does not depend on manifest row order.
 
-Candidate manifest fields are atomic. In each manifest layer, `candidate_promotion_decisions` and `earliest_candidate_gate_pass_start` must be published together or omitted together. A manifest cannot publish row-level candidate evidence without the release-level earliest-candidate summary, and it cannot publish the summary without the row-level evidence.
+Candidate manifest fields are atomic. In each manifest layer, `candidate_promotion_decisions` and `earliest_candidate_gate_pass_start` must be published together or omitted together. A manifest cannot publish row-level candidate evidence without the release-level earliest-candidate summary, and it cannot publish the summary without the row-level evidence. If row-level decisions include `refined_earliest_passing_snapshot`, the manifest must also publish `refined_earliest_candidate_gate_pass_boundary`.
 
 If candidate evidence is missing, malformed, stale, contradictory, or not generated for every configured candidate start, the release audit fails closed. This prevents an accidental claim that the bounded liquid universe is research-ready from 2006.
 

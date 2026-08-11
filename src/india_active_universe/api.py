@@ -814,19 +814,34 @@ class DataPlatform:
             platform.research_quality_intervals = manifest.get("research_quality_intervals") or []
             has_data_candidate_decisions = "candidate_promotion_decisions" in manifest
             has_data_earliest_candidate = "earliest_candidate_gate_pass_start" in manifest
+            has_data_refined_candidate_boundary = "refined_earliest_candidate_gate_pass_boundary" in manifest
             if has_data_candidate_decisions != has_data_earliest_candidate:
                 raise ValueError(
                     "data manifest candidate_promotion_decisions and "
                     "earliest_candidate_gate_pass_start must be provided together"
                 )
+            if has_data_refined_candidate_boundary and not has_data_candidate_decisions:
+                raise ValueError(
+                    "data manifest refined_earliest_candidate_gate_pass_boundary and "
+                    "candidate_promotion_decisions must be provided together"
+                )
             platform.candidate_promotion_decisions = _normalize_candidate_promotion_decisions(
                 manifest.get("candidate_promotion_decisions")
             )
+            has_data_refined_candidate_rows = any(
+                "refined_earliest_passing_snapshot" in row
+                for row in platform.candidate_promotion_decisions
+            )
+            if has_data_refined_candidate_rows and not has_data_refined_candidate_boundary:
+                raise ValueError(
+                    "data manifest refined_earliest_candidate_gate_pass_boundary must be provided "
+                    "when candidate_promotion_decisions include refined_earliest_passing_snapshot"
+                )
             platform.earliest_candidate_gate_pass_start = _normalize_earliest_candidate_gate_pass_start(
                 manifest.get("earliest_candidate_gate_pass_start"),
                 platform.candidate_promotion_decisions,
             )
-            if "refined_earliest_candidate_gate_pass_boundary" in manifest:
+            if has_data_refined_candidate_boundary:
                 platform._refined_earliest_candidate_gate_pass_boundary = _normalize_refined_earliest_candidate_gate_pass_boundary(
                     manifest.get("refined_earliest_candidate_gate_pass_boundary"),
                     platform.candidate_promotion_decisions,
@@ -844,20 +859,35 @@ class DataPlatform:
             platform.research_quality_intervals = research_manifest.get("research_quality_intervals") or platform.research_quality_intervals
             has_research_candidate_decisions = "candidate_promotion_decisions" in research_manifest
             has_research_earliest_candidate = "earliest_candidate_gate_pass_start" in research_manifest
+            has_research_refined_candidate_boundary = "refined_earliest_candidate_gate_pass_boundary" in research_manifest
             if has_research_candidate_decisions != has_research_earliest_candidate:
                 raise ValueError(
                     "research manifest candidate_promotion_decisions and "
                     "earliest_candidate_gate_pass_start must be provided together"
                 )
+            if has_research_refined_candidate_boundary and not has_research_candidate_decisions:
+                raise ValueError(
+                    "research manifest refined_earliest_candidate_gate_pass_boundary and "
+                    "candidate_promotion_decisions must be provided together"
+                )
             if has_research_candidate_decisions:
                 platform.candidate_promotion_decisions = _normalize_candidate_promotion_decisions(
                     research_manifest.get("candidate_promotion_decisions")
                 )
+                has_research_refined_candidate_rows = any(
+                    "refined_earliest_passing_snapshot" in row
+                    for row in platform.candidate_promotion_decisions
+                )
+                if has_research_refined_candidate_rows and not has_research_refined_candidate_boundary:
+                    raise ValueError(
+                        "research manifest refined_earliest_candidate_gate_pass_boundary must be provided "
+                        "when candidate_promotion_decisions include refined_earliest_passing_snapshot"
+                    )
                 platform.earliest_candidate_gate_pass_start = _normalize_earliest_candidate_gate_pass_start(
                     research_manifest.get("earliest_candidate_gate_pass_start"),
                     platform.candidate_promotion_decisions,
                 )
-                if "refined_earliest_candidate_gate_pass_boundary" in research_manifest:
+                if has_research_refined_candidate_boundary:
                     platform._refined_earliest_candidate_gate_pass_boundary = _normalize_refined_earliest_candidate_gate_pass_boundary(
                         research_manifest.get("refined_earliest_candidate_gate_pass_boundary"),
                         platform.candidate_promotion_decisions,

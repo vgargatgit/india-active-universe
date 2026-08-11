@@ -1045,6 +1045,107 @@ def test_release_loader_requires_candidate_decisions_when_data_manifest_publishe
         DataPlatform.from_release(release, strict=True)
 
 
+def test_release_loader_requires_refined_boundary_when_data_manifest_candidate_rows_publish_refined_snapshots(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    candidate_decisions = [
+        {
+            "candidate_start": candidate_start,
+            "candidate_audit_status": "FAIL",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "FAIL",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "refined_earliest_passing_snapshot": None,
+            "hard_failures": {
+                **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+                "not_materialized": False,
+                "candidate_start_snapshot_missing": False,
+                "decision_window_snapshots_missing": False,
+                "identity_failures": 1,
+            },
+            "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+        }
+        for candidate_start in CANDIDATE_RESEARCH_START_DATES
+    ]
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "candidate_promotion_decisions": candidate_decisions,
+                "earliest_candidate_gate_pass_start": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="refined_earliest_candidate_gate_pass_boundary must be provided"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_requires_refined_boundary_when_research_manifest_candidate_rows_publish_refined_snapshots(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+            }
+        ),
+        encoding="utf-8",
+    )
+    candidate_decisions = [
+        {
+            "candidate_start": candidate_start,
+            "candidate_audit_status": "FAIL",
+            "decision_window_gate": "PASS",
+            "warmup_gate": "PASS",
+            "feature_readiness": {"feature_warmup_not_ready": False},
+            "session_liquidity_gate": "PASS",
+            "identity_gate": "FAIL",
+            "price_action_gate": "PASS",
+            "instrument_gate": "PASS",
+            "status_gate": "PASS",
+            "refined_earliest_passing_snapshot": None,
+            "hard_failures": {
+                **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
+                "not_materialized": False,
+                "candidate_start_snapshot_missing": False,
+                "decision_window_snapshots_missing": False,
+                "identity_failures": 1,
+            },
+            "promotion_interpretation": CANDIDATE_NOT_READY_INTERPRETATION,
+        }
+        for candidate_start in CANDIDATE_RESEARCH_START_DATES
+    ]
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "candidate_promotion_decisions": candidate_decisions,
+                "earliest_candidate_gate_pass_start": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="refined_earliest_candidate_gate_pass_boundary must be provided"):
+        DataPlatform.from_release(release, strict=True)
+
+
 def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     release = tmp_path / TARGET_RELEASE_ID
     release.mkdir()
@@ -1111,6 +1212,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
                 "instrument_gate": "PASS",
 
                 "status_gate": "PASS",
+                "refined_earliest_passing_snapshot": None,
                 "hard_failures": {
                     **{key: 0 for key in EXPECTED_CANDIDATE_HARD_FAILURE_KEYS},
                     "not_materialized": False,
@@ -1122,6 +1224,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             for candidate_start in CANDIDATE_RESEARCH_START_DATES
         ],
         "earliest_candidate_gate_pass_start": None,
+        "refined_earliest_candidate_gate_pass_boundary": None,
         "known_policy": {
             "signals": SIGNAL_POLICY,
             "execution": EXECUTION_POLICY,
@@ -1613,6 +1716,13 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_earliest_candidate = {key: value for key, value in valid_manifest.items() if key != "earliest_candidate_gate_pass_start"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_earliest_candidate)
     assert "research manifest earliest_candidate_gate_pass_start is missing" in failures
+
+    missing_refined_candidate_boundary = {
+        key: value for key, value in valid_manifest.items()
+        if key != "refined_earliest_candidate_gate_pass_boundary"
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_refined_candidate_boundary)
+    assert "research manifest refined_earliest_candidate_gate_pass_boundary is missing despite refined candidate row evidence" in failures
 
     missing_partition_hash = {key: value for key, value in valid_manifest.items() if key != "partitioned_artifacts_manifest_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_partition_hash)

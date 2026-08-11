@@ -613,6 +613,14 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             if isinstance(item, dict)
             and item.get("refined_earliest_passing_snapshot")
         )
+        refined_candidate_rows_present = any(
+            isinstance(item, dict) and "refined_earliest_passing_snapshot" in item
+            for item in candidate_decisions
+        )
+        if refined_candidate_rows_present and "refined_earliest_candidate_gate_pass_boundary" not in research_manifest:
+            failures.append(
+                "research manifest refined_earliest_candidate_gate_pass_boundary is missing despite refined candidate row evidence"
+            )
         if refined_earliest_candidate_gate_pass_boundary is None and refined_gate_pass_boundaries:
             failures.append("research manifest refined_earliest_candidate_gate_pass_boundary is null despite refined gate-pass candidate boundaries")
         if refined_earliest_candidate_gate_pass_boundary is not None:
