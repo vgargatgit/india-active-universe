@@ -38,10 +38,10 @@ It is generated from release artifacts and companion audit reports. It does not 
 A missing candidate audit row is an explicit non-pass state.
 | Candidate start | Candidate audit | Decision-window gate | Warmup gate | Session-liquidity gate | Identity gate | Price-action gate | Instrument gate | Status gate | Hard failures | Promotion interpretation |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2011-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=76` | `NOT_READY` |
-| 2009-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=153` | `NOT_READY` |
-| 2007-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=238` | `NOT_READY` |
-| 2006-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `REVIEW_REQUIRED` | `PASS` | `price_action.signal_window_non_pass_boundaries=238` | `NOT_READY` |
+| 2011-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `none` | `NOT_READY` |
+| 2009-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `none` | `NOT_READY` |
+| 2007-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `none` | `NOT_READY` |
+| 2006-01-01 | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `PASS` | `REVIEW_REQUIRED` | `PASS` | `none` | `NOT_READY` |
 
 ## Final promotion rule
 

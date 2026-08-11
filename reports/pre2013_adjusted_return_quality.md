@@ -6,12 +6,12 @@ Maximum configured lookback window: `300` official sessions.
 
 ## Candidate material price-action gate
 
-| Candidate start | Material events in candidate or lookback scope | Missing factors | Non-PASS boundaries | Left-censored boundaries | Possible signal-window non-PASS boundaries | Gate |
-|---|---:|---:|---:|---:|---:|---|
-| 2011-01-01 | 120 | 0 | 76 | 76 | 76 | `REVIEW_REQUIRED` |
-| 2009-01-01 | 197 | 0 | 153 | 153 | 153 | `REVIEW_REQUIRED` |
-| 2007-01-01 | 282 | 0 | 238 | 238 | 238 | `REVIEW_REQUIRED` |
-| 2006-01-01 | 282 | 0 | 238 | 238 | 238 | `REVIEW_REQUIRED` |
+| Candidate start | Material events in candidate or lookback scope | Missing factors | Non-PASS boundaries | Left-censored boundaries | Non-PASS without observed crossing | Contaminating signal-window non-PASS | Gate |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 2011-01-01 | 120 | 0 | 76 | 76 | 76 | 0 | `PASS` |
+| 2009-01-01 | 197 | 0 | 153 | 153 | 153 | 0 | `PASS` |
+| 2007-01-01 | 282 | 0 | 238 | 238 | 238 | 0 | `PASS` |
+| 2006-01-01 | 282 | 0 | 238 | 238 | 238 | 0 | `PASS` |
 
 ## Adjusted one-session return outliers
 

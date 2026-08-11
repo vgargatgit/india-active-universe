@@ -104,7 +104,19 @@ def main() -> None:
               ca.share_factor,
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               cal.session_index AS event_session_index,
-              cs.decision_session_index
+              cs.decision_session_index,
+              (
+                SELECT MAX(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
+              ) AS any_pre_adjusted_date,
+              (
+                SELECT MIN(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
+              ) AS any_post_adjusted_date
             FROM scoped_required_security sr
             JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
             JOIN candidate_sessions cs USING (candidate_start)
@@ -153,6 +165,19 @@ def main() -> None:
                 WHERE validation_status <> 'PASS'
                   AND event_session_index >= decision_session_index - {max_window}
               ) AS signal_window_non_pass_boundaries
+              ,
+              COUNT(DISTINCT event_id) FILTER (
+                WHERE validation_status <> 'PASS'
+                  AND event_session_index >= decision_session_index - {max_window}
+                  AND any_pre_adjusted_date IS NULL
+                  AND any_post_adjusted_date IS NOT NULL
+              ) AS left_censored_non_pass_no_crossing_boundaries,
+              COUNT(DISTINCT event_id) FILTER (
+                WHERE validation_status <> 'PASS'
+                  AND event_session_index >= decision_session_index - {max_window}
+                  AND any_pre_adjusted_date IS NOT NULL
+                  AND any_post_adjusted_date IS NOT NULL
+              ) AS contaminating_signal_window_non_pass_boundaries
             FROM material_events
             GROUP BY candidate_start
           ), liquidity_window_counts AS (
@@ -211,7 +236,19 @@ def main() -> None:
               ca.share_factor,
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               event_cal.session_index AS event_session_index,
-              boundary_cal.session_index AS boundary_session_index
+              boundary_cal.session_index AS boundary_session_index,
+              (
+                SELECT MAX(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
+              ) AS any_pre_adjusted_date,
+              (
+                SELECT MIN(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
+              ) AS any_post_adjusted_date
             FROM boundary_security_scope bss
             JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
             LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v
@@ -234,6 +271,19 @@ def main() -> None:
                 WHERE validation_status <> 'PASS'
                   AND event_session_index >= boundary_session_index - {max_window}
               ) AS signal_window_non_pass_boundaries
+              ,
+              COUNT(DISTINCT event_id) FILTER (
+                WHERE validation_status <> 'PASS'
+                  AND event_session_index >= boundary_session_index - {max_window}
+                  AND any_pre_adjusted_date IS NULL
+                  AND any_post_adjusted_date IS NOT NULL
+              ) AS left_censored_non_pass_no_crossing_boundaries,
+              COUNT(DISTINCT event_id) FILTER (
+                WHERE validation_status <> 'PASS'
+                  AND event_session_index >= boundary_session_index - {max_window}
+                  AND any_pre_adjusted_date IS NOT NULL
+                  AND any_post_adjusted_date IS NOT NULL
+              ) AS contaminating_signal_window_non_pass_boundaries
             FROM boundary_material_events
             GROUP BY candidate_start, boundary_date
           ), boundary_gate_counts AS (
@@ -249,7 +299,9 @@ def main() -> None:
                 WHERE lf.liquidity_window_definition IS DISTINCT FROM 'OFFICIAL_NSE_SESSION_WINDOW'
               ) AS session_liquidity_window_failures,
               COALESCE(bmc.material_missing_factors, 0) AS material_missing_factors,
-              COALESCE(bmc.signal_window_non_pass_boundaries, 0) AS signal_window_non_pass_boundaries
+              COALESCE(bmc.signal_window_non_pass_boundaries, 0) AS signal_window_non_pass_boundaries,
+              COALESCE(bmc.left_censored_non_pass_no_crossing_boundaries, 0) AS left_censored_non_pass_no_crossing_boundaries,
+              COALESCE(bmc.contaminating_signal_window_non_pass_boundaries, 0) AS contaminating_signal_window_non_pass_boundaries
             FROM boundary_required_scope brs
             JOIN boundary_security_scope bss
               ON bss.candidate_start = brs.candidate_start
@@ -262,6 +314,7 @@ def main() -> None:
               ON bmc.candidate_start = brs.candidate_start
              AND bmc.boundary_date = brs.boundary_date
             GROUP BY brs.candidate_start, brs.boundary_date, bmc.material_missing_factors, bmc.signal_window_non_pass_boundaries
+              , bmc.left_censored_non_pass_no_crossing_boundaries, bmc.contaminating_signal_window_non_pass_boundaries
           ), refined_boundaries AS (
             SELECT candidate_start,
               MIN(boundary_date) AS refined_earliest_passing_snapshot
@@ -272,6 +325,8 @@ def main() -> None:
               AND instrument_failures = 0
               AND status_failures = 0
               AND session_liquidity_window_failures = 0
+              AND material_missing_factors = 0
+              AND contaminating_signal_window_non_pass_boundaries = 0
             GROUP BY candidate_start
           )
           SELECT c.candidate_start,
@@ -296,6 +351,8 @@ def main() -> None:
             COALESCE(mat.material_events, 0) AS material_events,
             COALESCE(mat.material_missing_factors, 0) AS material_missing_factors,
             COALESCE(mat.signal_window_non_pass_boundaries, 0) AS signal_window_non_pass_boundaries,
+            COALESCE(mat.left_censored_non_pass_no_crossing_boundaries, 0) AS left_censored_non_pass_no_crossing_boundaries,
+            COALESCE(mat.contaminating_signal_window_non_pass_boundaries, 0) AS contaminating_signal_window_non_pass_boundaries,
             COALESCE(lw.session_liquidity_window_failures, 0) AS session_liquidity_window_failures
           FROM candidates c
           LEFT JOIN candidate_sessions cs USING (candidate_start)
@@ -335,6 +392,8 @@ def main() -> None:
             material_events,
             material_missing_factors,
             signal_window_non_pass_boundaries,
+            left_censored_non_pass_no_crossing_boundaries,
+            contaminating_signal_window_non_pass_boundaries,
             session_liquidity_window_failures,
         ) = row
         hard_failures = {
@@ -351,8 +410,10 @@ def main() -> None:
             "material_missing_factors": int(material_missing_factors),
             "material_events": int(material_events),
             "signal_window_non_pass_boundaries": int(signal_window_non_pass_boundaries),
+            "left_censored_non_pass_no_crossing_boundaries": int(left_censored_non_pass_no_crossing_boundaries),
+            "contaminating_signal_window_non_pass_boundaries": int(contaminating_signal_window_non_pass_boundaries),
             "price_action_gate_pass": int(price_adjustment_failures) == 0 and int(material_missing_factors) == 0,
-            "boundary_validation_review_required": int(signal_window_non_pass_boundaries) != 0,
+            "boundary_validation_review_required": int(contaminating_signal_window_non_pass_boundaries) != 0,
         }
         feature_readiness = {
             "feature_warmup_not_ready": first_decision_session is None or required_rows == 0 or decision_session_index is None or int(decision_session_index) < max_window,

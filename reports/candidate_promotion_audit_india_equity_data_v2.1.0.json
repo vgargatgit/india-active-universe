@@ -36,7 +36,9 @@
       "monthly_snapshots_after_decision": 24,
       "pit_universe_gate_pass": true,
       "price_action_evidence": {
-        "boundary_validation_review_required": true,
+        "boundary_validation_review_required": false,
+        "contaminating_signal_window_non_pass_boundaries": 0,
+        "left_censored_non_pass_no_crossing_boundaries": 76,
         "material_events": 120,
         "material_missing_factors": 0,
         "price_action_gate_pass": true,
@@ -50,7 +52,7 @@
       "required_prior_sessions_for_full_readiness": 300,
       "required_rows": 18005,
       "required_securities": 1819,
-      "research_candidate_gate_pass": false,
+      "research_candidate_gate_pass": true,
       "signal_ready_252_rows": 14447,
       "signal_ready_273_rows": 12960,
       "status": "PASS"
@@ -91,7 +93,9 @@
       "monthly_snapshots_after_decision": 48,
       "pit_universe_gate_pass": true,
       "price_action_evidence": {
-        "boundary_validation_review_required": true,
+        "boundary_validation_review_required": false,
+        "contaminating_signal_window_non_pass_boundaries": 0,
+        "left_censored_non_pass_no_crossing_boundaries": 153,
         "material_events": 197,
         "material_missing_factors": 0,
         "price_action_gate_pass": true,
@@ -105,7 +109,7 @@
       "required_prior_sessions_for_full_readiness": 300,
       "required_rows": 36092,
       "required_securities": 2142,
-      "research_candidate_gate_pass": false,
+      "research_candidate_gate_pass": true,
       "signal_ready_252_rows": 40806,
       "signal_ready_273_rows": 39091,
       "status": "PASS"
@@ -146,7 +150,9 @@
       "monthly_snapshots_after_decision": 72,
       "pit_universe_gate_pass": true,
       "price_action_evidence": {
-        "boundary_validation_review_required": true,
+        "boundary_validation_review_required": false,
+        "contaminating_signal_window_non_pass_boundaries": 0,
+        "left_censored_non_pass_no_crossing_boundaries": 238,
         "material_events": 282,
         "material_missing_factors": 0,
         "price_action_gate_pass": true,
@@ -160,7 +166,7 @@
       "required_prior_sessions_for_full_readiness": 300,
       "required_rows": 54096,
       "required_securities": 2349,
-      "research_candidate_gate_pass": false,
+      "research_candidate_gate_pass": true,
       "signal_ready_252_rows": 62038,
       "signal_ready_273_rows": 59893,
       "status": "PASS"
@@ -201,7 +207,9 @@
       "monthly_snapshots_after_decision": 84,
       "pit_universe_gate_pass": true,
       "price_action_evidence": {
-        "boundary_validation_review_required": true,
+        "boundary_validation_review_required": false,
+        "contaminating_signal_window_non_pass_boundaries": 0,
+        "left_censored_non_pass_no_crossing_boundaries": 238,
         "material_events": 282,
         "material_missing_factors": 0,
         "price_action_gate_pass": true,
@@ -215,7 +223,7 @@
       "required_prior_sessions_for_full_readiness": 300,
       "required_rows": 63096,
       "required_securities": 2510,
-      "research_candidate_gate_pass": false,
+      "research_candidate_gate_pass": true,
       "signal_ready_252_rows": 70226,
       "signal_ready_273_rows": 67942,
       "status": "PASS"

@@ -486,7 +486,19 @@ def main() -> None:
               ca.share_factor,
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               cal.session_index AS event_session_index,
-              cs.decision_session_index
+              cs.decision_session_index,
+              (
+                SELECT MAX(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
+              ) AS any_pre_adjusted_date,
+              (
+                SELECT MIN(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
+              ) AS any_post_adjusted_date
             FROM scoped_required sr
             JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
             JOIN candidate_sessions cs USING (candidate_start)
@@ -509,7 +521,19 @@ def main() -> None:
             COUNT(DISTINCT event_id) FILTER (
               WHERE validation_status <> 'PASS'
                 AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
-            ) AS possible_signal_window_non_pass_boundaries
+            ) AS possible_signal_window_non_pass_boundaries,
+            COUNT(DISTINCT event_id) FILTER (
+              WHERE validation_status <> 'PASS'
+                AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
+                AND any_pre_adjusted_date IS NULL
+                AND any_post_adjusted_date IS NOT NULL
+            ) AS left_censored_non_pass_no_crossing_boundaries,
+            COUNT(DISTINCT event_id) FILTER (
+              WHERE validation_status <> 'PASS'
+                AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
+                AND any_pre_adjusted_date IS NOT NULL
+                AND any_post_adjusted_date IS NOT NULL
+            ) AS contaminating_signal_window_non_pass_boundaries
           FROM material_events
           GROUP BY candidate_start
           ORDER BY candidate_start DESC
@@ -1232,23 +1256,23 @@ Weekend and holiday dates are not part of any window.
         "",
         "## Candidate material price-action gate",
         "",
-        "| Candidate start | Material events in candidate or lookback scope | Missing factors | Non-PASS boundaries | Left-censored boundaries | Possible signal-window non-PASS boundaries | Gate |",
-        "|---|---:|---:|---:|---:|---:|---|",
+        "| Candidate start | Material events in candidate or lookback scope | Missing factors | Non-PASS boundaries | Left-censored boundaries | Non-PASS without observed crossing | Contaminating signal-window non-PASS | Gate |",
+        "|---|---:|---:|---:|---:|---:|---:|---|",
     ]
     adjustment_rows_by_candidate = {str(row[0]): row for row in pre2013_adjustment_candidate_rows}
     for candidate_start in CANDIDATE_RESEARCH_START_DATES:
         row = adjustment_rows_by_candidate.get(candidate_start)
         if row is None:
-            material_events = missing_factors = non_pass_boundaries = left_censored_boundaries = possible_signal_boundaries = 0
+            material_events = missing_factors = non_pass_boundaries = left_censored_boundaries = possible_signal_boundaries = no_crossing_boundaries = contaminating_boundaries = 0
         else:
-            _candidate, material_events, missing_factors, non_pass_boundaries, left_censored_boundaries, possible_signal_boundaries = row
+            _candidate, material_events, missing_factors, non_pass_boundaries, left_censored_boundaries, possible_signal_boundaries, no_crossing_boundaries, contaminating_boundaries = row
         if missing_factors:
             gate = "FAIL_MISSING_FACTORS"
-        elif possible_signal_boundaries:
+        elif contaminating_boundaries:
             gate = "REVIEW_REQUIRED"
         else:
             gate = "PASS"
-        adjustment_quality_text.append(f"| {candidate_start} | {material_events} | {missing_factors} | {non_pass_boundaries} | {left_censored_boundaries} | {possible_signal_boundaries} | `{gate}` |")
+        adjustment_quality_text.append(f"| {candidate_start} | {material_events} | {missing_factors} | {non_pass_boundaries} | {left_censored_boundaries} | {no_crossing_boundaries} | {contaminating_boundaries} | `{gate}` |")
     adjustment_quality_text.extend([
         "",
         "## Adjusted one-session return outliers",
@@ -1654,10 +1678,10 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         if row is None:
             adjustment_gate_by_candidate[candidate_start] = "PASS"
             continue
-        _candidate, _material_events, missing_factors, _non_pass_boundaries, _left_censored_boundaries, possible_signal_boundaries = row
+        _candidate, _material_events, missing_factors, _non_pass_boundaries, _left_censored_boundaries, _possible_signal_boundaries, _no_crossing_boundaries, contaminating_boundaries = row
         if missing_factors:
             adjustment_gate_by_candidate[candidate_start] = "FAIL_MISSING_FACTORS"
-        elif possible_signal_boundaries:
+        elif contaminating_boundaries:
             adjustment_gate_by_candidate[candidate_start] = "REVIEW_REQUIRED"
         else:
             adjustment_gate_by_candidate[candidate_start] = "PASS"
@@ -1759,7 +1783,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             ]
             active_price_action_review = [
                 f"price_action.{key}={value}" for key, value in sorted(price_action_evidence.items())
-                if key in {"price_adjustment_failures", "material_missing_factors", "signal_window_non_pass_boundaries"}
+                if key in {"price_adjustment_failures", "material_missing_factors", "contaminating_signal_window_non_pass_boundaries"}
                 and isinstance(value, int)
                 and value != 0
             ]
