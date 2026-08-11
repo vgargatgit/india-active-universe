@@ -7,7 +7,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from scripts.build_completion_audit import invariant_validation_summary, research_manifest_contract_failures
+from scripts.build_completion_audit import REQUIRED_RESEARCH_REPORTS, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -309,7 +309,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "research_invariant_validation_sha256": "0" * 64,
         "test_result_sha256": "0" * 64,
         "ci_status_sha256": "0" * 64,
-        "quality_reports": {"research_universe_coverage.md": "0" * 64},
+        "quality_reports": {name: "0" * 64 for name in REQUIRED_RESEARCH_REPORTS},
         "known_limitations": [
             "Complete archive remains exploratory outside the scoped research universe.",
             "Terminal-event and terminal-value history is partial.",
@@ -341,6 +341,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_ci_status_hash = {key: value for key, value in valid_manifest.items() if key != "ci_status_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)
     assert "research manifest ci_status_sha256 is missing" in failures
+
+    missing_raw_report_hash = {
+        **valid_manifest,
+        "quality_reports": {
+            name: digest for name, digest in valid_manifest["quality_reports"].items()
+            if name != "raw_integrity_audit.md"
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_raw_report_hash)
+    assert "research manifest quality report hash missing for raw_integrity_audit.md" in failures
 
     missing_required_security_field = {
         **valid_manifest,

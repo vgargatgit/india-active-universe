@@ -267,8 +267,12 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key in ("config_sha256", "manual_override_sha256", "research_invariant_validation_sha256", "test_result_sha256", "ci_status_sha256"):
         if not research_manifest.get(key):
             failures.append(f"research manifest {key} is missing")
-    if not research_manifest.get("quality_reports"):
+    quality_reports = research_manifest.get("quality_reports") or {}
+    if not quality_reports:
         failures.append("research manifest quality_reports are missing")
+    for name in REQUIRED_RESEARCH_REPORTS:
+        if name not in quality_reports:
+            failures.append(f"research manifest quality report hash missing for {name}")
     limitations = research_manifest.get("known_limitations") or []
     required_limit_tokens = (
         "exploratory",
