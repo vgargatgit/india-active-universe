@@ -390,7 +390,7 @@ def main() -> None:
         if not key.startswith("release/"):
             continue
         path = release / key.removeprefix("release/")
-        if path.is_file() and sha256(path) != expected:
+        if not path.is_file() or sha256(path) != expected:
             hash_mismatches.append(key)
     for name, expected in research_manifest.get("artifacts", {}).items():
         path = release / name
