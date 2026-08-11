@@ -26,6 +26,7 @@ from india_active_universe.profiles import (
     RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
+    TARGET_RELEASE_ID,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
     TOP_LIQUIDITY_RANKING_METRIC,
@@ -233,7 +234,7 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
 
 
 def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
-    release = tmp_path / "india_equity_data_v2.0.0"
+    release = tmp_path / TARGET_RELEASE_ID
     release.mkdir()
     data_manifest = {
         "release_id": release.name,
@@ -419,7 +420,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
 
 
 def test_data_manifest_contract_requires_release_provenance(tmp_path):
-    release = tmp_path / "india_equity_data_v2.0.0"
+    release = tmp_path / TARGET_RELEASE_ID
     release.mkdir()
     manifest = {
         "release_id": release.name,

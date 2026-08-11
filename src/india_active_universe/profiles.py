@@ -1,5 +1,6 @@
 """Published universe profile contracts."""
 
+TARGET_RELEASE_ID = "india_equity_data_v2.0.0"
 PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"
 PROFILE_VERSION = "LIQUID_V1"
 PRIORITY_SCOPE = "LIQUID_V1_OR_HISTORICAL_TOP750"
