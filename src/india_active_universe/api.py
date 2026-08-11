@@ -681,6 +681,11 @@ class DataPlatform:
             "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
             "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
         }
+        candidate_recommended_pit_universe_interval = {
+            **candidate_recommended_research_interval,
+            "interval_type": "PIT_UNIVERSE",
+            "feature_readiness_policy": "FEATURE_READINESS_REPORTED_SEPARATELY",
+        }
         return {
             "recorded_earliest_candidate_gate_pass_start": recorded_earliest,
             "earliest_candidate_gate_pass_start": derived_earliest,
@@ -693,6 +698,7 @@ class DataPlatform:
             "recorded_refined_earliest_candidate_gate_pass_boundary": recorded_refined,
             "refined_earliest_candidate_gate_pass_boundary": derived_refined,
             "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary": recorded_refined == derived_refined,
+            "candidate_recommended_pit_universe_interval": candidate_recommended_pit_universe_interval,
             "candidate_recommended_research_interval": candidate_recommended_research_interval,
             "candidate_promotion_decisions": self.candidate_promotion_status(),
         }

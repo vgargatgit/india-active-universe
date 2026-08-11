@@ -500,6 +500,17 @@ def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
                 "recorded_refined_earliest_candidate_gate_pass_boundary": None,
                 "refined_earliest_candidate_gate_pass_boundary": None,
                 "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary": True,
+                "candidate_recommended_pit_universe_interval": {
+                    "status": "NO_REFINED_BOUNDARY",
+                    "start": None,
+                    "end": None,
+                    "profile": "NSE_BROAD_LIQUID_PIT_V1",
+                    "profile_version": "LIQUID_V1",
+                    "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
+                    "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+                    "interval_type": "PIT_UNIVERSE",
+                    "feature_readiness_policy": "FEATURE_READINESS_REPORTED_SEPARATELY",
+                },
                 "candidate_recommended_research_interval": {
                     "status": "NO_REFINED_BOUNDARY",
                     "start": None,
@@ -1235,6 +1246,17 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         ],
         "earliest_candidate_gate_pass_start": None,
         "refined_earliest_candidate_gate_pass_boundary": None,
+        "candidate_recommended_pit_universe_interval": {
+            "status": "NO_REFINED_BOUNDARY",
+            "start": None,
+            "end": "2026-08-10",
+            "profile": PROFILE_ID,
+            "profile_version": PROFILE_VERSION,
+            "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
+            "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
+            "interval_type": "PIT_UNIVERSE",
+            "feature_readiness_policy": "FEATURE_READINESS_REPORTED_SEPARATELY",
+        },
         "candidate_recommended_research_interval": {
             "status": "NO_REFINED_BOUNDARY",
             "start": None,
@@ -1750,6 +1772,13 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, missing_recommended_interval)
     assert "research manifest candidate_recommended_research_interval is missing or not an object" in failures
 
+    missing_pit_universe_interval = {
+        key: value for key, value in valid_manifest.items()
+        if key != "candidate_recommended_pit_universe_interval"
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, missing_pit_universe_interval)
+    assert "research manifest candidate_recommended_pit_universe_interval is missing or not an object" in failures
+
     promoted_recommended_interval = {
         **valid_manifest,
         "candidate_recommended_research_interval": {
@@ -1769,6 +1798,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     }
     failures = research_manifest_contract_failures(release, data_manifest, stale_scan_method_interval)
     assert "research manifest candidate_recommended_research_interval.boundary_scan_method is not the published refined scan method" in failures
+
+    feature_conflated_pit_interval = {
+        **valid_manifest,
+        "candidate_recommended_pit_universe_interval": {
+            **valid_manifest["candidate_recommended_pit_universe_interval"],
+            "feature_readiness_policy": "REQUIRED_FOR_UNIVERSE_PROMOTION",
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, feature_conflated_pit_interval)
+    assert "research manifest candidate_recommended_pit_universe_interval.feature_readiness_policy does not separate feature readiness" in failures
 
     mismatched_recommended_interval = {
         **valid_manifest,

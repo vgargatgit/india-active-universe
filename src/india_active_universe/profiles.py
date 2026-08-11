@@ -126,6 +126,7 @@ CANDIDATE_PROMOTION_SUMMARY_FIELDS = (
     "recorded_refined_earliest_candidate_gate_pass_boundary",
     "refined_earliest_candidate_gate_pass_boundary",
     "recorded_matches_derived_refined_earliest_candidate_gate_pass_boundary",
+    "candidate_recommended_pit_universe_interval",
     "candidate_recommended_research_interval",
     "candidate_promotion_decisions",
 )

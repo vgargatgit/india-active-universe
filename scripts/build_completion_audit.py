@@ -662,6 +662,33 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append("research manifest candidate_recommended_research_interval.boundary_scan_method is not the published refined scan method")
             if recommended_interval.get("promotion_status") != "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS":
                 failures.append("research manifest candidate_recommended_research_interval.promotion_status is not fail-closed")
+        pit_universe_interval = research_manifest.get("candidate_recommended_pit_universe_interval")
+        if not isinstance(pit_universe_interval, dict):
+            failures.append("research manifest candidate_recommended_pit_universe_interval is missing or not an object")
+        else:
+            expected_recommendation_status = (
+                "CANDIDATE_REFINED_BOUNDARY_AVAILABLE"
+                if refined_earliest_candidate_gate_pass_boundary
+                else "NO_REFINED_BOUNDARY"
+            )
+            if pit_universe_interval.get("status") != expected_recommendation_status:
+                failures.append("research manifest candidate_recommended_pit_universe_interval.status does not match refined boundary availability")
+            if pit_universe_interval.get("start") != refined_earliest_candidate_gate_pass_boundary:
+                failures.append("research manifest candidate_recommended_pit_universe_interval.start does not match refined boundary")
+            if not isinstance(pit_universe_interval.get("end"), str):
+                failures.append("research manifest candidate_recommended_pit_universe_interval.end is missing or not a string")
+            if pit_universe_interval.get("profile") != PROFILE_ID:
+                failures.append("research manifest candidate_recommended_pit_universe_interval.profile is not the published profile")
+            if pit_universe_interval.get("profile_version") != PROFILE_VERSION:
+                failures.append("research manifest candidate_recommended_pit_universe_interval.profile_version is not the published profile version")
+            if pit_universe_interval.get("boundary_scan_method") != CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD:
+                failures.append("research manifest candidate_recommended_pit_universe_interval.boundary_scan_method is not the published refined scan method")
+            if pit_universe_interval.get("promotion_status") != "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS":
+                failures.append("research manifest candidate_recommended_pit_universe_interval.promotion_status is not fail-closed")
+            if pit_universe_interval.get("interval_type") != "PIT_UNIVERSE":
+                failures.append("research manifest candidate_recommended_pit_universe_interval.interval_type is not PIT_UNIVERSE")
+            if pit_universe_interval.get("feature_readiness_policy") != "FEATURE_READINESS_REPORTED_SEPARATELY":
+                failures.append("research manifest candidate_recommended_pit_universe_interval.feature_readiness_policy does not separate feature readiness")
 
     policy = research_manifest.get("known_policy") or {}
     expected_policy = {
