@@ -16,6 +16,7 @@ from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     COMPONENT_QUALITY,
     DATASET_QUALITY_TIER,
+    DATA_RELEASE_MANIFEST_ARTIFACT,
     EXECUTION_POLICY,
     LIQUIDITY_ARTIFACT,
     LIQUID_V1_DEFINITION,
@@ -24,8 +25,10 @@ from india_active_universe.profiles import (
     PROFILE_ID,
     PROFILE_VERSION,
     PARSER_VERSIONS,
+    PARTITIONED_ARTIFACTS_MANIFEST,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RECOMMENDED_SIGNAL_PRICE_SERIES,
+    RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_START_DATE,
@@ -194,7 +197,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
             failures.append(f"data manifest parser_versions.{key} is not {expected}")
     artifacts = manifest.get("artifacts") or {}
     for name in REQUIRED:
-        if name in {"data_release_manifest.json", "research_release_manifest.json"}:
+        if name in {DATA_RELEASE_MANIFEST_ARTIFACT, RESEARCH_RELEASE_MANIFEST_ARTIFACT}:
             continue
         if f"release/{name}" not in artifacts:
             failures.append(f"data manifest artifact hash missing for release/{name}")
@@ -204,7 +207,7 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
 def research_manifest_contract_failures(release: Path, manifest: dict, research_manifest: dict) -> list[str]:
     failures: list[str] = []
     if not research_manifest:
-        return ["missing research_release_manifest.json contract"]
+        return [f"missing {RESEARCH_RELEASE_MANIFEST_ARTIFACT} contract"]
     if research_manifest.get("release_id") != release.name:
         failures.append("research manifest release_id does not match release directory")
     if not research_manifest.get("git_sha"):
@@ -374,8 +377,8 @@ def main() -> None:
     args = parser.parse_args()
     release = Path(args.release)
     report_dir = Path(args.out).resolve().parent
-    manifest = json.loads((release / "data_release_manifest.json").read_text(encoding="utf-8"))
-    research_manifest_path = release / "research_release_manifest.json"
+    manifest = json.loads((release / DATA_RELEASE_MANIFEST_ARTIFACT).read_text(encoding="utf-8"))
+    research_manifest_path = release / RESEARCH_RELEASE_MANIFEST_ARTIFACT
     research_manifest = json.loads(research_manifest_path.read_text(encoding="utf-8")) if research_manifest_path.exists() else {}
     missing = [name for name in REQUIRED if not (release / name).exists()]
     missing_reports = [name for name in REQUIRED_RESEARCH_REPORTS if not (report_dir / name).exists()]
@@ -388,7 +391,7 @@ def main() -> None:
     ci_status_report = report_dir / f"ci_status_{release.name}.json"
     if research_manifest.get("ci_status_sha256") and not ci_status_report.exists():
         missing_reports.append(ci_status_report.name)
-    partition_manifest_path = release / "partitioned_artifacts_manifest.json"
+    partition_manifest_path = release / PARTITIONED_ARTIFACTS_MANIFEST
     manifest_mismatch = manifest.get("release_id") != release.name
     research_quality_ok = research_manifest.get("research_quality", {}).get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
     data_contract_failures = data_manifest_contract_failures(release, manifest)

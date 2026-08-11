@@ -13,6 +13,9 @@ TERMINAL_VALUE_POLICY = "explicit recovery scenarios; no invented canonical valu
 RECOMMENDED_SIGNAL_PRICE_SERIES = "price_return_adjusted_close"
 RAW_EXECUTION_PRICE_ARTIFACT = "daily_prices_raw.parquet"
 LIQUIDITY_ARTIFACT = "liquidity_features.parquet"
+DATA_RELEASE_MANIFEST_ARTIFACT = "data_release_manifest.json"
+RESEARCH_RELEASE_MANIFEST_ARTIFACT = "research_release_manifest.json"
+PARTITIONED_ARTIFACTS_MANIFEST = "partitioned_artifacts_manifest.json"
 TERMINAL_VALUE_POLICY_REQUIREMENT = "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN"
 DATASET_QUALITY_TIER = "DATASET_EXPLORATORY"
 ACTIVE_DEFINITION = "ACTIVE_V1"
@@ -74,15 +77,15 @@ REQUIRED_RELEASE_ARTIFACTS = (
     "unresolved_observed_trading.parquet",
     LIQUIDITY_ARTIFACT,
     "terminal_events.parquet",
-    "data_release_manifest.json",
+    DATA_RELEASE_MANIFEST_ARTIFACT,
     "trading_calendar.parquet",
     "company_name_history.parquet",
     "isin_history.parquet",
     "corporate_action_boundary_validation.parquet",
     "research_universe_monthly.parquet",
     "required_research_security.parquet",
-    "research_release_manifest.json",
-    "partitioned_artifacts_manifest.json",
+    RESEARCH_RELEASE_MANIFEST_ARTIFACT,
+    PARTITIONED_ARTIFACTS_MANIFEST,
 )
 REQUIRED_RESEARCH_REPORTS = (
     "data_source_coverage.md",
