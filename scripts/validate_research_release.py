@@ -128,6 +128,17 @@ def main() -> None:
               WHERE CAST(rrs.first_research_date AS DATE) IS DISTINCT FROM CAST(m.first_research_date AS DATE)
                  OR CAST(rrs.last_research_date AS DATE) IS DISTINCT FROM CAST(m.last_research_date AS DATE)
             """).fetchone()[0],
+            "required_artifact_identity_quality_failures": connection.execute(f"""
+              SELECT COUNT(*)
+              FROM read_parquet('{r}/required_research_security.parquet')
+              WHERE research_identity_quality NOT IN (
+                'OFFICIAL_EXCHANGE_IDENTITY',
+                'MULTI_SOURCE_VERIFIED',
+                'RECONSTRUCTED_HIGH_CONFIDENCE',
+                'RECONSTRUCTED_TRADING_IDENTITY'
+              )
+                 OR research_identity_quality IS NULL
+            """).fetchone()[0],
             "future_listing_rows": connection.execute(f"""
               SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet') u
               JOIN (SELECT security_id, MIN(CAST(date AS DATE)) AS first_seen FROM read_parquet('{r}/daily_prices_raw.parquet') GROUP BY security_id) p USING (security_id)

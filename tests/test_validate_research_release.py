@@ -55,6 +55,7 @@ def _write_release(release, required_security_ids):
                 "enters_top750": [True for _ in required_security_ids],
                 "first_research_date": ["2020-03-31" for _ in required_security_ids],
                 "last_research_date": ["2020-03-31" for _ in required_security_ids],
+                "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY" for _ in required_security_ids],
             }
         ),
         release / "required_research_security.parquet",
@@ -96,6 +97,7 @@ def test_research_release_validator_accepts_matching_required_artifact(tmp_path)
     assert metrics["required_scope_missing_from_required_artifact"] == 0
     assert metrics["required_artifact_security_without_monthly_scope"] == 0
     assert metrics["required_artifact_flag_failures"] == 0
+    assert metrics["required_artifact_identity_quality_failures"] == 0
     assert metrics["status"] == "PASS"
 
 
@@ -128,6 +130,7 @@ def test_research_release_validator_fails_when_required_artifact_flags_mismatch_
                 "enters_top750": [True],
                 "first_research_date": ["2020-03-31"],
                 "last_research_date": ["2020-03-31"],
+                "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
             }
         ),
         release / "required_research_security.parquet",
@@ -158,6 +161,7 @@ def test_research_release_validator_fails_when_required_artifact_date_range_mism
                 "enters_top750": [True],
                 "first_research_date": ["2020-01-31"],
                 "last_research_date": ["2020-03-31"],
+                "research_identity_quality": ["RECONSTRUCTED_TRADING_IDENTITY"],
             }
         ),
         release / "required_research_security.parquet",
@@ -174,4 +178,35 @@ def test_research_release_validator_fails_when_required_artifact_date_range_mism
     assert result.returncode != 0
     metrics = json.loads(out.read_text(encoding="utf-8"))
     assert metrics["required_artifact_date_range_failures"] == 1
+    assert metrics["status"] == "FAIL"
+
+
+def test_research_release_validator_fails_when_required_artifact_identity_quality_is_not_research_ok(tmp_path):
+    release = tmp_path / "release"
+    _write_release(release, ["SEC1"])
+    pq.write_table(
+        pa.table(
+            {
+                "security_id": ["SEC1"],
+                "enters_liquid_v1": [True],
+                "enters_top750": [True],
+                "first_research_date": ["2020-03-31"],
+                "last_research_date": ["2020-03-31"],
+                "research_identity_quality": ["PARTIAL"],
+            }
+        ),
+        release / "required_research_security.parquet",
+    )
+    out = tmp_path / "validation.json"
+
+    result = subprocess.run(
+        [sys.executable, "scripts/validate_research_release.py", "--release", str(release), "--out", str(out)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    metrics = json.loads(out.read_text(encoding="utf-8"))
+    assert metrics["required_artifact_identity_quality_failures"] == 1
     assert metrics["status"] == "FAIL"
