@@ -940,6 +940,79 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
         platform.active_on("2012-12-31")
 
 
+def test_release_loader_rejects_pre_warmup_data_manifest_research_interval(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "research_quality_intervals": [
+                    {
+                        "start": "2007-01-31",
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="data manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"):
+        DataPlatform.from_release(release, strict=True)
+
+
+def test_release_loader_rejects_pre_warmup_research_manifest_research_interval(tmp_path):
+    import json
+
+    release = tmp_path / "india_equity_data_test"
+    release.mkdir()
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
+                "verified_end_date": "2026-08-10",
+                "quality_tier": "DATASET_EXPLORATORY",
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "research_quality_intervals": [
+                    {
+                        "start": RESEARCH_START_DATE,
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (release / RESEARCH_RELEASE_MANIFEST_ARTIFACT).write_text(
+        json.dumps(
+            {
+                "warmup_coverage": {"earliest_fully_warmed_date": "2007-03-15"},
+                "research_quality_intervals": [
+                    {
+                        "start": "2007-01-31",
+                        "end": "2026-08-10",
+                        "status": RESEARCH_HIGH_CONFIDENCE_STATUS,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="research manifest pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"):
+        DataPlatform.from_release(release, strict=True)
+
+
 def test_release_loader_preserves_data_manifest_candidate_state_when_research_manifest_omits_candidate_fields(tmp_path):
     import json
     import pyarrow as pa

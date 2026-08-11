@@ -33,6 +33,7 @@ from .profiles import (
     RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
+    RESEARCH_START_DATE,
     SOURCE_ONLY_STATUS,
     TOP_LIQUIDITY_RANKING_METRIC,
 )
@@ -248,6 +249,27 @@ def _validate_candidate_interval_recommendations(
         raise ValueError(
             f"{manifest_name} candidate_recommended_pit_universe_interval.feature_readiness_policy does not separate feature readiness"
         )
+
+
+def _validate_research_quality_intervals_after_warmup(
+    manifest_name: str,
+    intervals: Any,
+    warmup_coverage: dict[str, Any],
+) -> None:
+    if not isinstance(intervals, list):
+        return
+    earliest_fully_warmed = warmup_coverage.get("earliest_fully_warmed_date")
+    for interval in intervals:
+        if (
+            isinstance(interval, dict)
+            and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+            and interval.get("start")
+            and _as_date(interval["start"]) < _as_date(RESEARCH_START_DATE)
+            and (not earliest_fully_warmed or _as_date(interval["start"]) < _as_date(earliest_fully_warmed))
+        ):
+            raise ValueError(
+                f"{manifest_name} pre-2013 RESEARCH_HIGH_CONFIDENCE interval starts before earliest fully warmed date"
+            )
 
 
 class SecurityMaster:
@@ -911,6 +933,11 @@ class DataPlatform:
             platform.quality_tier = manifest.get("quality_tier")
             platform.warmup_coverage = manifest.get("warmup_coverage") or {}
             platform.research_quality_intervals = manifest.get("research_quality_intervals") or []
+            _validate_research_quality_intervals_after_warmup(
+                "data manifest",
+                platform.research_quality_intervals,
+                platform.warmup_coverage,
+            )
             has_data_candidate_decisions = "candidate_promotion_decisions" in manifest
             has_data_earliest_candidate = "earliest_candidate_gate_pass_start" in manifest
             has_data_refined_candidate_boundary = "refined_earliest_candidate_gate_pass_boundary" in manifest
@@ -962,6 +989,11 @@ class DataPlatform:
                 platform.quality_tier = research_quality["status"]
             platform.warmup_coverage = research_manifest.get("warmup_coverage") or platform.warmup_coverage
             platform.research_quality_intervals = research_manifest.get("research_quality_intervals") or platform.research_quality_intervals
+            _validate_research_quality_intervals_after_warmup(
+                "research manifest",
+                platform.research_quality_intervals,
+                platform.warmup_coverage,
+            )
             has_research_candidate_decisions = "candidate_promotion_decisions" in research_manifest
             has_research_earliest_candidate = "earliest_candidate_gate_pass_start" in research_manifest
             has_research_refined_candidate_boundary = "refined_earliest_candidate_gate_pass_boundary" in research_manifest
