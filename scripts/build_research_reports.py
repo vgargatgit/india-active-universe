@@ -348,6 +348,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "recommended_signal_price_series": "price_return_adjusted_close",
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
+        "top_liquidity_ranking_metric": "median_traded_value_126",
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
         "liquid_v1_securities": int(counts[3]),
         "identity_failures": int(required_scope_failure_count),

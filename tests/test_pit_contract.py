@@ -244,6 +244,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "recommended_signal_price_series": "price_return_adjusted_close",
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
+        "top_liquidity_ranking_metric": "median_traded_value_126",
         "terminal_value_policy_requirement": "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN",
         "required_research_securities": 10,
         "identity_failures": 0,
