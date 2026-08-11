@@ -1,0 +1,64 @@
+{
+  "artifacts": {
+    "corporate_action_boundary_validation.parquet": "bd0b727ab16bc5d5c40bdc02c40d78d6515e67e3f9e4a9844654540334e3502a",
+    "corporate_actions.parquet": "2e1d5a966e178b7909da18252a785bc64fcc1ee5a88dcbd70cb8e9d45d0086b9",
+    "daily_prices_adjusted.parquet": "002c5f8e6ed5d4b80844c4f71272ce6bec69024e1ce025c79f8dac6524120c71",
+    "daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
+    "liquidity_features.parquet": "95278f6d606fb651b402f4a6f11012b496b20fa86c7cb69ec50de7b6369e3370",
+    "required_research_security.parquet": "ef3970501f53c3459a01c52bb018deec7e1cf129ee910d1e991564a4018e302c",
+    "research_universe_monthly.parquet": "4569c4ac6d407a26b306eb294ecde1ec57f2e79476861947b44342f7dc3bd15c",
+    "suspension_events_resolved.parquet": "e8551f3dfe89be4c189c92be4ed79a3edfd9137ac078be033a2b9f1cbd2b3321",
+    "trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
+  },
+  "boundary_validation": {
+    "NO_LOCAL_BOUNDARY_OBSERVATION": 24,
+    "NO_POST_EVENT_OBSERVATION": 240,
+    "NO_PRE_EVENT_OBSERVATION": 26,
+    "PASS": 432,
+    "WARNING_LARGE_BOUNDARY_MOVE": 26
+  },
+  "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
+  "git_sha": "40e48c685b13f7cb0b375eb9065b8bd0f361ae50",
+  "identity_failures": 0,
+  "known_policy": {
+    "execution": "raw nominal OHLC",
+    "signals": "price-return adjusted close",
+    "terminal_values": "explicit recovery scenarios; no invented canonical value"
+  },
+  "liquid_v1_securities": 2352,
+  "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
+  "material_price_action_missing_factors": 0,
+  "quality_reports": {
+    "current_survivor_comparison.md": "478823e955d848c12028356360b7c2ff3b96b2df909517d6722c71bf7994b7af",
+    "data_source_coverage.md": "4a8d50c73699c17a81c4c1f17c0fafdf1066a71f37b64cae0084b766819f969a",
+    "research_identity_priority.md": "b265c74d3297b8fd9acdac219d4e232c3bf2940182e8a65c4baec05b38bbcfaa",
+    "research_identity_promotion.md": "1075816b73feb2a0e46844f6a65995f7fa81d767962aa01e93783f54fa65ae95",
+    "research_price_adjustment_promotion.md": "3fa8b318dc2be20727072da0608cc547e8570398efa7a5a866cc4b9c049a7380",
+    "research_scale.md": "bea072ee0ce46bcd32d1b667897cf3f4d98e1ebcbb512b10c1c8fede533392e7",
+    "research_universe_corporate_action_audit.md": "87ec2f184b8760d76b57d743b380b52300faf466882c44d16b2cb0e4fb32a75b",
+    "research_universe_coverage.md": "ae1d6b978d99f2dda4c45ce1cd0ccc5b819f21bf05563bebd746b75816a3e539",
+    "research_universe_stability.md": "b7d0be2d0b470d1f480b8e5571e21ec1f3289186877bafb8bc06fda3bdcf5756",
+    "session_correct_liquidity_audit.md": "b79a4ec60304a00fdf16e8ecf8f4028edde28f2ade78bbe6399fe9c1fd8d0337",
+    "survivorship_audit.md": "e05fb2acd0b09ac43ea39eacce18c8a8a73a792f0e4e7b7032ac130c416d9a45"
+  },
+  "release_id": "india_equity_data_v2.0.1",
+  "required_research_securities": 2680,
+  "research_invariant_validation_sha256": "70b61f64e95580636169050910dbdea278f7fbbc336ab10b204923f1ba82e936",
+  "research_quality": {
+    "end": "2026-08-10",
+    "monthly_snapshot_start": "2013-01-31",
+    "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+    "profile_version": "LIQUID_V1",
+    "start": "2013-01-01",
+    "status": "RESEARCH_HIGH_CONFIDENCE",
+    "universe_profile": "NSE_BROAD_LIQUID_PIT_V1"
+  },
+  "source_coverage": {
+    "observed_end": "2026-08-10",
+    "observed_start": "2006-01-02",
+    "research_end": "2026-08-10",
+    "research_start": "2013-01-01"
+  },
+  "status_interval_overlaps": 0,
+  "test_result_sha256": "e5dfa1911cf022b30396d10baea06a207a674f0b73608b3aa57dc146a8088df9"
+}

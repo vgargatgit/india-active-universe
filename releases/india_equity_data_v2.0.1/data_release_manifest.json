@@ -1,0 +1,76 @@
+{
+  "artifacts": {
+    "canonical/daily_prices_raw.jsonl": "76447168c0d34d181a4edad27d7c1991a464f3a3c03aa80baa4bb027a267c861",
+    "canonical/security_master.jsonl": "b34150847e10abb6449e86379d694579885de863268c6fd136cf74aacaa7bef5",
+    "derived/active_universe_daily.jsonl": "f5ea1417db52dd57da42de7ebb09c4c7458f40d319f3f48b84217d5f8b78def4",
+    "derived/data_quality_findings.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "derived/liquidity_features.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release/active_universe_daily.parquet": "afac2dd344ce674f0fabae9655443330d81a30accf671a000beac5dcb14988ed",
+    "release/company_name_history.parquet": "3516e9003b0dcf4b7910e3d48243845d060bbc6f9d46873759dbc8882fa1a414",
+    "release/corporate_action_boundary_validation.parquet": "bd0b727ab16bc5d5c40bdc02c40d78d6515e67e3f9e4a9844654540334e3502a",
+    "release/corporate_actions.parquet": "2e1d5a966e178b7909da18252a785bc64fcc1ee5a88dcbd70cb8e9d45d0086b9",
+    "release/daily_prices_adjusted.parquet": "002c5f8e6ed5d4b80844c4f71272ce6bec69024e1ce025c79f8dac6524120c71",
+    "release/daily_prices_raw.parquet": "c33849772a2a34a2430bfccbecb5082b458dcb5129dde111b22b006a0550cd4e",
+    "release/isin_history.parquet": "64a5ad9e21e201c07b7903a8bb918d230cba1282bcc67676c386540e46e63143",
+    "release/issuer_master.parquet": "8a37132c2670c7e31298e46d5258bb3e76f028d60807315afdf0adcfd6928dfb",
+    "release/liquidity_features.parquet": "95278f6d606fb651b402f4a6f11012b496b20fa86c7cb69ec50de7b6369e3370",
+    "release/listing_episodes.parquet": "21e478459c34b35aa43731d4cc1beb93110fe90fa2ace4b518cb4d26616b0576",
+    "release/required_research_security.parquet": "ef3970501f53c3459a01c52bb018deec7e1cf129ee910d1e991564a4018e302c",
+    "release/research_universe_monthly.parquet": "4569c4ac6d407a26b306eb294ecde1ec57f2e79476861947b44342f7dc3bd15c",
+    "release/security_master.parquet": "2b9a5850551d986e36e4e2b376a1950e036cbb3375f2c34536bd4096ec915e6a",
+    "release/source_manifest.json": "482b9995f8e3834ebcc65ba7e19240d86bf62ebd41f3c06890f6d390145ae096",
+    "release/suspension_events_resolved.parquet": "e8551f3dfe89be4c189c92be4ed79a3edfd9137ac078be033a2b9f1cbd2b3321",
+    "release/symbol_history.parquet": "6f32a53baf5dd212648b689afdc8a50c45ee4ad8855a5d134613b5772c9d7b27",
+    "release/terminal_events.parquet": "63ef10fb1b70a4a9f6129ee8b4c536bfe363e2b661979aaa5e13c6ef986538d0",
+    "release/trading_calendar.parquet": "c36e2107f9dda0ed2ac4c3364235973da4f73a9b3d7eed1226bb805ed79062ab",
+    "release/trading_status.parquet": "69777e1b226de434e4ddd388ed3058020e271df8cd1fa07496ab3a6c282f58ba",
+    "release/trading_status_intervals.parquet": "cec1113f9db3154d0407fab9593fba00e4e32d9002de02436559481bd40ac0f8"
+  },
+  "component_quality": {
+    "raw_ohlcv": "RESEARCH_HIGH_CONFIDENCE",
+    "raw_source": "SOURCE_HIGH_CONFIDENCE",
+    "research_universe_2013_onward": "RESEARCH_HIGH_CONFIDENCE",
+    "terminal_events": "PARTIAL",
+    "total_return": "PARTIAL"
+  },
+  "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
+  "coverage": {
+    "observation_count": 7545021,
+    "observed_end": "2026-08-10",
+    "observed_start": "2006-01-02",
+    "security_count": 5745
+  },
+  "definition": "ACTIVE_V1",
+  "git_commit": "40e48c685b13f7cb0b375eb9065b8bd0f361ae50",
+  "manual_override_sha256": "466baf20033e957e5a7bc8d294e6c7fbdf9fdf03de0f21aacffdaadae4f4ae2c",
+  "parser_versions": {
+    "canonicalization": "identity-v1",
+    "nse_bhavcopy": "nse-bhavcopy-v2"
+  },
+  "project_id": "india-active-universe",
+  "quality": {
+    "identity_quality": {
+      "PARTIAL": 1822,
+      "SINGLE_OFFICIAL_SOURCE": 4413
+    },
+    "quality_findings": 0
+  },
+  "quality_tier": "DATASET_EXPLORATORY",
+  "release_id": "india_equity_data_v2.0.1",
+  "research_coverage": {
+    "priority_scope": "LIQUID_V1_OR_HISTORICAL_TOP750",
+    "profile_version": "LIQUID_V1",
+    "research_verified_end": "2026-08-10",
+    "research_verified_start": "2013-01-01",
+    "universe_profile": "NSE_BROAD_LIQUID_PIT_V1"
+  },
+  "source": "NSE_OFFICIAL_BHAVCOPY",
+  "source_coverage": {
+    "source_verified_end": "2026-08-10",
+    "source_verified_start": "2006-01-02",
+    "verification_basis": "official NSE market-data files; no independent exchange calendar claim"
+  },
+  "source_manifest_sha256": "482b9995f8e3834ebcc65ba7e19240d86bf62ebd41f3c06890f6d390145ae096",
+  "verified_end_date": "2026-08-10",
+  "verified_start_date": "2006-01-02"
+}
