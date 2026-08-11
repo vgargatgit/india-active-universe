@@ -8,6 +8,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from india_active_universe.profiles import DATA_RELEASE_MANIFEST_ARTIFACT
+
 
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -18,7 +20,7 @@ def sha256(path: Path) -> str:
 
 
 def validate_manifest_hashes(release: Path) -> list[str]:
-    manifest_path = release / "data_release_manifest.json"
+    manifest_path = release / DATA_RELEASE_MANIFEST_ARTIFACT
     if not manifest_path.is_file():
         return [f"missing manifest: {manifest_path.name}"]
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

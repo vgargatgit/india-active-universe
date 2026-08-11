@@ -8,6 +8,8 @@ import json
 import subprocess
 from pathlib import Path
 
+from india_active_universe.profiles import DATA_RELEASE_MANIFEST_ARTIFACT
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -17,7 +19,7 @@ def main() -> None:
     args = parser.parse_args()
 
     release = Path(args.release)
-    manifest = json.loads((release / "data_release_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((release / DATA_RELEASE_MANIFEST_ARTIFACT).read_text(encoding="utf-8"))
     raw = subprocess.run(
         [
             "gh", "run", "view", args.run_id,

@@ -7,7 +7,7 @@ import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from india_active_universe.profiles import ACTIVE_DEFINITION, COMPONENT_QUALITY, DATASET_QUALITY_TIER, PARSER_VERSIONS, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, RESEARCH_START_DATE
+from india_active_universe.profiles import ACTIVE_DEFINITION, COMPONENT_QUALITY, DATASET_QUALITY_TIER, DATA_RELEASE_MANIFEST_ARTIFACT, PARSER_VERSIONS, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, RESEARCH_START_DATE
 
 
 def rows(path: Path):
@@ -79,12 +79,12 @@ def main() -> None:
             release_suspension_manifest.write_bytes(suspension_manifest.read_bytes())
         artifacts["release/suspension_source_manifest.json"] = file_hash(release_suspension_manifest)
     if release_dir.exists():
-        for path in sorted(item for item in release_dir.iterdir() if item.is_file() and item.name != "data_release_manifest.json" and item.suffix in {".parquet", ".json"}):
+        for path in sorted(item for item in release_dir.iterdir() if item.is_file() and item.name != DATA_RELEASE_MANIFEST_ARTIFACT and item.suffix in {".parquet", ".json"}):
             artifacts[f"release/{path.name}"] = file_hash(path)
     manual_override_path = root.parents[2] / "data/reference/manual_identity_overrides.yaml"
     manifest = {"release_id": args.release_id, "project_id": "india-active-universe", "git_commit": current_commit(root), "coverage": {"observed_start": first, "observed_end": last, "security_count": len(securities), "observation_count": price_rows}, "source_coverage": {"source_verified_start": first, "source_verified_end": last, "verification_basis": "official NSE market-data files; no independent exchange calendar claim"}, "research_coverage": {"research_verified_start": RESEARCH_START_DATE, "research_verified_end": last, "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE}, "component_quality": COMPONENT_QUALITY, "definition": ACTIVE_DEFINITION, "quality_tier": DATASET_QUALITY_TIER, "verified_start_date": first, "verified_end_date": last, "source_manifest_sha256": file_hash(source_manifest) if source_manifest.exists() else None, "config_sha256": file_hash(config_path) if config_path.exists() else None, "manual_override_sha256": file_hash(manual_override_path) if manual_override_path.exists() else None, "parser_versions": PARSER_VERSIONS, "artifacts": artifacts, "quality": {"identity_quality": dict(quality_counts), "quality_findings": 0}, "source": "NSE_OFFICIAL_BHAVCOPY"}
     release_dir.mkdir(parents=True, exist_ok=True)
-    (release_dir / "data_release_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (release_dir / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(manifest["coverage"], sort_keys=True))
 
 
