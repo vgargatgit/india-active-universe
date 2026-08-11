@@ -23,6 +23,7 @@ from india_active_universe.profiles import (
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_MONTHLY_SNAPSHOT_START,
     RESEARCH_START_DATE,
     REQUIRED_RESEARCH_REPORTS,
     REQUIRED_QUALITY_THRESHOLD,
@@ -357,7 +358,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
     manifest = {
         "release_id": release.name,
         "git_sha": git_sha,
-        "research_quality": {"status": quality, "start": research_start, "end": str(coverage[1]), "monthly_snapshot_start": str(coverage[0]), "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE},
+        "research_quality": {"status": quality, "start": research_start, "end": str(coverage[1]), "monthly_snapshot_start": RESEARCH_MONTHLY_SNAPSHOT_START, "universe_profile": PROFILE_ID, "profile_version": PROFILE_VERSION, "priority_scope": PRIORITY_SCOPE},
         "source_coverage": {
             "observed_start": observed_coverage.get("observed_start"),
             "observed_end": observed_coverage.get("observed_end"),
