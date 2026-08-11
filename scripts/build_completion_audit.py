@@ -35,6 +35,7 @@ from india_active_universe.profiles import (
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
+    RESEARCH_MONTHLY_SNAPSHOT_START,
     RESEARCH_START_DATE,
     REQUIRED_RELEASE_ARTIFACTS,
     REQUIRED_RESEARCH_REPORTS,
@@ -240,13 +241,17 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
             failures.append(f"research_quality.{key} is not {expected}")
     if not quality.get("end"):
         failures.append("research_quality.end is missing")
-    if not quality.get("monthly_snapshot_start"):
-        failures.append("research_quality.monthly_snapshot_start is missing")
+    if quality.get("monthly_snapshot_start") != RESEARCH_MONTHLY_SNAPSHOT_START:
+        failures.append(f"research_quality.monthly_snapshot_start is not {RESEARCH_MONTHLY_SNAPSHOT_START}")
 
     coverage = research_manifest.get("source_coverage") or {}
     for key in ("observed_start", "observed_end", "research_start", "research_end"):
         if not coverage.get(key):
             failures.append(f"source_coverage.{key} is missing")
+    if coverage.get("research_start") != quality.get("start"):
+        failures.append("source_coverage.research_start does not match research_quality.start")
+    if coverage.get("research_end") != quality.get("end"):
+        failures.append("source_coverage.research_end does not match research_quality.end")
     data_coverage = manifest.get("coverage") or {}
     for key in ("observed_start", "observed_end"):
         if data_coverage.get(key) and coverage.get(key) != data_coverage.get(key):
