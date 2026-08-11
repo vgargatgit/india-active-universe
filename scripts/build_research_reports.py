@@ -211,7 +211,7 @@ def main() -> None:
           SELECT EXTRACT(YEAR FROM date)::INTEGER AS year,
             COUNT(DISTINCT security_id) FILTER (WHERE top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AS required_count,
             COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND research_identity_ok) AS identity_passing,
-            COUNT(DISTINCT security_id) FILTER (WHERE (top750_liQUIDITY OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND NOT research_identity_ok) AS identity_failures,
+            COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND NOT research_identity_ok) AS identity_failures,
             COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND NOT price_adjustment_ok) AS price_action_failures,
             COUNT(DISTINCT security_id) FILTER (WHERE (top750_liquidity OR NSE_BROAD_LIQUID_PIT_V1_eligible) AND status_quality = 'UNKNOWN_STATUS') AS unknown_status_exclusions
           FROM read_parquet('{r}/research_universe_monthly.parquet')
