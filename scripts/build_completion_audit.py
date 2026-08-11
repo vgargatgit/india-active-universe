@@ -12,7 +12,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, REQUIRED_QUALITY_THRESHOLD, TOP_LIQUIDITY_RANKING_METRIC
 
 
 REQUIRED = [
@@ -246,7 +246,7 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
         if policy.get(key) != expected:
             failures.append(f"known_policy.{key} is not the published downstream contract")
     expected_contract_fields = {
-        "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
+        "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
         "recommended_signal_price_series": "price_return_adjusted_close",
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",

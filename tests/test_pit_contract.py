@@ -7,7 +7,7 @@ from india_active_universe.api import CalendarStore, CompanyNameHistoryStore, Co
 from india_active_universe.identity import apply_manual_overrides, load_manual_overrides
 from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, REQUIRED_QUALITY_THRESHOLD, TOP_LIQUIDITY_RANKING_METRIC
 from scripts.build_completion_audit import REQUIRED, REQUIRED_RESEARCH_REPORTS, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
@@ -241,7 +241,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "execution": "raw nominal OHLC",
             "terminal_values": "explicit recovery scenarios; no invented canonical value",
         },
-        "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
+        "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
         "recommended_signal_price_series": "price_return_adjusted_close",
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import duckdb
 
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, TOP_LIQUIDITY_RANKING_METRIC
+from india_active_universe.profiles import LIQUID_V1_DEFINITION, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, REQUIRED_QUALITY_THRESHOLD, TOP_LIQUIDITY_RANKING_METRIC
 
 
 MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS')"
@@ -346,7 +346,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             "research_end": str(coverage[1]),
         },
         "required_research_securities": int(required_count),
-        "required_quality_threshold": "RESEARCH_IDENTITY_OK_AND_PRICE_ACTION_OK_FOR_LIQUID_V1_OR_HISTORICAL_TOP750",
+        "required_quality_threshold": REQUIRED_QUALITY_THRESHOLD,
         "recommended_signal_price_series": "price_return_adjusted_close",
         "raw_execution_price_artifact": "daily_prices_raw.parquet",
         "liquidity_artifact": "liquidity_features.parquet",
