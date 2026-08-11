@@ -10,7 +10,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from india_active_universe.profiles import REQUIRED_RELEASE_ARTIFACTS, TARGET_RELEASE_ID
+from india_active_universe.profiles import (
+    REQUIRED_RELEASE_ARTIFACTS,
+    SOURCE_MANIFEST_ARTIFACT,
+    SUSPENSION_SOURCE_MANIFEST_ARTIFACT,
+    TARGET_RELEASE_ID,
+)
 
 REQUIRED = tuple(name for name in REQUIRED_RELEASE_ARTIFACTS if name.endswith(".parquet"))
 
@@ -80,7 +85,7 @@ def main() -> None:
     staging.mkdir(parents=True)
     try:
         for path in sorted(source.iterdir()):
-            if path.is_file() and (path.suffix == ".parquet" or path.name in {"source_manifest.json", "suspension_source_manifest.json"}):
+            if path.is_file() and (path.suffix == ".parquet" or path.name in {SOURCE_MANIFEST_ARTIFACT, SUSPENSION_SOURCE_MANIFEST_ARTIFACT}):
                 shutil.copy2(path, staging / path.name)
         output_manifest = dict(manifest)
         output_manifest["release_id"] = args.release_id

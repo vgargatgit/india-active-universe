@@ -7,7 +7,7 @@ import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from india_active_universe.profiles import ACTIVE_DEFINITION, COMPONENT_QUALITY, DATASET_QUALITY_TIER, DATA_RELEASE_MANIFEST_ARTIFACT, PARSER_VERSIONS, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, RESEARCH_START_DATE
+from india_active_universe.profiles import ACTIVE_DEFINITION, COMPONENT_QUALITY, DATASET_QUALITY_TIER, DATA_RELEASE_MANIFEST_ARTIFACT, PARSER_VERSIONS, PRIORITY_SCOPE, PROFILE_ID, PROFILE_VERSION, RESEARCH_START_DATE, SOURCE_MANIFEST_ARTIFACT, SUSPENSION_SOURCE_MANIFEST_ARTIFACT
 
 
 def rows(path: Path):
@@ -68,16 +68,16 @@ def main() -> None:
     (reports / "survivorship_audit.md").write_text("# Survivorship audit\n\nThis first release is observation-based. Securities are retained for every dated official observation, independent of whether they appear in the current NSE reference universe. Terminal-event classification remains a subsequent evidence-enrichment stage.\n", encoding="utf-8")
     artifacts = {}
     if source_manifest.exists():
-        release_source_manifest = release_dir / "source_manifest.json"
+        release_source_manifest = release_dir / SOURCE_MANIFEST_ARTIFACT
         if not release_source_manifest.exists():
             release_source_manifest.write_bytes(source_manifest.read_bytes())
-        artifacts["release/source_manifest.json"] = file_hash(release_source_manifest)
+        artifacts[f"release/{SOURCE_MANIFEST_ARTIFACT}"] = file_hash(release_source_manifest)
     suspension_manifest = root / "raw/nse/notices/suspensions/source_manifest.json"
     if suspension_manifest.exists():
-        release_suspension_manifest = release_dir / "suspension_source_manifest.json"
+        release_suspension_manifest = release_dir / SUSPENSION_SOURCE_MANIFEST_ARTIFACT
         if not release_suspension_manifest.exists():
             release_suspension_manifest.write_bytes(suspension_manifest.read_bytes())
-        artifacts["release/suspension_source_manifest.json"] = file_hash(release_suspension_manifest)
+        artifacts[f"release/{SUSPENSION_SOURCE_MANIFEST_ARTIFACT}"] = file_hash(release_suspension_manifest)
     if release_dir.exists():
         for path in sorted(item for item in release_dir.iterdir() if item.is_file() and item.name != DATA_RELEASE_MANIFEST_ARTIFACT and item.suffix in {".parquet", ".json"}):
             artifacts[f"release/{path.name}"] = file_hash(path)
