@@ -32,6 +32,7 @@ from india_active_universe.profiles import (
     SIGNAL_POLICY,
     SOURCE_BUILD_MODE,
     SOURCE_MANIFEST_ARTIFACT,
+    SOURCE_OBSERVED_START_DATE,
     SECURITY_MASTER_ARTIFACT,
     TARGET_RELEASE_ID,
     TERMINAL_VALUE_POLICY,
@@ -209,8 +210,8 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
     (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
         json.dumps(
             {
-                "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
-                "verified_start_date": "2006-01-02",
+                "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
+                "verified_start_date": SOURCE_OBSERVED_START_DATE,
                 "verified_end_date": "2026-08-10",
                 "quality_tier": "DATASET_EXPLORATORY",
             }
@@ -247,7 +248,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
         "release_id": release.name,
         "git_commit": "abc123",
         "build_mode": SOURCE_BUILD_MODE,
-        "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
+        "coverage": {"observed_start": SOURCE_OBSERVED_START_DATE, "observed_end": "2026-08-10"},
         "config_sha256": "0" * 64,
         "manual_override_sha256": "0" * 64,
     }
@@ -264,7 +265,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "priority_scope": PRIORITY_SCOPE,
         },
         "source_coverage": {
-            "observed_start": "2006-01-02",
+            "observed_start": SOURCE_OBSERVED_START_DATE,
             "observed_end": "2026-08-10",
             "research_start": RESEARCH_START_DATE,
             "research_end": "2026-08-10",
@@ -440,13 +441,13 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         "release_id": release.name,
         "git_commit": "abc123",
         "coverage": {
-            "observed_start": "2006-01-02",
+            "observed_start": SOURCE_OBSERVED_START_DATE,
             "observed_end": "2026-08-10",
             "security_count": 2,
             "observation_count": 3,
         },
         "source_coverage": {
-            "source_verified_start": "2006-01-02",
+            "source_verified_start": SOURCE_OBSERVED_START_DATE,
             "source_verified_end": "2026-08-10",
             "verification_basis": "official NSE market-data files; no independent exchange calendar claim",
         },
