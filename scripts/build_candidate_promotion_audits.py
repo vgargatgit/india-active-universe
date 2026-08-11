@@ -122,6 +122,7 @@ def main() -> None:
               ca.share_factor,
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               cal.session_index AS event_session_index,
+              first_required_cal.session_index AS first_required_session_index,
               cs.decision_session_index,
               {adjusted_pre_expr},
               {adjusted_post_expr}
@@ -132,11 +133,13 @@ def main() -> None:
               ON v.event_id = ca.event_id
             LEFT JOIN read_parquet('{r}/trading_calendar.parquet') cal
               ON CAST(cal.date AS DATE) = CAST(ca.event_date AS DATE)
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') first_required_cal
+              ON CAST(first_required_cal.date AS DATE) = sr.first_required_month
             WHERE ca.event_type IN {MATERIAL_ACTIONS}
               AND CAST(ca.event_date AS DATE) < DATE '{args.control_start}'
               AND (
                 CAST(ca.event_date AS DATE) >= sr.first_required_month
-                OR cal.session_index >= cs.decision_session_index - {max_window}
+                OR cal.session_index >= first_required_cal.session_index - {max_window}
               )
           ), month_counts AS (
             SELECT candidate_start,
@@ -182,6 +185,7 @@ def main() -> None:
               ) AS left_censored_non_pass_no_crossing_boundaries,
               COUNT(DISTINCT event_id) FILTER (
                 WHERE validation_status <> 'PASS'
+                  AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
                   AND event_session_index >= decision_session_index - {max_window}
                   AND any_pre_adjusted_date IS NOT NULL
                   AND any_post_adjusted_date IS NOT NULL
@@ -245,6 +249,7 @@ def main() -> None:
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               event_cal.session_index AS event_session_index,
               boundary_cal.session_index AS boundary_session_index,
+              first_required_cal.session_index AS first_required_session_index,
               {adjusted_pre_expr},
               {adjusted_post_expr}
             FROM boundary_security_scope bss
@@ -255,11 +260,13 @@ def main() -> None:
               ON CAST(event_cal.date AS DATE) = CAST(ca.event_date AS DATE)
             LEFT JOIN read_parquet('{r}/trading_calendar.parquet') boundary_cal
               ON CAST(boundary_cal.date AS DATE) = bss.boundary_date
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') first_required_cal
+              ON CAST(first_required_cal.date AS DATE) = bss.first_required_month
             WHERE ca.event_type IN {MATERIAL_ACTIONS}
               AND CAST(ca.event_date AS DATE) < DATE '{args.control_start}'
               AND (
                 CAST(ca.event_date AS DATE) >= bss.first_required_month
-                OR event_cal.session_index >= boundary_cal.session_index - {max_window}
+                OR event_cal.session_index >= first_required_cal.session_index - {max_window}
               )
           ), boundary_material_counts AS (
             SELECT candidate_start,
@@ -278,6 +285,7 @@ def main() -> None:
               ) AS left_censored_non_pass_no_crossing_boundaries,
               COUNT(DISTINCT event_id) FILTER (
                 WHERE validation_status <> 'PASS'
+                  AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
                   AND event_session_index >= boundary_session_index - {max_window}
                   AND any_pre_adjusted_date IS NOT NULL
                   AND any_post_adjusted_date IS NOT NULL

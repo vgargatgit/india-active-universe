@@ -17,9 +17,10 @@ def parse_date(value: str | None) -> str | None:
 
 def classify(subject: str) -> str:
     text = subject.upper()
-    if "BONUS" in text and ("PREFERENCE" in text or "NCRPS" in text):
+    has_bonus = "BONUS" in text or re.search(r"\bBON\s*\d+\s*:\s*\d+", text) is not None
+    if has_bonus and ("PREFERENCE" in text or "NCRPS" in text):
         return "BONUS_PREFERENCE_SECURITY"
-    if "BONUS" in text and "DEBENTURE" not in text:
+    if has_bonus and "DEBENTURE" not in text:
         return "BONUS"
     if "SPLIT" in text or "SUB-DIVISION" in text:
         return "SPLIT"
@@ -63,6 +64,10 @@ def face_value_transition(subject: str, event_type: str) -> tuple[float | None, 
     )
     if not transition:
         transition = re.search(r"CONSOLIDATION.*?R[SE]\.?\s*(\d+(?:\.\d+)?)\D+TO\s+R[SE]\.?\s*(\d+(?:\.\d+)?)", text)
+    if not transition:
+        transition = re.search(r"SPL(?:IT)?\s*[-:/ ]+\s*R[SE]\.?\s*(\d+(?:\.\d+)?)\s*/?\s*TO\s*(\d+(?:\.\d+)?)\s*/?", text)
+    if not transition:
+        transition = re.search(r"FV\s+SPL\s*[-:/ ]+\s*(\d+(?:\.\d+)?)\s*/?\s*TO\s*(\d+(?:\.\d+)?)\s*/?", text)
     values = [float(value) for value in transition.groups()] if transition else [float(value) for value in re.findall(r"R[SE]\.?\s*(\d+(?:\.\d+)?)", text)]
     if len(values) != 2 or values[0] <= 0 or values[1] <= 0:
         return None, None, None

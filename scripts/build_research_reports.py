@@ -522,12 +522,15 @@ def main() -> None:
               ON CAST(cal.date AS DATE) >= c.candidate_start
             GROUP BY c.candidate_start
           ), scoped_required AS (
-            SELECT DISTINCT c.candidate_start, u.security_id
+            SELECT c.candidate_start,
+              u.security_id,
+              MIN(CAST(u.date AS DATE)) AS first_required_month
             FROM candidates c
             JOIN read_parquet('{r}/research_universe_monthly.parquet') u
               ON CAST(u.date AS DATE) >= c.candidate_start
              AND CAST(u.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
              AND (u.NSE_BROAD_LIQUID_PIT_V1_eligible OR u.top750_liquidity)
+            GROUP BY c.candidate_start, u.security_id
           ), material_events AS (
             SELECT sr.candidate_start,
               ca.event_id,
@@ -538,6 +541,7 @@ def main() -> None:
               ca.share_factor,
               COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
               cal.session_index AS event_session_index,
+              first_required_cal.session_index AS first_required_session_index,
               cs.decision_session_index,
               (
                 SELECT MAX(CAST(p.date AS DATE))
@@ -558,11 +562,13 @@ def main() -> None:
               ON v.event_id = ca.event_id
             LEFT JOIN read_parquet('{r}/trading_calendar.parquet') cal
               ON CAST(cal.date AS DATE) = CAST(ca.event_date AS DATE)
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') first_required_cal
+              ON CAST(first_required_cal.date AS DATE) = sr.first_required_month
             WHERE ca.event_type IN {MATERIAL_ACTIONS}
               AND CAST(ca.event_date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
               AND (
-                CAST(ca.event_date AS DATE) >= sr.candidate_start
-                OR cal.session_index >= cs.decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
+                CAST(ca.event_date AS DATE) >= sr.first_required_month
+                OR cal.session_index >= first_required_cal.session_index - {max(FEATURE_READINESS_WINDOWS.values())}
               )
           )
           SELECT candidate_start,
@@ -582,6 +588,7 @@ def main() -> None:
             ) AS left_censored_non_pass_no_crossing_boundaries,
             COUNT(DISTINCT event_id) FILTER (
               WHERE validation_status <> 'PASS'
+                AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
                 AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
                 AND any_pre_adjusted_date IS NOT NULL
                 AND any_post_adjusted_date IS NOT NULL

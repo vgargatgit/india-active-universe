@@ -27,8 +27,26 @@ def test_preference_share_bonus_is_not_common_equity_bonus():
     assert classify("Bonus Ncrps 1:116") == "BONUS_PREFERENCE_SECURITY"
 
 
+def test_bonus_abbreviation_overrides_dividend_text():
+    assert classify("Div-Rs.5.50 Pr Sh/Bon 5:1purpose Revised") == "BONUS"
+
+
 def test_face_value_transition_accepts_plain_slash_notation():
     old_face, new_face, factor = face_value_transition(
         "Bonus 1:1 / Face Value Split From 10/- To Face Value 2/-", "BONUS"
     )
     assert (old_face, new_face, factor) == (10.0, 2.0, 0.2)
+
+
+def test_face_value_transition_accepts_abbreviated_split_notation():
+    old_face, new_face, factor = face_value_transition(
+        "Bonus-1:1 Spl-Rs 5/ To 2/", "BONUS"
+    )
+    assert (old_face, new_face, factor) == (5.0, 2.0, 0.4)
+
+
+def test_face_value_transition_accepts_fv_spl_abbreviation():
+    old_face, new_face, factor = face_value_transition(
+        "Fv Spl-10 To 5 / Bon 1:2", "BONUS"
+    )
+    assert (old_face, new_face, factor) == (10.0, 5.0, 0.5)
