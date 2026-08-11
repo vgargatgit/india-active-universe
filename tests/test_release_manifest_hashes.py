@@ -7,10 +7,11 @@ import pyarrow.parquet as pq
 
 from scripts.publish_parquet import publish
 from scripts.validate_release_manifest_hashes import sha256, validate_manifest_hashes
+from india_active_universe.profiles import DATA_RELEASE_MANIFEST_ARTIFACT
 
 
 def write_manifest(release: Path, digest: str) -> None:
-    (release / "data_release_manifest.json").write_text(
+    (release / DATA_RELEASE_MANIFEST_ARTIFACT).write_text(
         json.dumps(
             {
                 "release_id": release.name,

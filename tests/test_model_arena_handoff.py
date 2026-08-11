@@ -7,14 +7,14 @@ from pathlib import Path
 import pytest
 
 from india_active_universe.api import DataPlatform
-from india_active_universe.profiles import LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TARGET_RELEASE_ID
+from india_active_universe.profiles import DATA_RELEASE_MANIFEST_ARTIFACT, LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TARGET_RELEASE_ID
 
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_ID = os.environ.get("INDIA_EQUITY_DATA_RELEASE_ID", TARGET_RELEASE_ID)
 RELEASE = ROOT / "releases" / RELEASE_ID
 REQUIRED_RELEASE_FILES = (
-    "data_release_manifest.json",
+    DATA_RELEASE_MANIFEST_ARTIFACT,
     "research_universe_monthly.parquet",
     "daily_prices_adjusted.parquet",
     "daily_prices_raw.parquet",
