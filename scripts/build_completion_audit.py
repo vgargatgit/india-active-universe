@@ -41,6 +41,7 @@ from india_active_universe.profiles import (
     REQUIRED_QUALITY_THRESHOLD,
     SECURITY_MASTER_ARTIFACT,
     SIGNAL_POLICY,
+    SOURCE_BUILD_MODE,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
     TERMINAL_EVENTS_ARTIFACT,
@@ -166,6 +167,8 @@ def data_manifest_contract_failures(release: Path, manifest: dict) -> list[str]:
         failures.append("data manifest release_id does not match release directory")
     if not manifest.get("git_commit") or manifest.get("git_commit") == "UNKNOWN":
         failures.append("data manifest git_commit is missing")
+    if manifest.get("build_mode") != SOURCE_BUILD_MODE:
+        failures.append(f"data manifest build_mode is not {SOURCE_BUILD_MODE}")
     coverage = manifest.get("coverage") or {}
     for key in ("observed_start", "observed_end", "security_count", "observation_count"):
         if coverage.get(key) is None:
