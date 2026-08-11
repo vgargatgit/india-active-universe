@@ -21,7 +21,7 @@ python -m pip install -e '.[dev]'
 india-equity-data --help
 ```
 
-The current research release is `india_equity_data_v2.0.0`: official NSE observations from 2006-01-02 through 2026-08-10, fresh source-built Parquet artifacts, official-session liquidity windows, effective-dated identities, raw and price-return adjusted prices, explicit status and terminal-event records, and a monthly `NSE_BROAD_LIQUID_PIT_V1` snapshot for 2013 onward. `LIQUID_V1` is a versioned consumer profile. It is not NIFTY 500 membership and it is not strategy logic. The full archive remains exploratory; the bounded liquid research scope is separately quality-labeled in `research_release_manifest.json`.
+The current research release is `india_equity_data_v2.0.1`: official NSE observations from 2006-01-02 through 2026-08-10, fresh source-built Parquet artifacts, official-session liquidity windows, effective-dated identities, raw and price-return adjusted prices, explicit status and terminal-event records, and a monthly `NSE_BROAD_LIQUID_PIT_V1` snapshot for 2013 onward. `LIQUID_V1` is a versioned consumer profile. It is not NIFTY 500 membership and it is not strategy logic. The full archive remains exploratory; the bounded liquid research scope is separately quality-labeled in `research_release_manifest.json`.
 
 Published release artifacts are compressed Parquet. JSONL files under `data/` are build intermediates and audit/debug outputs, not the downstream storage contract.
 

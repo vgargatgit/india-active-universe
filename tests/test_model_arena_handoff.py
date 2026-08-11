@@ -3,11 +3,21 @@ from __future__ import annotations
 from datetime import timedelta
 from pathlib import Path
 
+import pytest
+
 from india_active_universe.api import DataPlatform
 
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE = ROOT / "releases" / "india_equity_data_v2.0.1"
+REQUIRED_RELEASE_FILES = (
+    "data_release_manifest.json",
+    "research_universe_monthly.parquet",
+    "daily_prices_adjusted.parquet",
+    "daily_prices_raw.parquet",
+    "trading_calendar.parquet",
+    "terminal_events.parquet",
+)
 HANDOFF_DATES = ("2013-03-28", "2018-03-28", "2020-03-31", "2024-03-28", "2026-08-10")
 MANDATORY_UNIVERSE_FIELDS = (
     "security_id",
@@ -26,6 +36,10 @@ MANDATORY_UNIVERSE_FIELDS = (
 
 
 def test_model_arena_handoff_reads_profile_history_liquidity_and_execution_prices():
+    missing = [name for name in REQUIRED_RELEASE_FILES if not (RELEASE / name).exists()]
+    if missing:
+        pytest.skip(f"local data-scale release artifacts are not present: {', '.join(missing)}")
+
     platform = DataPlatform.from_release(RELEASE, strict=True)
     assert platform.coverage_end is not None
 
