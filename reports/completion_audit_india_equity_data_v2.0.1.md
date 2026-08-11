@@ -15,7 +15,7 @@
 - Adjusted-price quality counts: `{"TOTAL_RETURN_PARTIAL": 7545021}`.
 - Corporate-action boundary validation: `{"NO_LOCAL_BOUNDARY_OBSERVATION": 25, "NO_POST_EVENT_OBSERVATION": 349, "NO_PRE_EVENT_OBSERVATION": 341, "PASS": 529, "WARNING_LARGE_BOUNDARY_MOVE": 31}`.
 - Test results: `{"errors": 0, "failures": 0, "model_arena_handoff_passed": true, "skipped": 0, "tests": 25}`.
-- GitHub Actions CI: `{"conclusion": "success", "descends_from_release_git_commit": true, "failed_jobs": [], "head_sha": "a397747b47ef6375cc35ab7f749bdab8656c31ec", "job_count": 1, "matches_release_git_commit": false, "release_git_commit": "70401f31c546eb43d52ea546859952f72e7fd448", "run_id": 31456968356, "run_url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31456968356", "status": "completed", "workflow_name": "ci"}`.
+- GitHub Actions CI: `{"conclusion": "success", "descends_from_release_git_commit": true, "failed_jobs": [], "head_sha": "397704a741d47c647202a18d74f1fa8c4dccb253", "job_count": 1, "matches_release_git_commit": false, "release_git_commit": "70401f31c546eb43d52ea546859952f72e7fd448", "run_id": 31457131418, "run_url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31457131418", "status": "completed", "workflow_name": "ci"}`.
 
 ## Required artifact checks
 
