@@ -212,7 +212,11 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
 def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     release = tmp_path / "india_equity_data_v2.0.0"
     release.mkdir()
-    data_manifest = {"release_id": release.name, "git_commit": "abc123"}
+    data_manifest = {
+        "release_id": release.name,
+        "git_commit": "abc123",
+        "coverage": {"observed_start": "2006-01-02", "observed_end": "2026-08-10"},
+    }
     valid_manifest = {
         "release_id": release.name,
         "git_sha": "abc123",
@@ -326,6 +330,13 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     missing_artifact_contract = {**valid_manifest, "liquidity_artifact": "research_universe_monthly.parquet"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_artifact_contract)
     assert "research manifest liquidity_artifact is not liquidity_features.parquet" in failures
+
+    stale_coverage = {
+        **valid_manifest,
+        "source_coverage": {**valid_manifest["source_coverage"], "observed_end": "2025-12-31"},
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, stale_coverage)
+    assert "source_coverage.observed_end does not match data manifest coverage" in failures
 
     missing_ci_status_hash = {key: value for key, value in valid_manifest.items() if key != "ci_status_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)

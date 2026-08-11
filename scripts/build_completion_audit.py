@@ -145,6 +145,10 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
     for key in ("observed_start", "observed_end", "research_start", "research_end"):
         if not coverage.get(key):
             failures.append(f"source_coverage.{key} is missing")
+    data_coverage = manifest.get("coverage") or {}
+    for key in ("observed_start", "observed_end"):
+        if data_coverage.get(key) and coverage.get(key) != data_coverage.get(key):
+            failures.append(f"source_coverage.{key} does not match data manifest coverage")
 
     policy = research_manifest.get("known_policy") or {}
     expected_policy = {
