@@ -9,6 +9,7 @@ from india_active_universe.models import DailyObservation
 from india_active_universe.pipeline import build_active_snapshot, classify_instrument_type, discover_securities
 from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
+    ACTIVE_UNIVERSE_ARTIFACT,
     COMPONENT_QUALITY,
     DATA_RELEASE_MANIFEST_ARTIFACT,
     DATASET_QUALITY_TIER,
@@ -25,11 +26,13 @@ from india_active_universe.profiles import (
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_MONTHLY_SNAPSHOT_START,
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
     RESEARCH_START_DATE,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     SOURCE_BUILD_MODE,
     SOURCE_MANIFEST_ARTIFACT,
+    SECURITY_MASTER_ARTIFACT,
     TARGET_RELEASE_ID,
     TERMINAL_VALUE_POLICY,
     TERMINAL_VALUE_POLICY_REQUIREMENT,
@@ -226,8 +229,8 @@ def test_strict_platform_uses_research_verified_range_for_release(tmp_path):
         ),
         encoding="utf-8",
     )
-    pq.write_table(pa.table({"security_id": []}), release / "security_master.parquet")
-    for name in ("active_universe_daily.parquet", "liquidity_features.parquet", "daily_prices_raw.parquet"):
+    pq.write_table(pa.table({"security_id": []}), release / SECURITY_MASTER_ARTIFACT)
+    for name in (ACTIVE_UNIVERSE_ARTIFACT, LIQUIDITY_ARTIFACT, RAW_EXECUTION_PRICE_ARTIFACT):
         pq.write_table(pa.table({"date": [], "security_id": []}), release / name)
 
     platform = DataPlatform.from_release(release, strict=True)
@@ -700,7 +703,7 @@ def test_parquet_ranked_liquid_on_excludes_non_ordinary_or_non_active_status(tmp
     import pyarrow as pa
     import pyarrow.parquet as pq
 
-    path = tmp_path / "active_universe_daily.parquet"
+    path = tmp_path / ACTIVE_UNIVERSE_ARTIFACT
     pq.write_table(
         pa.table(
             {
@@ -722,7 +725,7 @@ def test_parquet_profile_on_executes_liquid_v1_when_materialized_flag_is_absent(
     import pyarrow as pa
     import pyarrow.parquet as pq
 
-    path = tmp_path / "research_universe_monthly.parquet"
+    path = tmp_path / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT
     pq.write_table(
         pa.table(
             {
@@ -749,7 +752,7 @@ def test_parquet_profile_on_reads_date_typed_monthly_snapshot(tmp_path):
     import pyarrow as pa
     import pyarrow.parquet as pq
 
-    path = tmp_path / "research_universe_monthly.parquet"
+    path = tmp_path / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT
     pq.write_table(
         pa.table(
             {

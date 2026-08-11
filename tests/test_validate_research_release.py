@@ -5,6 +5,12 @@ import sys
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from india_active_universe.profiles import (
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
+    TRADING_CALENDAR_ARTIFACT,
+)
+
 
 def _write_release(release, required_security_ids):
     release.mkdir()
@@ -44,9 +50,9 @@ def _write_release(release, required_security_ids):
             "eligibility_reason_codes": ["PASSED_LIQUID_V1"],
         }
     )
-    pq.write_table(monthly, release / "research_universe_monthly.parquet")
-    pq.write_table(pa.table({"security_id": ["SEC1"], "date": ["2020-01-01"]}), release / "daily_prices_raw.parquet")
-    pq.write_table(pa.table({"date": ["2020-03-31"]}), release / "trading_calendar.parquet")
+    pq.write_table(monthly, release / RESEARCH_UNIVERSE_MONTHLY_ARTIFACT)
+    pq.write_table(pa.table({"security_id": ["SEC1"], "date": ["2020-01-01"]}), release / RAW_EXECUTION_PRICE_ARTIFACT)
+    pq.write_table(pa.table({"date": ["2020-03-31"]}), release / TRADING_CALENDAR_ARTIFACT)
     pq.write_table(
         pa.table(
             {
