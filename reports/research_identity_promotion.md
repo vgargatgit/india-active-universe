@@ -1,7 +1,9 @@
 # Research identity promotion
 
-Required research securities: `2680`.
-Identity failures in the full required scope: `0`.
+Promoted research start: `2013-01-01`.
+Promoted-scope required research securities: `2680`.
+Candidate-plus-promoted support artifact securities: `4481`.
+Identity failures in the promoted required scope: `0`.
 
 | Research identity quality | Securities |
 |---|---:|

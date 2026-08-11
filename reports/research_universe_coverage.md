@@ -2,12 +2,23 @@
 
 Profile: `NSE_BROAD_LIQUID_PIT_V1` / `LIQUID_V1`
 
-Coverage: `2013-01-31` through `2026-08-10`.
+Coverage: `2004-01-30` through `2026-08-10`.
 
-Required research securities: `2680` total (`2352` LIQUID_V1 names and `2278` Top-750 names).
+Promoted-scope required research securities: `2680` total (`2352` LIQUID_V1 names and `2278` Top-750 names).
+
+Candidate-plus-promoted support artifact securities: `4481`.
 
 | Year | Active ordinary | LIQUID_V1 | Top-750 | Required | Identity passing | Identity failures | Price-action failures | Unknown-status exclusions | Sparse names |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2004 | 852 | 0 | 852 | 852 | 852 | 0 | 0 | 0 | 275 |
+| 2005 | 933 | 480 | 932 | 932 | 932 | 0 | 0 | 0 | 217 |
+| 2006 | 1071 | 454 | 958 | 958 | 958 | 0 | 0 | 0 | 253 |
+| 2007 | 1231 | 507 | 978 | 979 | 979 | 0 | 0 | 0 | 286 |
+| 2008 | 1326 | 542 | 935 | 935 | 935 | 0 | 0 | 0 | 431 |
+| 2009 | 1350 | 579 | 944 | 944 | 944 | 0 | 0 | 0 | 782 |
+| 2010 | 1499 | 745 | 949 | 962 | 962 | 0 | 0 | 0 | 438 |
+| 2011 | 3007 | 554 | 1690 | 1693 | 1693 | 0 | 0 | 0 | 568 |
+| 2012 | 1592 | 512 | 910 | 911 | 911 | 0 | 0 | 0 | 571 |
 | 2013 | 1568 | 520 | 893 | 893 | 893 | 0 | 0 | 0 | 643 |
 | 2014 | 1557 | 748 | 921 | 932 | 932 | 0 | 0 | 0 | 749 |
 | 2015 | 1561 | 821 | 926 | 951 | 951 | 0 | 0 | 0 | 313 |

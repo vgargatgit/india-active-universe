@@ -1,6 +1,6 @@
 # Survivorship audit
 
-Historically observed security IDs that do not have an observation on the latest source date: `3317`.
+Historically observed security IDs that do not have an observation on the latest source date: `3444`.
 
 | Security | Symbol | Last liquid date | Last observed date | Terminal evidence |
 |---|---|---|---|---|

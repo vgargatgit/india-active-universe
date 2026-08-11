@@ -43,6 +43,7 @@ from india_active_universe.profiles import (
     RECOMMENDED_SIGNAL_PRICE_SERIES,
     RESEARCH_RELEASE_MANIFEST_ARTIFACT,
     RESEARCH_MANIFEST_ARTIFACTS,
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
     RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_MONTHLY_SNAPSHOT_START,
@@ -94,10 +95,10 @@ def published_research_monthly_snapshot_start(
     fallback_monthly_start: str,
 ) -> str:
     """Return the first monthly snapshot covered by the scalar research interval."""
-    if published_start == fallback_start:
-        return fallback_monthly_start
     if published_start == CURRENT_PROVEN_RESEARCH_START_DATE:
         return RESEARCH_MONTHLY_SNAPSHOT_START
+    if published_start == fallback_start:
+        return fallback_monthly_start
     return published_start
 
 
@@ -1569,11 +1570,11 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             """)
             signal_price_diffs = scalar(regression_connection, f"""
               WITH baseline AS (
-                SELECT CAST(date AS DATE) AS date, security_id, price_return_adjusted_close
+                SELECT CAST(date AS DATE) AS date, security_id, research_adjusted_close AS price_return_adjusted_close
                 FROM read_parquet('{baseline_r}/daily_prices_adjusted.parquet')
                 WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
               ), candidate AS (
-                SELECT CAST(date AS DATE) AS date, security_id, price_return_adjusted_close
+                SELECT CAST(date AS DATE) AS date, security_id, research_adjusted_close AS price_return_adjusted_close
                 FROM read_parquet('{r}/daily_prices_adjusted.parquet')
                 WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
               )

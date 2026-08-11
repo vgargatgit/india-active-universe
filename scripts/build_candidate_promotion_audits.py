@@ -132,16 +132,19 @@ def main() -> None:
             WHERE sm.security_id IS NOT NULL
             GROUP BY candidate_start
           ), required_counts AS (
-            SELECT candidate_start,
+            SELECT rs.candidate_start,
               COUNT(*) AS required_rows,
-              COUNT(*) FILTER (WHERE model_handoff_history_ready_300) AS fully_warmed_required_rows,
-              COUNT(DISTINCT security_id) AS required_securities,
-              COUNT(DISTINCT security_id) FILTER (WHERE identity_ok IS DISTINCT FROM TRUE) AS identity_failures,
-              COUNT(DISTINCT security_id) FILTER (WHERE price_adjustment_ok IS DISTINCT FROM TRUE) AS price_adjustment_failures,
-              COUNT(DISTINCT security_id) FILTER (WHERE instrument_ok IS DISTINCT FROM TRUE) AS instrument_failures,
-              COUNT(DISTINCT security_id) FILTER (WHERE status_ok IS DISTINCT FROM TRUE) AS status_failures
-            FROM scoped_required_security
-            GROUP BY candidate_start
+              COUNT(*) FILTER (WHERE rs.model_handoff_history_ready_300) AS fully_warmed_required_rows,
+              COUNT(DISTINCT rs.security_id) AS required_securities,
+              COUNT(DISTINCT rs.security_id) FILTER (WHERE srs.identity_ok IS DISTINCT FROM TRUE) AS identity_failures,
+              COUNT(DISTINCT rs.security_id) FILTER (WHERE srs.price_adjustment_ok IS DISTINCT FROM TRUE) AS price_adjustment_failures,
+              COUNT(DISTINCT rs.security_id) FILTER (WHERE srs.instrument_ok IS DISTINCT FROM TRUE) AS instrument_failures,
+              COUNT(DISTINCT rs.security_id) FILTER (WHERE srs.status_ok IS DISTINCT FROM TRUE) AS status_failures
+            FROM required_scope rs
+            LEFT JOIN scoped_required_security srs
+              ON srs.candidate_start = rs.candidate_start
+             AND srs.security_id = rs.security_id
+            GROUP BY rs.candidate_start
           ), material_counts AS (
             SELECT candidate_start,
               COUNT(DISTINCT event_id) AS material_events,

@@ -22,6 +22,7 @@ def main() -> None:
     con.execute(
         f"""COPY (
             SELECT date,
+                   (ROW_NUMBER() OVER (ORDER BY CAST(date AS DATE)) - 1)::BIGINT AS session_index,
                    'OFFICIAL_NSE_MARKET_DATA' AS session_evidence,
                    count(DISTINCT source_file_id)::BIGINT AS source_file_count,
                    array_agg(DISTINCT source_file_id ORDER BY source_file_id) AS source_file_ids,
