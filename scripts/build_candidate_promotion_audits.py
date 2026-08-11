@@ -11,6 +11,7 @@ import duckdb
 
 from india_active_universe.profiles import (
     CANDIDATE_RESEARCH_START_DATES,
+    CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     FEATURE_READINESS_WINDOWS,
     LIQUID_V1_DEFINITION,
     PROFILE_ID,
@@ -403,6 +404,7 @@ def main() -> None:
         "priority_scope": PRIORITY_SCOPE,
         "control_start": args.control_start,
         "candidate_start_dates": list(CANDIDATE_RESEARCH_START_DATES),
+        "refined_boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
         "required_prior_sessions_for_full_readiness": max_window,
         "listing_age_sessions_min": listing_age_min,
         "candidate_audits": audits,

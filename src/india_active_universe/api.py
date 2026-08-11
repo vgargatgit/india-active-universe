@@ -20,6 +20,7 @@ from .profiles import (
     CANDIDATE_PROMOTION_API_METHODS,
     CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
     CANDIDATE_PROMOTION_SUMMARY_FIELDS,
+    CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_RESEARCH_START_DATES,
     DATA_RELEASE_MANIFEST_ARTIFACT,
     FEATURE_READINESS_WINDOWS,
@@ -677,6 +678,7 @@ class DataPlatform:
             "end": self.coverage_end.isoformat() if self.coverage_end else None,
             "profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
+            "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
             "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
         }
         return {

@@ -23,6 +23,7 @@ from india_active_universe.profiles import (
     CANDIDATE_FAIL_VALUE,
     CANDIDATE_NOT_RECORDED_VALUE,
     CANDIDATE_PASS_VALUE,
+    CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_RESEARCH_START_DATES,
     CORPORATE_ACTIONS_ARTIFACT,
     CURRENT_PROVEN_RESEARCH_END_DATE,
@@ -1743,6 +1744,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "end": str(coverage[1]),
         "profile": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
+        "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
         "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
     }
     executive_text = [

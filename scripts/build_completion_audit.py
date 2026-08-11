@@ -28,6 +28,7 @@ from india_active_universe.profiles import (
     CANDIDATE_NOT_RECORDED_VALUE,
     CANDIDATE_PASS_VALUE,
     CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
+    CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_RESEARCH_START_DATES,
     COMPONENT_QUALITY,
     CORPORATE_ACTIONS_ARTIFACT,
@@ -186,6 +187,8 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
         malformed_candidate_report.append("control_start")
     if candidate_promotion_report.get("candidate_start_dates") != list(CANDIDATE_RESEARCH_START_DATES):
         malformed_candidate_report.append("candidate_start_dates")
+    if candidate_promotion_report.get("refined_boundary_scan_method") != CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD:
+        malformed_candidate_report.append("refined_boundary_scan_method")
     if candidate_promotion_report.get("required_prior_sessions_for_full_readiness") != max(FEATURE_READINESS_WINDOWS.values()):
         malformed_candidate_report.append("required_prior_sessions_for_full_readiness")
     candidate_audits = candidate_promotion_report.get("candidate_audits") or []
@@ -655,6 +658,8 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append("research manifest candidate_recommended_research_interval.profile is not the published profile")
             if recommended_interval.get("profile_version") != PROFILE_VERSION:
                 failures.append("research manifest candidate_recommended_research_interval.profile_version is not the published profile version")
+            if recommended_interval.get("boundary_scan_method") != CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD:
+                failures.append("research manifest candidate_recommended_research_interval.boundary_scan_method is not the published refined scan method")
             if recommended_interval.get("promotion_status") != "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS":
                 failures.append("research manifest candidate_recommended_research_interval.promotion_status is not fail-closed")
 

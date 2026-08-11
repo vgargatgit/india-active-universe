@@ -11,6 +11,7 @@ from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     ACTIVE_UNIVERSE_ARTIFACT,
     CANDIDATE_MONTHLY_SNAPSHOT_START,
+    CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_PROMOTION_SUMMARY_FIELDS,
     CANDIDATE_RESEARCH_START_DATES,
     COMPONENT_QUALITY,
@@ -505,6 +506,7 @@ def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
                     "end": None,
                     "profile": "NSE_BROAD_LIQUID_PIT_V1",
                     "profile_version": "LIQUID_V1",
+                    "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
                     "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
                 },
                 "candidate_promotion_decisions": [],
@@ -1239,6 +1241,7 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "end": "2026-08-10",
             "profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
+            "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
             "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
         },
         "known_policy": {
@@ -1757,6 +1760,16 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, promoted_recommended_interval)
     assert "research manifest candidate_recommended_research_interval.promotion_status is not fail-closed" in failures
 
+    stale_scan_method_interval = {
+        **valid_manifest,
+        "candidate_recommended_research_interval": {
+            **valid_manifest["candidate_recommended_research_interval"],
+            "boundary_scan_method": "COARSE_CANDIDATE_STARTS_ONLY",
+        },
+    }
+    failures = research_manifest_contract_failures(release, data_manifest, stale_scan_method_interval)
+    assert "research manifest candidate_recommended_research_interval.boundary_scan_method is not the published refined scan method" in failures
+
     mismatched_recommended_interval = {
         **valid_manifest,
         "candidate_recommended_research_interval": {
@@ -1969,6 +1982,7 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
         "priority_scope": PRIORITY_SCOPE,
         "control_start": RESEARCH_START_DATE,
         "candidate_start_dates": list(CANDIDATE_RESEARCH_START_DATES),
+        "refined_boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
         "required_prior_sessions_for_full_readiness": max(FEATURE_READINESS_WINDOWS.values()),
         "candidate_audits": [valid_row, stale_row, missing_evidence_row, valid_2006_row],
     }
@@ -1983,6 +1997,12 @@ def test_candidate_promotion_audit_summary_requires_warmup_evidence():
 
     duplicate_summary = candidate_promotion_audit_summary({**valid_report, "candidate_audits": [valid_row, {**valid_row}]})
     assert duplicate_summary["duplicate_candidate_starts"] == ["2011-01-01"]
+
+    stale_scan_method_summary = candidate_promotion_audit_summary({
+        **valid_report,
+        "refined_boundary_scan_method": "COARSE_CANDIDATE_STARTS_ONLY",
+    })
+    assert stale_scan_method_summary["malformed_candidate_report"] == ["refined_boundary_scan_method"]
 
     unexpected_summary = candidate_promotion_audit_summary({**valid_report, "candidate_audits": [valid_row, {**valid_row, "candidate_start": "2010-01-01"}]})
     assert unexpected_summary["unexpected_candidate_starts"] == ["2010-01-01"]
