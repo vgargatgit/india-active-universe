@@ -25,6 +25,7 @@ from india_active_universe.profiles import (
     RESEARCH_MANIFEST_ARTIFACTS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_START_DATE,
+    REQUIRED_RESEARCH_REPORTS,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -43,13 +44,6 @@ REQUIRED = [
     "company_name_history.parquet", "isin_history.parquet", "corporate_action_boundary_validation.parquet",
     "research_universe_monthly.parquet", "required_research_security.parquet",
     "research_release_manifest.json", "partitioned_artifacts_manifest.json",
-]
-
-REQUIRED_RESEARCH_REPORTS = [
-    "data_source_coverage.md", "raw_integrity_audit.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md",
-    "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md",
-    "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md",
-    "current_survivor_comparison.md", "research_scale.md",
 ]
 
 REQUIRED_PARTITIONED_ARTIFACTS = {

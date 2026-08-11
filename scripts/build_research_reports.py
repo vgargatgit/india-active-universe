@@ -24,6 +24,7 @@ from india_active_universe.profiles import (
     RESEARCH_EXPLORATORY_STATUS,
     RESEARCH_HIGH_CONFIDENCE_STATUS,
     RESEARCH_START_DATE,
+    REQUIRED_RESEARCH_REPORTS,
     REQUIRED_QUALITY_THRESHOLD,
     SIGNAL_POLICY,
     TERMINAL_VALUE_POLICY,
@@ -432,7 +433,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         ],
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
-        "quality_reports": {name: sha256(reports / name) for name in ("data_source_coverage.md", "raw_integrity_audit.md", "research_universe_coverage.md", "research_identity_priority.md", "research_identity_promotion.md", "research_price_adjustment_promotion.md", "research_universe_corporate_action_audit.md", "session_correct_liquidity_audit.md", "research_universe_stability.md", "survivorship_audit.md", "current_survivor_comparison.md", "research_scale.md")},
+        "quality_reports": {name: sha256(reports / name) for name in REQUIRED_RESEARCH_REPORTS},
         "known_policy": {"signals": SIGNAL_POLICY, "execution": EXECUTION_POLICY, "terminal_values": TERMINAL_VALUE_POLICY},
         "known_limitations": [
             "Complete 2006 onward archive remains dataset-wide exploratory outside the scoped research universe.",

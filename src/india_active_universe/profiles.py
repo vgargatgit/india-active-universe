@@ -47,3 +47,17 @@ RESEARCH_MANIFEST_ARTIFACTS = (
     "suspension_events_resolved.parquet",
     "unresolved_observed_trading.parquet",
 )
+REQUIRED_RESEARCH_REPORTS = (
+    "data_source_coverage.md",
+    "raw_integrity_audit.md",
+    "research_universe_coverage.md",
+    "research_identity_priority.md",
+    "research_identity_promotion.md",
+    "research_price_adjustment_promotion.md",
+    "research_universe_corporate_action_audit.md",
+    "session_correct_liquidity_audit.md",
+    "research_universe_stability.md",
+    "survivorship_audit.md",
+    "current_survivor_comparison.md",
+    "research_scale.md",
+)
