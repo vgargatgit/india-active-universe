@@ -90,6 +90,11 @@ def dividend_amount(subject: str, face_value: object, event_type: str) -> tuple[
     return None, None
 
 
+def has_unsupported_rights_component(subject: str, event_type: str) -> bool:
+    """Return true when a material price action also contains unsupported rights terms."""
+    return event_type in {"BONUS", "SPLIT", "REVERSE_SPLIT"} and "RIGHT" in subject.upper()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--raw", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
@@ -108,21 +113,23 @@ def main() -> None:
         numerator, denominator, ratio_raw = ratio(subject)
         old_face_value, new_face_value, face_price_factor = face_value_transition(subject, event_type)
         cash_dividend_per_share, dividend_amount_quality = dividend_amount(subject, item.get("faceVal"), event_type)
+        unsupported_rights_component = has_unsupported_rights_component(subject, event_type)
         event_date = parse_date(item.get("exDate")) or parse_date(item.get("recDate"))
         if not event_date:
             continue
         price_factor = None
         share_factor = None
-        if event_type == "BONUS" and numerator is not None and denominator:
+        if event_type == "BONUS" and numerator is not None and denominator and not unsupported_rights_component:
             share_factor = (numerator + denominator) / denominator
             price_factor = 1.0 / share_factor
             if face_price_factor is not None:
                 price_factor *= face_price_factor
                 share_factor /= face_price_factor
-        if event_type in {"SPLIT", "REVERSE_SPLIT"} and face_price_factor is not None:
+        if event_type in {"SPLIT", "REVERSE_SPLIT"} and face_price_factor is not None and not unsupported_rights_component:
             price_factor = face_price_factor
             share_factor = 1.0 / face_price_factor
-        output.append({"event_id": f"NSE_CA_{index:06d}", "security_id": isin_to_security.get(item.get("isin")), "issuer_id": None, "exchange": "NSE", "symbol_at_event": item.get("symbol"), "isin": item.get("isin"), "series": item.get("series"), "event_type": event_type, "event_date": event_date, "ex_date": parse_date(item.get("exDate")), "record_date": parse_date(item.get("recDate")), "subject": subject, "face_value": item.get("faceVal"), "old_face_value": old_face_value, "new_face_value": new_face_value, "cash_dividend_per_share": cash_dividend_per_share, "dividend_currency": "INR" if cash_dividend_per_share is not None else None, "dividend_amount_quality": dividend_amount_quality, "ratio_raw": ratio_raw, "ratio_numerator": numerator, "ratio_denominator": denominator, "price_factor": price_factor, "share_factor": share_factor, "source": "NSE_OFFICIAL_CORPORATE_ACTION_FEED", "source_file_id": Path(args.raw).name, "source_quality": "OFFICIAL_EXCHANGE_ACTION_FEED", "review_status": "RESOLVED_BY_ISIN" if item.get("isin") in isin_to_security else "IDENTITY_REVIEW_REQUIRED", "notes": None})
+        notes = "UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT" if unsupported_rights_component else None
+        output.append({"event_id": f"NSE_CA_{index:06d}", "security_id": isin_to_security.get(item.get("isin")), "issuer_id": None, "exchange": "NSE", "symbol_at_event": item.get("symbol"), "isin": item.get("isin"), "series": item.get("series"), "event_type": event_type, "event_date": event_date, "ex_date": parse_date(item.get("exDate")), "record_date": parse_date(item.get("recDate")), "subject": subject, "face_value": item.get("faceVal"), "old_face_value": old_face_value, "new_face_value": new_face_value, "cash_dividend_per_share": cash_dividend_per_share, "dividend_currency": "INR" if cash_dividend_per_share is not None else None, "dividend_amount_quality": dividend_amount_quality, "ratio_raw": ratio_raw, "ratio_numerator": numerator, "ratio_denominator": denominator, "price_factor": price_factor, "share_factor": share_factor, "source": "NSE_OFFICIAL_CORPORATE_ACTION_FEED", "source_file_id": Path(args.raw).name, "source_quality": "OFFICIAL_EXCHANGE_ACTION_FEED", "review_status": "FACTOR_REVIEW_REQUIRED" if unsupported_rights_component else ("RESOLVED_BY_ISIN" if item.get("isin") in isin_to_security else "IDENTITY_REVIEW_REQUIRED"), "notes": notes})
     write_jsonl(args.out, output, overwrite=True)
     print(json.dumps({"events": len(output), "linked_security_ids": sum(row["security_id"] is not None for row in output), "unresolved_identity": sum(row["security_id"] is None for row in output)}, sort_keys=True))
 

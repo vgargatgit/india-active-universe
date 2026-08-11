@@ -1,4 +1,4 @@
-from scripts.normalize_corporate_actions import classify, face_value_transition
+from scripts.normalize_corporate_actions import classify, face_value_transition, has_unsupported_rights_component
 from scripts.validate_corporate_action_boundaries import classify_boundary
 
 
@@ -50,3 +50,13 @@ def test_face_value_transition_accepts_fv_spl_abbreviation():
         "Fv Spl-10 To 5 / Bon 1:2", "BONUS"
     )
     assert (old_face, new_face, factor) == (10.0, 5.0, 0.5)
+
+
+def test_bonus_rights_composite_requires_factor_review():
+    subject = "Bonus 1:2/Rights 1:1"
+    assert classify(subject) == "BONUS"
+    assert has_unsupported_rights_component(subject, "BONUS") is True
+
+
+def test_plain_bonus_does_not_require_rights_review():
+    assert has_unsupported_rights_component("Bonus 1:2", "BONUS") is False
