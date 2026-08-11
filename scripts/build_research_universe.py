@@ -115,9 +115,9 @@ def main() -> None:
           AND b.trading_status = 'ACTIVE_TRADING'
       )
       SELECT r.*,
-        r.rank_126 <= 500 AS top500_liquidity,
-        r.rank_126 <= 750 AS top750_liquidity,
-        r.rank_126 <= 1000 AS top1000_liquidity,
+        r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 500 AS top500_liquidity,
+        r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 750 AS top750_liquidity,
+        r.median_traded_value_126 IS NOT NULL AND r.rank_126 <= 1000 AS top1000_liquidity,
         r.liquid_v1_eligible AS LIQUID_V1_eligible,
         r.liquid_v1_eligible AS NSE_BROAD_LIQUID_PIT_V1_eligible,
         'NSE_BROAD_LIQUID_PIT_V1' AS profile_id,

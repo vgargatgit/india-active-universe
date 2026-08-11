@@ -72,6 +72,13 @@ def main() -> None:
                   OR status_quality IS NULL
                 )
             """).fetchone()[0],
+            "top_liquidity_null_metric_failures": connection.execute(f"""
+              SELECT COUNT(*) FROM read_parquet('{r}/research_universe_monthly.parquet')
+              WHERE (COALESCE(top500_liquidity, FALSE)
+                  OR COALESCE(top750_liquidity, FALSE)
+                  OR COALESCE(top1000_liquidity, FALSE))
+                AND median_traded_value_126 IS NULL
+            """).fetchone()[0],
             "required_scope_missing_from_required_artifact": connection.execute(f"""
               WITH monthly_required AS (
                 SELECT DISTINCT security_id
