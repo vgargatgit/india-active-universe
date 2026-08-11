@@ -597,6 +597,98 @@ def main() -> None:
           GROUP BY candidate_start
           ORDER BY candidate_start DESC
         """).fetchall()
+        pre2013_contaminating_boundary_rows = connection.execute(f"""
+          WITH candidates(candidate_start) AS (
+            VALUES {candidate_values}
+          ), candidate_sessions AS (
+            SELECT c.candidate_start,
+              MIN(cal.session_index) AS decision_session_index
+            FROM candidates c
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') cal
+              ON CAST(cal.date AS DATE) >= c.candidate_start
+            GROUP BY c.candidate_start
+          ), scoped_required AS (
+            SELECT c.candidate_start,
+              u.security_id,
+              MIN(CAST(u.date AS DATE)) AS first_required_month
+            FROM candidates c
+            JOIN read_parquet('{r}/research_universe_monthly.parquet') u
+              ON CAST(u.date AS DATE) >= c.candidate_start
+             AND CAST(u.date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
+             AND (u.NSE_BROAD_LIQUID_PIT_V1_eligible OR u.top750_liquidity)
+            GROUP BY c.candidate_start, u.security_id
+          ), material_events AS (
+            SELECT sr.candidate_start,
+              ca.event_id,
+              ca.security_id,
+              ca.symbol_at_event,
+              CAST(ca.event_date AS DATE) AS event_date,
+              ca.event_type,
+              ca.subject,
+              ca.price_factor,
+              ca.share_factor,
+              COALESCE(v.validation_status, 'NO_BOUNDARY_VALIDATION') AS validation_status,
+              v.pre_event_close,
+              v.post_event_close,
+              v.holder_value_ratio,
+              first_required_cal.session_index - cal.session_index AS sessions_before_first_required,
+              cal.session_index AS event_session_index,
+              cs.decision_session_index,
+              (
+                SELECT MAX(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) < CAST(ca.event_date AS DATE)
+              ) AS any_pre_adjusted_date,
+              (
+                SELECT MIN(CAST(p.date AS DATE))
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet') p
+                WHERE p.security_id = ca.security_id
+                  AND CAST(p.date AS DATE) >= CAST(ca.event_date AS DATE)
+              ) AS any_post_adjusted_date
+            FROM scoped_required sr
+            JOIN read_parquet('{r}/corporate_actions.parquet') ca USING (security_id)
+            JOIN candidate_sessions cs USING (candidate_start)
+            LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v
+              ON v.event_id = ca.event_id
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') cal
+              ON CAST(cal.date AS DATE) = CAST(ca.event_date AS DATE)
+            LEFT JOIN read_parquet('{r}/trading_calendar.parquet') first_required_cal
+              ON CAST(first_required_cal.date AS DATE) = sr.first_required_month
+            WHERE ca.event_type IN {MATERIAL_ACTIONS}
+              AND CAST(ca.event_date AS DATE) < DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}'
+              AND (
+                CAST(ca.event_date AS DATE) >= sr.first_required_month
+                OR cal.session_index >= first_required_cal.session_index - {max(FEATURE_READINESS_WINDOWS.values())}
+              )
+          )
+          SELECT candidate_start,
+            event_id,
+            security_id,
+            symbol_at_event,
+            event_date,
+            event_type,
+            subject,
+            price_factor,
+            share_factor,
+            pre_event_close,
+            post_event_close,
+            holder_value_ratio,
+            validation_status,
+            sessions_before_first_required,
+            CASE
+              WHEN UPPER(subject) LIKE '%RIGHT%' THEN 'UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT'
+              WHEN validation_status = 'WARNING_LARGE_BOUNDARY_MOVE' THEN 'LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED'
+              ELSE 'NON_PASS_BOUNDARY_REVIEW_REQUIRED'
+            END AS blocker_class
+          FROM material_events
+          WHERE validation_status <> 'PASS'
+            AND validation_status <> 'NO_LOCAL_BOUNDARY_OBSERVATION'
+            AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
+            AND any_pre_adjusted_date IS NOT NULL
+            AND any_post_adjusted_date IS NOT NULL
+          ORDER BY candidate_start DESC, event_date, symbol_at_event, event_id
+        """).fetchall()
         pre2013_adjusted_outlier_rows = connection.execute(f"""
           WITH required_pre2013 AS (
             SELECT DISTINCT security_id
@@ -1348,6 +1440,20 @@ Weekend and holiday dates are not part of any window.
             gate = "PASS"
         adjustment_quality_text.append(f"| {candidate_start} | {material_events} | {missing_factors} | {non_pass_boundaries} | {left_censored_boundaries} | {no_crossing_boundaries} | {contaminating_boundaries} | `{gate}` |")
     adjustment_quality_text.extend([
+        "",
+        "## Candidate signal-window boundary blockers",
+        "",
+        "These rows explain the `Contaminating signal-window non-PASS` counts above. They are source-backed blockers, not inferred index-membership artifacts.",
+        "",
+        "| Candidate start | Event | Security | Symbol | Event date | Type | Subject | Price factor | Share factor | Pre close | Post close | Holder value ratio | Validation | Sessions before first required month | Blocker class |",
+        "|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---|---:|---|",
+    ])
+    for candidate_start, event_id, sid, symbol, event_date, event_type, subject, price_factor, share_factor, pre_close, post_close, holder_ratio, validation_status, sessions_before_first_required, blocker_class in pre2013_contaminating_boundary_rows:
+        adjustment_quality_text.append(f"| {candidate_start} | `{event_id}` | `{sid}` | `{symbol}` | {event_date} | `{event_type}` | {subject} | {price_factor} | {share_factor} | {pre_close} | {post_close} | {holder_ratio} | `{validation_status}` | {sessions_before_first_required} | `{blocker_class}` |")
+    adjustment_quality_text.extend([
+        "",
+        "`UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT` means the official event subject includes a rights component that this price-return adjustment model does not yet price. It must stay blocking until rights terms are supported or manually reviewed with evidence.",
+        "`LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` means official split/bonus factors exist, but the adjacent holder-value move is outside the current warning threshold and still needs classification as genuine market move, source anomaly, identity error, or missing adjustment.",
         "",
         "## Adjusted one-session return outliers",
         "",
