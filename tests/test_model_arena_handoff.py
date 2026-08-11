@@ -7,7 +7,18 @@ from pathlib import Path
 import pytest
 
 from india_active_universe.api import DataPlatform
-from india_active_universe.profiles import DATA_RELEASE_MANIFEST_ARTIFACT, LIQUID_V1_DEFINITION, PROFILE_ID, PROFILE_VERSION, TARGET_RELEASE_ID
+from india_active_universe.profiles import (
+    ADJUSTED_PRICE_ARTIFACT,
+    DATA_RELEASE_MANIFEST_ARTIFACT,
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
+    TERMINAL_EVENTS_ARTIFACT,
+    TRADING_CALENDAR_ARTIFACT,
+    LIQUID_V1_DEFINITION,
+    PROFILE_ID,
+    PROFILE_VERSION,
+    TARGET_RELEASE_ID,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,11 +26,11 @@ RELEASE_ID = os.environ.get("INDIA_EQUITY_DATA_RELEASE_ID", TARGET_RELEASE_ID)
 RELEASE = ROOT / "releases" / RELEASE_ID
 REQUIRED_RELEASE_FILES = (
     DATA_RELEASE_MANIFEST_ARTIFACT,
-    "research_universe_monthly.parquet",
-    "daily_prices_adjusted.parquet",
-    "daily_prices_raw.parquet",
-    "trading_calendar.parquet",
-    "terminal_events.parquet",
+    RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
+    ADJUSTED_PRICE_ARTIFACT,
+    RAW_EXECUTION_PRICE_ARTIFACT,
+    TRADING_CALENDAR_ARTIFACT,
+    TERMINAL_EVENTS_ARTIFACT,
 )
 BASE_HANDOFF_DATES = ("2013-03-28", "2018-03-28", "2020-03-31", "2024-03-28")
 MANDATORY_UNIVERSE_FIELDS = (
