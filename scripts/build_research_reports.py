@@ -21,8 +21,10 @@ from india_active_universe.profiles import (
     CANDIDATE_NOT_READY_INTERPRETATION,
     CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
     CANDIDATE_FAIL_VALUE,
+    CANDIDATE_FEATURE_READINESS_POLICY,
     CANDIDATE_NOT_RECORDED_VALUE,
     CANDIDATE_PASS_VALUE,
+    CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
     CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_RESEARCH_START_DATES,
     CORPORATE_ACTIONS_ARTIFACT,
@@ -1749,8 +1751,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
     }
     candidate_recommended_pit_universe_interval = {
         **candidate_recommended_research_interval,
-        "interval_type": "PIT_UNIVERSE",
-        "feature_readiness_policy": "FEATURE_READINESS_REPORTED_SEPARATELY",
+        "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+        "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
     }
     executive_text = [
         "# Extended history research readiness",

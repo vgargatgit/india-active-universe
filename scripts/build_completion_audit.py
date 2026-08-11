@@ -25,8 +25,10 @@ from india_active_universe.profiles import (
     CANDIDATE_HARD_FAILURE_KEYS,
     CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
     CANDIDATE_FAIL_VALUE,
+    CANDIDATE_FEATURE_READINESS_POLICY,
     CANDIDATE_NOT_RECORDED_VALUE,
     CANDIDATE_PASS_VALUE,
+    CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
     CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
     CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_RESEARCH_START_DATES,
@@ -685,9 +687,9 @@ def research_manifest_contract_failures(release: Path, manifest: dict, research_
                 failures.append("research manifest candidate_recommended_pit_universe_interval.boundary_scan_method is not the published refined scan method")
             if pit_universe_interval.get("promotion_status") != "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS":
                 failures.append("research manifest candidate_recommended_pit_universe_interval.promotion_status is not fail-closed")
-            if pit_universe_interval.get("interval_type") != "PIT_UNIVERSE":
+            if pit_universe_interval.get("interval_type") != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE:
                 failures.append("research manifest candidate_recommended_pit_universe_interval.interval_type is not PIT_UNIVERSE")
-            if pit_universe_interval.get("feature_readiness_policy") != "FEATURE_READINESS_REPORTED_SEPARATELY":
+            if pit_universe_interval.get("feature_readiness_policy") != CANDIDATE_FEATURE_READINESS_POLICY:
                 failures.append("research manifest candidate_recommended_pit_universe_interval.feature_readiness_policy does not separate feature readiness")
 
     policy = research_manifest.get("known_policy") or {}

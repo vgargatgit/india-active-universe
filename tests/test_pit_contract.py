@@ -11,6 +11,8 @@ from india_active_universe.profiles import (
     ACTIVE_DEFINITION,
     ACTIVE_UNIVERSE_ARTIFACT,
     CANDIDATE_MONTHLY_SNAPSHOT_START,
+    CANDIDATE_FEATURE_READINESS_POLICY,
+    CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
     CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_PROMOTION_SUMMARY_FIELDS,
     CANDIDATE_RESEARCH_START_DATES,
@@ -374,14 +376,17 @@ def test_platform_exposes_machine_readable_candidate_promotion_contract():
         CANDIDATE_DECISION_GATE_VALUES,
         CANDIDATE_DECISION_REQUIRED_FIELDS,
         CANDIDATE_FAIL_VALUE,
+        CANDIDATE_FEATURE_READINESS_POLICY,
         CANDIDATE_GATE_PASS_INTERPRETATION,
         CANDIDATE_HARD_FAILURE_KEYS,
         CANDIDATE_NOT_RECORDED_VALUE,
         CANDIDATE_NUMERIC_HARD_FAILURE_KEYS,
         CANDIDATE_PASS_VALUE,
+        CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
         CANDIDATE_PROMOTION_API_METHODS,
         CANDIDATE_PROMOTION_INTERPRETATION_VALUES,
         CANDIDATE_PROMOTION_SUMMARY_FIELDS,
+        CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
         CANDIDATE_RESEARCH_START_DATES,
     )
 
@@ -400,6 +405,9 @@ def test_platform_exposes_machine_readable_candidate_promotion_contract():
     assert tuple(contract["candidate_promotion_interpretation_values"]) == CANDIDATE_PROMOTION_INTERPRETATION_VALUES
     assert contract["candidate_pass_value"] == CANDIDATE_PASS_VALUE
     assert contract["candidate_fail_value"] == CANDIDATE_FAIL_VALUE
+    assert contract["candidate_refined_boundary_scan_method"] == CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD
+    assert contract["candidate_pit_universe_interval_type"] == CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
+    assert contract["candidate_feature_readiness_policy"] == CANDIDATE_FEATURE_READINESS_POLICY
     assert contract["candidate_not_recorded_value"] == CANDIDATE_NOT_RECORDED_VALUE
     assert contract["candidate_gate_pass_interpretation"] == CANDIDATE_GATE_PASS_INTERPRETATION
 
@@ -508,8 +516,8 @@ def test_candidate_readiness_cli_prints_candidate_summary(monkeypatch, capsys):
                     "profile_version": "LIQUID_V1",
                     "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
                     "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
-                    "interval_type": "PIT_UNIVERSE",
-                    "feature_readiness_policy": "FEATURE_READINESS_REPORTED_SEPARATELY",
+                    "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+                    "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
                 },
                 "candidate_recommended_research_interval": {
                     "status": "NO_REFINED_BOUNDARY",
@@ -1254,8 +1262,8 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
             "profile_version": PROFILE_VERSION,
             "boundary_scan_method": CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
             "promotion_status": "NOT_PROMOTED_UNLESS_PRESENT_IN_RESEARCH_QUALITY_INTERVALS",
-            "interval_type": "PIT_UNIVERSE",
-            "feature_readiness_policy": "FEATURE_READINESS_REPORTED_SEPARATELY",
+            "interval_type": CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
+            "feature_readiness_policy": CANDIDATE_FEATURE_READINESS_POLICY,
         },
         "candidate_recommended_research_interval": {
             "status": "NO_REFINED_BOUNDARY",
