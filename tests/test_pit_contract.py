@@ -381,6 +381,10 @@ def test_research_manifest_contract_requires_scoped_downstream_policy(tmp_path):
     failures = research_manifest_contract_failures(release, data_manifest, stale_coverage)
     assert "source_coverage.observed_end does not match data manifest coverage" in failures
 
+    stale_config_hash = {**valid_manifest, "config_sha256": "1" * 64}
+    failures = research_manifest_contract_failures(release, data_manifest, stale_config_hash)
+    assert "research manifest config_sha256 does not match data manifest" in failures
+
     missing_ci_status_hash = {key: value for key, value in valid_manifest.items() if key != "ci_status_sha256"}
     failures = research_manifest_contract_failures(release, data_manifest, missing_ci_status_hash)
     assert "research manifest ci_status_sha256 is missing or invalid" in failures
