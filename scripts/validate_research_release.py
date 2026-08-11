@@ -318,6 +318,61 @@ def main() -> None:
                  OR (COALESCE(top500_liquidity, FALSE) AND NOT COALESCE(top750_liquidity, FALSE))
                  OR (COALESCE(top750_liquidity, FALSE) AND NOT COALESCE(top1000_liquidity, FALSE))
             """).fetchone()[0],
+            "zero_liquid_collapse_months": connection.execute(f"""
+              WITH monthly AS (
+                SELECT CAST(date AS DATE) AS date,
+                       COUNT(*) FILTER (WHERE NSE_BROAD_LIQUID_PIT_V1_eligible) AS liquid_count
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                GROUP BY 1
+              ), flagged AS (
+                SELECT date, liquid_count,
+                       LAG(liquid_count) OVER (ORDER BY date) AS previous_liquid_count,
+                       LEAD(liquid_count) OVER (ORDER BY date) AS next_liquid_count
+                FROM monthly
+              )
+              SELECT COUNT(*)
+              FROM flagged
+              WHERE liquid_count = 0
+                AND COALESCE(previous_liquid_count, 0) >= 100
+                AND COALESCE(next_liquid_count, 0) >= 100
+            """).fetchone()[0],
+            "active_security_count_spike_reversal_failures": connection.execute(f"""
+              WITH yearly AS (
+                SELECT EXTRACT(year FROM CAST(date AS DATE)) AS year,
+                       COUNT(DISTINCT security_id) AS active_count
+                FROM read_parquet('{r}/daily_prices_raw.parquet')
+                WHERE instrument_type = '{instrument_type}'
+                GROUP BY 1
+              ), flagged AS (
+                SELECT year, active_count,
+                       LAG(active_count) OVER (ORDER BY year) AS previous_count,
+                       LEAD(active_count) OVER (ORDER BY year) AS next_count
+                FROM yearly
+              )
+              SELECT COUNT(*)
+              FROM flagged
+              WHERE previous_count IS NOT NULL
+                AND next_count IS NOT NULL
+                AND active_count > previous_count * 1.5
+                AND next_count < active_count / 1.5
+            """).fetchone()[0],
+            "population_history_reset_months": connection.execute(f"""
+              WITH monthly AS (
+                SELECT CAST(date AS DATE) AS date,
+                       AVG(history_sessions) AS avg_history_sessions
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                GROUP BY 1
+              ), flagged AS (
+                SELECT date, avg_history_sessions,
+                       LAG(avg_history_sessions) OVER (ORDER BY date) AS previous_avg_history_sessions
+                FROM monthly
+              )
+              SELECT COUNT(*)
+              FROM flagged
+              WHERE previous_avg_history_sessions IS NOT NULL
+                AND previous_avg_history_sessions >= 300
+                AND avg_history_sessions < previous_avg_history_sessions * 0.5
+            """).fetchone()[0],
         }
     finally:
         connection.close()

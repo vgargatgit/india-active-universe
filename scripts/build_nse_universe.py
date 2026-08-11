@@ -75,6 +75,7 @@ def main() -> None:
                 yield item
 
     discovered = discover_securities(observations())
+    v1_identities = build_identity_rows(discovered, canonicalization_version="identity-v1")
     identities = build_identity_rows(discovered, canonicalization_version=args.canonicalization_version, session_index_by_date=session_index_by_date)
     overrides = load_manual_overrides(args.manual_overrides)
     apply_manual_overrides(identities, overrides)
@@ -126,8 +127,43 @@ def main() -> None:
         unresolved_handle.close()
 
     symbol_history = [{"security_id": row["security_id"], "exchange": row["exchange"], "symbol": row["symbol"], "series": row["series"], "effective_from": row["effective_from"], "effective_to": row["effective_to"], "source": row.get("identity_source") or "UNRESOLVED_OBSERVATION", "confidence": row["identity_quality"]} for row in identities]
+    v1_by_source_key = {
+        (row["exchange"], row["symbol"], row["series"], row.get("candidate_isin") or "", row["effective_from"], row["effective_to"]): row
+        for row in v1_identities
+    }
+    migration_rows = []
+    for row in identities:
+        source_key = (row["exchange"], row["symbol"], row["series"], row.get("candidate_isin") or "", row["effective_from"], row["effective_to"])
+        old = v1_by_source_key.get(source_key)
+        if not old:
+            continue
+        reason = "UNCHANGED"
+        quality = "UNCHANGED"
+        evidence = "IDENTITY_V1_COMPATIBLE"
+        if old["security_id"] != row["security_id"]:
+            reason = "ADJACENT_SOURCE_IDENTITY_CONTINUITY"
+            quality = "RECONSTRUCTED_PRE_ISIN_CONTINUITY" if row.get("identity_source") == "RECONSTRUCTED_PRE_ISIN_CONTINUITY" else "RECONSTRUCTED_ADJACENT_SYMBOL_ISIN_CONTINUITY"
+            evidence = "same exchange/symbol/series; adjacent official-session observations; effective-dated source ISIN preserved"
+        migration_rows.append({
+            "old_security_id": old["security_id"],
+            "new_security_id": row["security_id"],
+            "old_listing_episode_id": old["listing_episode_id"],
+            "new_listing_episode_id": row["listing_episode_id"],
+            "exchange": row["exchange"],
+            "symbol": row["symbol"],
+            "series": row["series"],
+            "source_isin": row.get("isin"),
+            "effective_from": row["effective_from"],
+            "effective_to": row["effective_to"],
+            "migration_reason": reason,
+            "identity_evidence": evidence,
+            "migration_quality": quality,
+            "canonicalization_from": "identity-v1",
+            "canonicalization_to": args.canonicalization_version,
+        })
     write_jsonl(canonical / "security_master.jsonl", identities, overwrite=True)
     write_jsonl(canonical / "symbol_history.jsonl", symbol_history, overwrite=True)
+    write_jsonl(canonical / "security_id_migration.jsonl", migration_rows, overwrite=True)
     write_jsonl(derived / "liquidity_features.jsonl", [], overwrite=True)
     write_jsonl(derived / "data_quality_findings.jsonl", findings, overwrite=True)
     print(f"dates={len(paths)} observations={raw_count} unresolved_observations={unresolved_count} securities={len(identities)} active_rows={active_count} findings={len(findings)}")

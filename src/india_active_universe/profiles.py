@@ -1,6 +1,6 @@
 """Published universe profile contracts."""
 
-TARGET_RELEASE_ID = "india_equity_data_v2.1.1"
+TARGET_RELEASE_ID = "india_equity_data_v2.2.0"
 SOURCE_BUILD_MODE = "SOURCE_BUILD"
 CACHED_PROMOTION_BUILD_MODE = "CACHED_PROMOTION"
 PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"
@@ -41,7 +41,7 @@ DATASET_QUALITY_TIER = "DATASET_EXPLORATORY"
 ACTIVE_DEFINITION = "ACTIVE_V1"
 PARSER_VERSIONS = {
     "nse_bhavcopy": "nse-bhavcopy-v2",
-    "canonicalization": "identity-v1",
+    "canonicalization": "identity-v2",
 }
 RESEARCH_HIGH_CONFIDENCE_STATUS = "RESEARCH_HIGH_CONFIDENCE"
 RESEARCH_EXPLORATORY_STATUS = "RESEARCH_EXPLORATORY"
@@ -190,6 +190,7 @@ RESEARCH_MANIFEST_ARTIFACTS = (
 REQUIRED_RELEASE_ARTIFACTS = (
     SECURITY_MASTER_ARTIFACT,
     "symbol_history.parquet",
+    "security_id_migration.parquet",
     "issuer_master.parquet",
     "listing_episodes.parquet",
     RAW_EXECUTION_PRICE_ARTIFACT,

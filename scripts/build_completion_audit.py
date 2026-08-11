@@ -103,6 +103,9 @@ EXPECTED_INVARIANT_VALIDATION_METRICS = {
     "eligible_profile_metadata_failures",
     "excluded_profile_metadata_failures",
     "top_liquidity_flag_failures",
+    "zero_liquid_collapse_months",
+    "active_security_count_spike_reversal_failures",
+    "population_history_reset_months",
 }
 
 EXPECTED_CANDIDATE_HARD_FAILURE_KEYS = set(CANDIDATE_HARD_FAILURE_KEYS)

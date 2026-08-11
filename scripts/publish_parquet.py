@@ -91,6 +91,7 @@ def main() -> None:
     mappings = {
         "security_master.jsonl": "security_master.parquet",
         "symbol_history.jsonl": "symbol_history.parquet",
+        "security_id_migration.jsonl": "security_id_migration.parquet",
         "unresolved_observed_trading.jsonl": "unresolved_observed_trading.parquet",
         "daily_prices_raw.jsonl": "daily_prices_raw.parquet",
         "active_universe_daily.jsonl": "active_universe_daily.parquet",
