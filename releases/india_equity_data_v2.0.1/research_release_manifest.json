@@ -18,7 +18,7 @@
     "WARNING_LARGE_BOUNDARY_MOVE": 26
   },
   "config_sha256": "f00cc1037e7bbd35b1f4e822e23727b74da73f3b72762495f32df0a0993c2ee4",
-  "git_sha": "696a1ca97d4a94429e1bfb2cd5243ed23ac22da4",
+  "git_sha": "70401f31c546eb43d52ea546859952f72e7fd448",
   "identity_failures": 0,
   "known_policy": {
     "execution": "raw nominal OHLC",
@@ -60,5 +60,5 @@
     "research_start": "2013-01-01"
   },
   "status_interval_overlaps": 0,
-  "test_result_sha256": "b50273727ff41320b9481af2041b66d83aafd317c1165e23d7afe798f1aff487"
+  "test_result_sha256": "aeecfcab9ff7c1d8bbea4308edff945015916d29ff8ff9ec1c10f4f72cba13e9"
 }
