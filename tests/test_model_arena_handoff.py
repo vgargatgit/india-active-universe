@@ -10,6 +10,7 @@ import pyarrow.parquet as parquet
 from india_active_universe.api import DataPlatform
 from india_active_universe.profiles import (
     ADJUSTED_PRICE_ARTIFACT,
+    CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
     DATA_RELEASE_MANIFEST_ARTIFACT,
     RAW_EXECUTION_PRICE_ARTIFACT,
     RESEARCH_UNIVERSE_MONTHLY_ARTIFACT,
@@ -120,6 +121,7 @@ def _earliest_promoted_pre2013_snapshot(platform: DataPlatform) -> str | None:
         interval for interval in platform.research_quality_intervals
         if interval.get("status") == "RESEARCH_HIGH_CONFIDENCE"
         and interval.get("start")
+        and interval.get("interval_type") != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
         and platform._check_date(interval["start"]) < date(2013, 1, 1)
     ]
     if not intervals:
@@ -142,7 +144,7 @@ def test_model_arena_handoff_reads_earliest_promoted_pre2013_interval():
     platform = DataPlatform.from_release(RELEASE, strict=True)
     as_of = _earliest_promoted_pre2013_snapshot(platform)
     if as_of is None:
-        pytest.skip("release does not publish a pre-2013 RESEARCH_HIGH_CONFIDENCE interval")
+        pytest.skip("release does not publish a pre-2013 feature/model RESEARCH_HIGH_CONFIDENCE interval")
 
     universe = sorted(platform.profile_on(as_of, PROFILE_VERSION), key=lambda row: row["liquidity_rank_126"])
     assert universe, as_of

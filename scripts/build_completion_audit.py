@@ -272,6 +272,17 @@ def candidate_promotion_audit_summary(candidate_promotion_report: dict) -> dict:
     }
 
 
+def pre2013_feature_model_rhc_intervals(research_manifest: dict) -> list[dict]:
+    return [
+        interval for interval in research_manifest.get("research_quality_intervals") or []
+        if isinstance(interval, dict)
+        and interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
+        and interval.get("start")
+        and str(interval.get("start")) < RESEARCH_START_DATE
+        and interval.get("interval_type") != CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE
+    ]
+
+
 def candidate_manifest_audit_consistency_failures(research_manifest: dict, candidate_promotion_report: dict) -> list[str]:
     failures: list[str] = []
     candidate_audits = candidate_promotion_report.get("candidate_audits") or []
@@ -1172,14 +1183,8 @@ def main() -> None:
         failures.append(f"test result report is not clean: {json.dumps(test_summary, sort_keys=True)}")
     if not test_summary["model_arena_handoff_passed"]:
         failures.append("Model Arena handoff smoke test did not pass in release evidence")
-    pre2013_rhc_intervals = [
-        interval for interval in research_manifest.get("research_quality_intervals") or []
-        if interval.get("status") == RESEARCH_HIGH_CONFIDENCE_STATUS
-        and interval.get("start")
-        and str(interval.get("start")) < RESEARCH_START_DATE
-    ]
-    if pre2013_rhc_intervals and not test_summary["early_model_arena_handoff_passed"]:
-        failures.append("early Model Arena handoff smoke test did not pass for promoted pre-2013 interval")
+    if pre2013_feature_model_rhc_intervals(research_manifest) and not test_summary["early_model_arena_handoff_passed"]:
+        failures.append("early Model Arena handoff smoke test did not pass for promoted pre-2013 feature/model interval")
     if not test_summary["multi_era_source_fixture_passed"]:
         failures.append("multi-era source fixture smoke test did not pass in release evidence")
     if research_manifest.get("ci_status_sha256") and (ci["status"] != "completed" or ci["conclusion"] != "success" or not ci["descends_from_release_git_commit"] or ci["failed_jobs"]):

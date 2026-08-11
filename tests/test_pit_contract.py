@@ -50,7 +50,7 @@ from india_active_universe.profiles import (
     TERMINAL_VALUE_POLICY_REQUIREMENT,
     TOP_LIQUIDITY_RANKING_METRIC,
 )
-from scripts.build_completion_audit import EXPECTED_CANDIDATE_HARD_FAILURE_KEYS, EXPECTED_INVARIANT_VALIDATION_METRICS, REQUIRED, REQUIRED_RESEARCH_REPORTS, candidate_manifest_audit_consistency_failures, candidate_promotion_audit_summary, data_manifest_contract_failures, invariant_validation_summary, research_manifest_contract_failures
+from scripts.build_completion_audit import EXPECTED_CANDIDATE_HARD_FAILURE_KEYS, EXPECTED_INVARIANT_VALIDATION_METRICS, REQUIRED, REQUIRED_RESEARCH_REPORTS, candidate_manifest_audit_consistency_failures, candidate_promotion_audit_summary, data_manifest_contract_failures, invariant_validation_summary, pre2013_feature_model_rhc_intervals, research_manifest_contract_failures
 from scripts.collect_nse_suspension_evidence import effective_date
 
 
@@ -2421,6 +2421,7 @@ def test_data_manifest_contract_requires_release_provenance(tmp_path):
         ],
     }
     assert data_manifest_contract_failures(release, pre_warmup_pit_universe_rhc) == []
+    assert pre2013_feature_model_rhc_intervals({"research_quality_intervals": pre_warmup_pit_universe_rhc["research_quality_intervals"]}) == []
 
     pre_refined_boundary_rhc = {
         **manifest,

@@ -56,6 +56,8 @@ The completion audit validates `candidate_recommended_pit_universe_interval` and
 
 `DataPlatform.from_release()` applies the same candidate interval recommendation checks during manifest loading. This prevents API consumers from using a release whose refined boundary, PIT-universe recommendation, or feature-readiness policy has gone stale even before the completion-audit report is read.
 
+The early Model Arena handoff smoke test is required only when a pre-2013 promoted interval is feature/model-ready. A PIT-universe-only interval can be research-high-confidence for bounded universe membership while still publishing feature/model readiness separately.
+
 The manifest candidate decision rows must also match the generated candidate promotion audit artifact. For each configured candidate start, `candidate_audit_status`, `feature_readiness`, `feature_model_readiness_complete`, `pit_universe_gate_pass`, `refined_earliest_passing_snapshot`, and `hard_failures` in `research_release_manifest.json` must equal the corresponding row in `candidate_promotion_audit_<release>.json`. Boolean hard-failure fields must remain booleans, count fields must remain integers, and `refined_earliest_passing_snapshot` must be a string or null. A `PASS` candidate audit must have a non-null refined snapshot. The field set is published in the profile constants as `CANDIDATE_HARD_FAILURE_KEYS`.
 
 If a candidate audit row is not recorded, the generated candidate decision remains fail-closed: boolean hard-failure fields are emitted as active failures instead of an empty map.
