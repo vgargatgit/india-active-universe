@@ -10,7 +10,7 @@ import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from scripts.build_completion_audit import junit_summary, partition_summary, source_coverage_summary
+from scripts.build_completion_audit import junit_summary, partition_summary, raw_integrity_summary, source_coverage_summary
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -102,3 +102,10 @@ def test_source_coverage_summary_requires_pass_gate(tmp_path: Path):
     report.write_text("# Data source coverage\n\nSource integrity gate: `FAIL`.\n", encoding="utf-8")
 
     assert source_coverage_summary(report) == {"status": "FAIL"}
+
+
+def test_raw_integrity_summary_requires_pass_gate(tmp_path: Path):
+    report = tmp_path / "raw_integrity_audit.md"
+    report.write_text("# RAW integrity audit\n\n- RAW integrity gate: `PASS`.\n", encoding="utf-8")
+
+    assert raw_integrity_summary(report) == {"status": "PASS"}

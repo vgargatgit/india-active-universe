@@ -38,6 +38,7 @@ def main() -> None:
         f"- Invalid files: {len(invalid):,}",
         f"- Earliest filename date: `{min(dates) if dates else None}`",
         f"- Latest filename date: `{max(dates) if dates else None}`",
+        f"- RAW integrity gate: `{'PASS' if not invalid else 'FAIL'}`.",
         "",
         "## Invalid files",
         "",
