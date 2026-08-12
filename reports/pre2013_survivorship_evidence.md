@@ -20,7 +20,7 @@ This report demonstrates that early historical universes are not built from curr
 |---|---|---|---|---|---:|---|---|---|---|
 | `SEC_1f4997de4086bf63` | `NISSAN` | `None` | 2006-12-29 | 2006-12-29 | 1 | `False` | `True` | 2011-09-28 | `UNKNOWN_TERMINAL_EVENT` |
 | `SEC_336a9eadd1a43080` | `PARSVNATH` | `PARSVNATH DEVELOPER LTD` | 2006-11-30 | 2012-12-31 | 1 | `True` | `True` | 2026-04-20 | `UNKNOWN_TERMINAL_EVENT` |
-| `SEC_3370ec232e920581` | `ASTERSILI` | `None` | 2010-07-30 | 2010-11-30 | 1 | `False` | `True` | 2016-05-19 | `COMPULSORY_DELISTING, UNKNOWN_TERMINAL_EVENT` |
+| `SEC_3370ec232e920581` | `ASTERSILI` | `None` | 2010-07-30 | 2010-11-30 | 1 | `False` | `True` | 2016-05-19 | `UNKNOWN_TERMINAL_EVENT, COMPULSORY_DELISTING` |
 | `SEC_43b9f2f458ab2fbd` | `HDIL` | `None` | 2007-07-31 | 2012-12-31 | 1 | `True` | `True` | 2019-11-21 | `UNKNOWN_TERMINAL_EVENT` |
 | `SEC_544f356bde8b4579` | `BSLIMITED` | `None` | 2010-10-29 | 2012-12-31 | 1 | `True` | `True` | 2018-02-21 | `UNKNOWN_TERMINAL_EVENT` |
 | `SEC_b6ce92c0f2420a5b` | `MIC` | `None` | 2007-05-31 | 2012-11-30 | 1 | `True` | `True` | 2021-05-14 | `UNKNOWN_TERMINAL_EVENT` |

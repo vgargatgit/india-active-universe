@@ -8,10 +8,10 @@ Maximum configured lookback window: `300` official sessions.
 
 | Candidate start | Material events in candidate or lookback scope | Missing factors | Non-PASS boundaries | Left-censored boundaries | Non-PASS without observed crossing | Contaminating signal-window non-PASS | Gate |
 |---|---:|---:|---:|---:|---:|---:|---|
-| 2011-01-01 | 112 | 0 | 7 | 2 | 2 | 1 | `REVIEW_REQUIRED` |
-| 2009-01-01 | 210 | 0 | 16 | 6 | 6 | 2 | `REVIEW_REQUIRED` |
-| 2007-01-01 | 318 | 1 | 25 | 8 | 8 | 3 | `FAIL_MISSING_FACTORS` |
-| 2006-01-01 | 327 | 1 | 26 | 8 | 8 | 3 | `FAIL_MISSING_FACTORS` |
+| 2011-01-01 | 112 | 0 | 4 | 2 | 2 | 1 | `REVIEW_REQUIRED` |
+| 2009-01-01 | 210 | 0 | 18 | 6 | 6 | 1 | `REVIEW_REQUIRED` |
+| 2007-01-01 | 318 | 1 | 31 | 8 | 8 | 2 | `FAIL_MISSING_FACTORS` |
+| 2006-01-01 | 327 | 1 | 32 | 8 | 8 | 2 | `FAIL_MISSING_FACTORS` |
 
 ## Candidate signal-window boundary blockers
 
@@ -20,13 +20,10 @@ These rows explain the `Contaminating signal-window non-PASS` counts above. They
 | Candidate start | Event | Security | Symbol | Event date | Type | Subject | Price factor | Share factor | Pre close | Post close | Holder value ratio | Validation | Sessions before first required month | Blocker class |
 |---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---|---:|---|
 | 2011-01-01 | `NSE_CA_006139` | `SEC_d708eab01839b6d8` | `KWALITY` | 2010-06-15 | `BONUS` | Bonus 5:7 | 0.5833333333333334 | 1.7142857142857142 | 163.0 | 138.7 | 1.4587204206836106 | `WARNING_LARGE_BOUNDARY_MOVE` | 160 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
-| 2009-01-01 | `NSE_CA_002743` | `SEC_24bfa19941802ce4` | `JINDALSTEL` | 2008-01-21 | `SPLIT` | Fv Split Rs.5/- To Re.1/- | 0.2 | 5.0 | 14363.85 | 2104.25 | 0.7324811941088216 | `WARNING_LARGE_BOUNDARY_MOVE` | 251 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
 | 2009-01-01 | `NSE_CA_006139` | `SEC_d708eab01839b6d8` | `KWALITY` | 2010-06-15 | `BONUS` | Bonus 5:7 | 0.5833333333333334 | 1.7142857142857142 | 163.0 | 138.7 | 1.4587204206836106 | `WARNING_LARGE_BOUNDARY_MOVE` | -92 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
 | 2007-01-01 | `NSE_CA_001069` | `SEC_28407aba58f0615a` | `LAKSHVILAS` | 2006-11-17 | `BONUS` | Bonus 1:2/Rights 1:1 | None | None | None | None | None | `NO_BOUNDARY_VALIDATION` | 49 | `UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT` |
-| 2007-01-01 | `NSE_CA_002743` | `SEC_24bfa19941802ce4` | `JINDALSTEL` | 2008-01-21 | `SPLIT` | Fv Split Rs.5/- To Re.1/- | 0.2 | 5.0 | 14363.85 | 2104.25 | 0.7324811941088216 | `WARNING_LARGE_BOUNDARY_MOVE` | -244 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
 | 2007-01-01 | `NSE_CA_006139` | `SEC_d708eab01839b6d8` | `KWALITY` | 2010-06-15 | `BONUS` | Bonus 5:7 | 0.5833333333333334 | 1.7142857142857142 | 163.0 | 138.7 | 1.4587204206836106 | `WARNING_LARGE_BOUNDARY_MOVE` | -92 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
 | 2006-01-01 | `NSE_CA_001069` | `SEC_28407aba58f0615a` | `LAKSHVILAS` | 2006-11-17 | `BONUS` | Bonus 1:2/Rights 1:1 | None | None | None | None | None | `NO_BOUNDARY_VALIDATION` | -198 | `UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT` |
-| 2006-01-01 | `NSE_CA_002743` | `SEC_24bfa19941802ce4` | `JINDALSTEL` | 2008-01-21 | `SPLIT` | Fv Split Rs.5/- To Re.1/- | 0.2 | 5.0 | 14363.85 | 2104.25 | 0.7324811941088216 | `WARNING_LARGE_BOUNDARY_MOVE` | -491 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
 | 2006-01-01 | `NSE_CA_006139` | `SEC_d708eab01839b6d8` | `KWALITY` | 2010-06-15 | `BONUS` | Bonus 5:7 | 0.5833333333333334 | 1.7142857142857142 | 163.0 | 138.7 | 1.4587204206836106 | `WARNING_LARGE_BOUNDARY_MOVE` | -92 | `LARGE_BOUNDARY_MOVE_REVIEW_REQUIRED` |
 
 `UNSUPPORTED_COMPOSITE_RIGHTS_COMPONENT` means the official event subject includes a rights component that this price-return adjustment model does not yet price. It must stay blocking until rights terms are supported or manually reviewed with evidence.
