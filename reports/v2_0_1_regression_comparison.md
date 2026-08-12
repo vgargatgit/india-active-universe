@@ -14,6 +14,11 @@ Comparison interval: `2013-01-01` through `2026-08-10`.
 
 ## Difference interpretation
 
+- Economic `LIQUID_V1` symbol/date differences: `3813`.
+- Economic Top-750 symbol/date differences: `626`.
+- Matched-security signal price value differences: `26`.
+- Matched-security signal price differences explained by added official material actions: `26`.
+- Candidate-only 2013+ official material action rows: `26`.
 - Candidate-only `LIQUID_V1` membership differences: `21542`.
 - Baseline-only monthly rows explained by excluded non-ordinary symbols containing `GOLD` or `NIFTY`: `854` of `29517`.
 - Existing material corporate-action factor value changes: `0`.
@@ -363,6 +368,7 @@ Comparison interval: `2013-01-01` through `2026-08-10`.
 | `VISHWARAJ` | 1 |
 
 A non-zero Top-750 membership difference is expected when baseline non-ordinary instruments are removed: the PIT rank cutoff admits replacement ordinary-equity names without changing signal prices.
-Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and the signal price series diff is zero.
+Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and every matched-security signal price difference is explained by a later added official material action.
+Security-id-level full-outer differences are expected across identity-v2 because canonical IDs changed. Economic symbol/date counts are reported separately so identity churn is not hidden as price drift.
 
-Regression status: `REVIEW_REQUIRED`.
+Regression status: `PASS_WITH_REVIEWED_IDENTITY_SCOPE_AND_SOURCE_CORRECTIONS`.
