@@ -1,8 +1,22 @@
 # v2.0.1 regression comparison
 
 Baseline release: `releases/india_equity_data_v2.0.1`.
-Candidate release: `releases/india_equity_data_v2.2.7`.
+Candidate release: `releases/india_equity_data_v2.2.8`.
 Comparison interval: `2013-01-01` through `2026-08-10`.
+
+Economic `LIQUID_V1` differences: `3813`.
+Attributed: `3813`.
+Unexplained: `0`.
+
+Economic Top-750 differences: `626`.
+Attributed: `626`.
+Unexplained: `0`.
+
+Matched economic signal-price differences: `26`.
+Explained: `26`.
+Unexplained: `0`.
+
+Regression status: `PASS_WITH_FULLY_ATTRIBUTED_REVIEWED_CORRECTIONS`.
 
 | Check | Difference rows |
 |---|---:|
@@ -371,4 +385,4 @@ A non-zero Top-750 membership difference is expected when baseline non-ordinary 
 Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and every matched-security signal price difference is explained by a later added official material action.
 Security-id-level full-outer differences are expected across identity-v2 because canonical IDs changed. Economic symbol/date counts are reported separately so identity churn is not hidden as price drift.
 
-Regression status: `PASS_WITH_REVIEWED_IDENTITY_SCOPE_AND_SOURCE_CORRECTIONS`.
+Regression attribution artifact: `reports/v2_0_1_membership_regression_attribution_summary.json`.

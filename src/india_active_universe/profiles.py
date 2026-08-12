@@ -1,6 +1,6 @@
 """Published universe profile contracts."""
 
-TARGET_RELEASE_ID = "india_equity_data_v2.2.7"
+TARGET_RELEASE_ID = "india_equity_data_v2.2.8"
 SOURCE_BUILD_MODE = "SOURCE_BUILD"
 CACHED_PROMOTION_BUILD_MODE = "CACHED_PROMOTION"
 PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"
@@ -36,6 +36,7 @@ RESEARCH_RELEASE_MANIFEST_ARTIFACT = "research_release_manifest.json"
 PARTITIONED_ARTIFACTS_MANIFEST = "partitioned_artifacts_manifest.json"
 SOURCE_MANIFEST_ARTIFACT = "source_manifest.json"
 SUSPENSION_SOURCE_MANIFEST_ARTIFACT = "suspension_source_manifest.json"
+CORPORATE_ACTION_EVIDENCE_ARTIFACT = "corporate_action_evidence.yaml"
 TERMINAL_VALUE_POLICY_REQUIREMENT = "DOWNSTREAM_RECOVERY_SENSITIVITY_REQUIRED_WHEN_CANONICAL_TERMINAL_VALUE_UNKNOWN"
 DATASET_QUALITY_TIER = "DATASET_EXPLORATORY"
 ACTIVE_DEFINITION = "ACTIVE_V1"
@@ -231,6 +232,8 @@ REQUIRED_RESEARCH_REPORTS = (
     "pre2013_research_universe_stability.md",
     "pre2013_historical_universe_counts.md",
     "v2_0_1_regression_comparison.md",
+    "v2_0_1_membership_regression_attribution.md",
+    "corporate_action_evidence_audit.md",
     "extended_history_research_readiness.md",
     "research_universe_coverage.md",
     "research_identity_priority.md",

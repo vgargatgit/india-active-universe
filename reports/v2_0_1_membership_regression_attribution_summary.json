@@ -1,0 +1,1362 @@
+{
+  "artifact_sha256": "4f72c9bf9b8f3d59d2f7443199ca596d11cd7138d4f8fe1c843c316ee17e0c94",
+  "attribution_counts": [
+    {
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "rows": 3650,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "primary_attribution": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "rows": 162,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
+      "rows": 1,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "rows": 86,
+      "universe_flag": "TOP1000"
+    },
+    {
+      "primary_attribution": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "rows": 351,
+      "universe_flag": "TOP1000"
+    },
+    {
+      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
+      "rows": 12,
+      "universe_flag": "TOP1000"
+    },
+    {
+      "primary_attribution": "RANK_CUTOFF_SECOND_ORDER_EFFECT",
+      "rows": 449,
+      "universe_flag": "TOP1000"
+    },
+    {
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "rows": 101,
+      "universe_flag": "TOP500"
+    },
+    {
+      "primary_attribution": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "rows": 59,
+      "universe_flag": "TOP500"
+    },
+    {
+      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
+      "rows": 6,
+      "universe_flag": "TOP500"
+    },
+    {
+      "primary_attribution": "RANK_CUTOFF_SECOND_ORDER_EFFECT",
+      "rows": 166,
+      "universe_flag": "TOP500"
+    },
+    {
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "rows": 118,
+      "universe_flag": "TOP750"
+    },
+    {
+      "primary_attribution": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "rows": 185,
+      "universe_flag": "TOP750"
+    },
+    {
+      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
+      "rows": 10,
+      "universe_flag": "TOP750"
+    },
+    {
+      "primary_attribution": "RANK_CUTOFF_SECOND_ORDER_EFFECT",
+      "rows": 313,
+      "universe_flag": "TOP750"
+    }
+  ],
+  "by_year": [
+    {
+      "rows": 145,
+      "universe_flag": "LIQUID_V1",
+      "year": 2013
+    },
+    {
+      "rows": 199,
+      "universe_flag": "LIQUID_V1",
+      "year": 2014
+    },
+    {
+      "rows": 301,
+      "universe_flag": "LIQUID_V1",
+      "year": 2015
+    },
+    {
+      "rows": 272,
+      "universe_flag": "LIQUID_V1",
+      "year": 2016
+    },
+    {
+      "rows": 305,
+      "universe_flag": "LIQUID_V1",
+      "year": 2017
+    },
+    {
+      "rows": 222,
+      "universe_flag": "LIQUID_V1",
+      "year": 2018
+    },
+    {
+      "rows": 137,
+      "universe_flag": "LIQUID_V1",
+      "year": 2019
+    },
+    {
+      "rows": 96,
+      "universe_flag": "LIQUID_V1",
+      "year": 2020
+    },
+    {
+      "rows": 136,
+      "universe_flag": "LIQUID_V1",
+      "year": 2021
+    },
+    {
+      "rows": 334,
+      "universe_flag": "LIQUID_V1",
+      "year": 2022
+    },
+    {
+      "rows": 399,
+      "universe_flag": "LIQUID_V1",
+      "year": 2023
+    },
+    {
+      "rows": 463,
+      "universe_flag": "LIQUID_V1",
+      "year": 2024
+    },
+    {
+      "rows": 513,
+      "universe_flag": "LIQUID_V1",
+      "year": 2025
+    },
+    {
+      "rows": 291,
+      "universe_flag": "LIQUID_V1",
+      "year": 2026
+    },
+    {
+      "rows": 194,
+      "universe_flag": "TOP1000",
+      "year": 2013
+    },
+    {
+      "rows": 152,
+      "universe_flag": "TOP1000",
+      "year": 2014
+    },
+    {
+      "rows": 76,
+      "universe_flag": "TOP1000",
+      "year": 2015
+    },
+    {
+      "rows": 74,
+      "universe_flag": "TOP1000",
+      "year": 2016
+    },
+    {
+      "rows": 38,
+      "universe_flag": "TOP1000",
+      "year": 2017
+    },
+    {
+      "rows": 32,
+      "universe_flag": "TOP1000",
+      "year": 2018
+    },
+    {
+      "rows": 58,
+      "universe_flag": "TOP1000",
+      "year": 2019
+    },
+    {
+      "rows": 86,
+      "universe_flag": "TOP1000",
+      "year": 2020
+    },
+    {
+      "rows": 30,
+      "universe_flag": "TOP1000",
+      "year": 2021
+    },
+    {
+      "rows": 46,
+      "universe_flag": "TOP1000",
+      "year": 2022
+    },
+    {
+      "rows": 32,
+      "universe_flag": "TOP1000",
+      "year": 2023
+    },
+    {
+      "rows": 30,
+      "universe_flag": "TOP1000",
+      "year": 2024
+    },
+    {
+      "rows": 20,
+      "universe_flag": "TOP1000",
+      "year": 2025
+    },
+    {
+      "rows": 30,
+      "universe_flag": "TOP1000",
+      "year": 2026
+    },
+    {
+      "rows": 82,
+      "universe_flag": "TOP500",
+      "year": 2013
+    },
+    {
+      "rows": 64,
+      "universe_flag": "TOP500",
+      "year": 2014
+    },
+    {
+      "rows": 28,
+      "universe_flag": "TOP500",
+      "year": 2015
+    },
+    {
+      "rows": 26,
+      "universe_flag": "TOP500",
+      "year": 2016
+    },
+    {
+      "rows": 14,
+      "universe_flag": "TOP500",
+      "year": 2017
+    },
+    {
+      "rows": 8,
+      "universe_flag": "TOP500",
+      "year": 2018
+    },
+    {
+      "rows": 4,
+      "universe_flag": "TOP500",
+      "year": 2019
+    },
+    {
+      "rows": 14,
+      "universe_flag": "TOP500",
+      "year": 2020
+    },
+    {
+      "rows": 6,
+      "universe_flag": "TOP500",
+      "year": 2021
+    },
+    {
+      "rows": 24,
+      "universe_flag": "TOP500",
+      "year": 2022
+    },
+    {
+      "rows": 12,
+      "universe_flag": "TOP500",
+      "year": 2023
+    },
+    {
+      "rows": 24,
+      "universe_flag": "TOP500",
+      "year": 2024
+    },
+    {
+      "rows": 14,
+      "universe_flag": "TOP500",
+      "year": 2025
+    },
+    {
+      "rows": 12,
+      "universe_flag": "TOP500",
+      "year": 2026
+    },
+    {
+      "rows": 172,
+      "universe_flag": "TOP750",
+      "year": 2013
+    },
+    {
+      "rows": 108,
+      "universe_flag": "TOP750",
+      "year": 2014
+    },
+    {
+      "rows": 52,
+      "universe_flag": "TOP750",
+      "year": 2015
+    },
+    {
+      "rows": 40,
+      "universe_flag": "TOP750",
+      "year": 2016
+    },
+    {
+      "rows": 24,
+      "universe_flag": "TOP750",
+      "year": 2017
+    },
+    {
+      "rows": 14,
+      "universe_flag": "TOP750",
+      "year": 2018
+    },
+    {
+      "rows": 14,
+      "universe_flag": "TOP750",
+      "year": 2019
+    },
+    {
+      "rows": 44,
+      "universe_flag": "TOP750",
+      "year": 2020
+    },
+    {
+      "rows": 26,
+      "universe_flag": "TOP750",
+      "year": 2021
+    },
+    {
+      "rows": 38,
+      "universe_flag": "TOP750",
+      "year": 2022
+    },
+    {
+      "rows": 38,
+      "universe_flag": "TOP750",
+      "year": 2023
+    },
+    {
+      "rows": 26,
+      "universe_flag": "TOP750",
+      "year": 2024
+    },
+    {
+      "rows": 22,
+      "universe_flag": "TOP750",
+      "year": 2025
+    },
+    {
+      "rows": 8,
+      "universe_flag": "TOP750",
+      "year": 2026
+    }
+  ],
+  "examples": [
+    {
+      "baseline_history_sessions": 3,
+      "baseline_median_traded_value_60": 25692459.0,
+      "baseline_rank": 266,
+      "candidate_history_sessions": 1067,
+      "candidate_median_traded_value_60": 65923643.325,
+      "candidate_rank": 224,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "20MICRONS",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 117,
+      "baseline_median_traded_value_60": 7192647.7,
+      "baseline_rank": 407,
+      "candidate_history_sessions": 2253,
+      "candidate_median_traded_value_60": 7192647.7,
+      "candidate_rank": 401,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "AJANTPHARM",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 87,
+      "baseline_median_traded_value_60": 43223506.475,
+      "baseline_rank": 221,
+      "candidate_history_sessions": 2253,
+      "candidate_median_traded_value_60": 43223506.475,
+      "candidate_rank": 222,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "AMARAJABAT",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 57,
+      "baseline_median_traded_value_60": 6874022.2,
+      "baseline_rank": 441,
+      "candidate_history_sessions": 2253,
+      "candidate_median_traded_value_60": 7059424.525,
+      "candidate_rank": 552,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "BBTC",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 57,
+      "baseline_median_traded_value_60": 6874022.2,
+      "baseline_rank": 441,
+      "candidate_history_sessions": 2253,
+      "candidate_median_traded_value_60": 7059424.525,
+      "candidate_rank": 552,
+      "date": "2013-01-31",
+      "diff_side": "BASELINE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "BBTC",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "TOP500"
+    },
+    {
+      "baseline_history_sessions": 64,
+      "baseline_median_traded_value_60": 65698120.075,
+      "baseline_rank": 185,
+      "candidate_history_sessions": 2253,
+      "candidate_median_traded_value_60": 65698120.075,
+      "candidate_rank": 152,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "BOMDYEING",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 66,
+      "baseline_median_traded_value_60": 9757540.575,
+      "baseline_rank": 372,
+      "candidate_history_sessions": 700,
+      "candidate_median_traded_value_60": 9757540.575,
+      "candidate_rank": 347,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GOENKA",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 171,
+      "baseline_median_traded_value_60": 28375795.775,
+      "baseline_rank": 241,
+      "candidate_history_sessions": 549,
+      "candidate_median_traded_value_60": 28375795.775,
+      "candidate_rank": 243,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GRAVITA",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 129,
+      "baseline_median_traded_value_60": 13057902.175,
+      "baseline_rank": 347,
+      "candidate_history_sessions": 2078,
+      "candidate_median_traded_value_60": 13057902.175,
+      "candidate_rank": 344,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GRUH",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 90,
+      "baseline_median_traded_value_60": 20584861.875,
+      "baseline_rank": 330,
+      "candidate_history_sessions": 2253,
+      "candidate_median_traded_value_60": 20584861.875,
+      "candidate_rank": 345,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GSFC",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 28,
+      "baseline_median_traded_value_60": 4003083.8499999996,
+      "baseline_rank": 528,
+      "candidate_history_sessions": 318,
+      "candidate_median_traded_value_60": 5700685.75,
+      "candidate_rank": 467,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "MBSWITCH",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 65,
+      "baseline_median_traded_value_60": 31010792.825,
+      "baseline_rank": 242,
+      "candidate_history_sessions": 583,
+      "candidate_median_traded_value_60": 31010792.825,
+      "candidate_rank": 206,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "ORISSAMINE",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 237,
+      "baseline_median_traded_value_60": 8036181.949999999,
+      "baseline_rank": 378,
+      "candidate_history_sessions": 405,
+      "candidate_median_traded_value_60": 8036181.949999999,
+      "candidate_rank": 376,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "SYMPHONY",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 201,
+      "baseline_median_traded_value_60": 17426427.7,
+      "baseline_rank": 298,
+      "candidate_history_sessions": 1691,
+      "candidate_median_traded_value_60": 17426427.7,
+      "candidate_rank": 297,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "VAKRANSOFT",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 145,
+      "baseline_median_traded_value_60": 16606235.350000001,
+      "baseline_rank": 286,
+      "candidate_history_sessions": 1350,
+      "candidate_median_traded_value_60": 16606235.350000001,
+      "candidate_rank": 285,
+      "date": "2013-01-31",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "ZYLOG",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 23,
+      "baseline_median_traded_value_60": 8597716.1,
+      "baseline_rank": 398,
+      "candidate_history_sessions": 1087,
+      "candidate_median_traded_value_60": 36093008.7,
+      "candidate_rank": 227,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "20MICRONS",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 137,
+      "baseline_median_traded_value_60": 18259260.925,
+      "baseline_rank": 388,
+      "candidate_history_sessions": 2273,
+      "candidate_median_traded_value_60": 18259260.925,
+      "candidate_rank": 386,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "AJANTPHARM",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 107,
+      "baseline_median_traded_value_60": 38851420.575,
+      "baseline_rank": 219,
+      "candidate_history_sessions": 2273,
+      "candidate_median_traded_value_60": 38851420.575,
+      "candidate_rank": 220,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "AMARAJABAT",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 77,
+      "baseline_median_traded_value_60": 4197042.65,
+      "baseline_rank": 486,
+      "candidate_history_sessions": 2273,
+      "candidate_median_traded_value_60": 4197042.65,
+      "candidate_rank": 528,
+      "date": "2013-02-28",
+      "diff_side": "BASELINE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "BBTC",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "TOP500"
+    },
+    {
+      "baseline_history_sessions": 84,
+      "baseline_median_traded_value_60": 59980537.85,
+      "baseline_rank": 182,
+      "candidate_history_sessions": 2273,
+      "candidate_median_traded_value_60": 59980537.85,
+      "candidate_rank": 170,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "BOMDYEING",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 86,
+      "baseline_median_traded_value_60": 10534172.175,
+      "baseline_rank": 360,
+      "candidate_history_sessions": 720,
+      "candidate_median_traded_value_60": 10534172.175,
+      "candidate_rank": 354,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GOENKA",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 191,
+      "baseline_median_traded_value_60": 28209503.1,
+      "baseline_rank": 254,
+      "candidate_history_sessions": 569,
+      "candidate_median_traded_value_60": 28209503.1,
+      "candidate_rank": 256,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GRAVITA",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 149,
+      "baseline_median_traded_value_60": 11742588.675,
+      "baseline_rank": 344,
+      "candidate_history_sessions": 2098,
+      "candidate_median_traded_value_60": 11742588.675,
+      "candidate_rank": 343,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GRUH",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 110,
+      "baseline_median_traded_value_60": 24983750.275,
+      "baseline_rank": 329,
+      "candidate_history_sessions": 2273,
+      "candidate_median_traded_value_60": 24983750.275,
+      "candidate_rank": 330,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GSFC",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 9,
+      "baseline_median_traded_value_60": 135413010.25,
+      "baseline_rank": 127,
+      "candidate_history_sessions": 1722,
+      "candidate_median_traded_value_60": 177042095.55,
+      "candidate_rank": 147,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "M&MFIN",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 85,
+      "baseline_median_traded_value_60": 23373731.5,
+      "baseline_rank": 256,
+      "candidate_history_sessions": 603,
+      "candidate_median_traded_value_60": 23373731.5,
+      "candidate_rank": 226,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "ORISSAMINE",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 221,
+      "baseline_median_traded_value_60": 12872683.825,
+      "baseline_rank": 298,
+      "candidate_history_sessions": 1711,
+      "candidate_median_traded_value_60": 12872683.825,
+      "candidate_rank": 298,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "VAKRANSOFT",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 165,
+      "baseline_median_traded_value_60": 15814926.475000001,
+      "baseline_rank": 304,
+      "candidate_history_sessions": 1370,
+      "candidate_median_traded_value_60": 15814926.475000001,
+      "candidate_rank": 304,
+      "date": "2013-02-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "ZYLOG",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 42,
+      "baseline_median_traded_value_60": 3279985.575,
+      "baseline_rank": 561,
+      "candidate_history_sessions": 1106,
+      "candidate_median_traded_value_60": 7751608.275,
+      "candidate_rank": 228,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "20MICRONS",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 156,
+      "baseline_median_traded_value_60": 31980023.55,
+      "baseline_rank": 355,
+      "candidate_history_sessions": 2292,
+      "candidate_median_traded_value_60": 31980023.55,
+      "candidate_rank": 354,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "AJANTPHARM",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 126,
+      "baseline_median_traded_value_60": 51863332.400000006,
+      "baseline_rank": 207,
+      "candidate_history_sessions": 2292,
+      "candidate_median_traded_value_60": 51863332.400000006,
+      "candidate_rank": 207,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "AMARAJABAT",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 103,
+      "baseline_median_traded_value_60": 51358299.35,
+      "baseline_rank": 186,
+      "candidate_history_sessions": 2292,
+      "candidate_median_traded_value_60": 51358299.35,
+      "candidate_rank": 177,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "BOMDYEING",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 105,
+      "baseline_median_traded_value_60": 15993839.15,
+      "baseline_rank": 347,
+      "candidate_history_sessions": 739,
+      "candidate_median_traded_value_60": 15993839.15,
+      "candidate_rank": 349,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GOENKA",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 210,
+      "baseline_median_traded_value_60": 19989202.8,
+      "baseline_rank": 275,
+      "candidate_history_sessions": 588,
+      "candidate_median_traded_value_60": 19989202.8,
+      "candidate_rank": 276,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GRAVITA",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 168,
+      "baseline_median_traded_value_60": 13074261.65,
+      "baseline_rank": 326,
+      "candidate_history_sessions": 2117,
+      "candidate_median_traded_value_60": 13074261.65,
+      "candidate_rank": 326,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GRUH",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 129,
+      "baseline_median_traded_value_60": 17918468.15,
+      "baseline_rank": 330,
+      "candidate_history_sessions": 2292,
+      "candidate_median_traded_value_60": 17918468.15,
+      "candidate_rank": 330,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "GSFC",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 28,
+      "baseline_median_traded_value_60": 187657959.15,
+      "baseline_rank": 106,
+      "candidate_history_sessions": 1741,
+      "candidate_median_traded_value_60": 189522039.875,
+      "candidate_rank": 122,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "M&MFIN",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 104,
+      "baseline_median_traded_value_60": 20422986.225,
+      "baseline_rank": 265,
+      "candidate_history_sessions": 622,
+      "candidate_median_traded_value_60": 20422986.225,
+      "candidate_rank": 244,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "ORISSAMINE",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 87,
+      "baseline_median_traded_value_60": 5774928.3,
+      "baseline_rank": 548,
+      "candidate_history_sessions": 388,
+      "candidate_median_traded_value_60": 5774928.3,
+      "candidate_rank": 502,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "SHALPAINTS",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "baseline_history_sessions": 240,
+      "baseline_median_traded_value_60": 9241528.175,
+      "baseline_rank": 335,
+      "candidate_history_sessions": 1730,
+      "candidate_median_traded_value_60": 9241528.175,
+      "candidate_rank": 335,
+      "date": "2013-03-28",
+      "diff_side": "CANDIDATE_ONLY",
+      "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "symbol": "VAKRANSOFT",
+      "trigger_reason": null,
+      "trigger_symbol": null,
+      "universe_flag": "LIQUID_V1"
+    }
+  ],
+  "rank_chains": [
+    {
+      "affected_symbol": "CHEMFALKAL",
+      "baseline_rank": 1004,
+      "candidate_rank": 997,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "GEMINI",
+      "baseline_rank": 1003,
+      "candidate_rank": 996,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "JVLAGRO",
+      "baseline_rank": 1007,
+      "candidate_rank": 1000,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "RUBYMILLS",
+      "baseline_rank": 1069,
+      "candidate_rank": 985,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "SATHAISPAT",
+      "baseline_rank": 1005,
+      "candidate_rank": 998,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "SUJANAUNI",
+      "baseline_rank": 1002,
+      "candidate_rank": 995,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "SURYALAXMI",
+      "baseline_rank": 1001,
+      "candidate_rank": 994,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "TIIL",
+      "baseline_rank": 1006,
+      "candidate_rank": 999,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "MBSWITCH",
+      "baseline_rank": 528,
+      "candidate_rank": 467,
+      "date": "2013-01-31",
+      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "trigger_security_id": "SEC_f7317d97391b8a64",
+      "trigger_symbol": "BBTC",
+      "universe_flag": "TOP500"
+    },
+    {
+      "affected_symbol": "POLYPLEX",
+      "baseline_rank": 502,
+      "candidate_rank": 500,
+      "date": "2013-01-31",
+      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "trigger_security_id": "SEC_f7317d97391b8a64",
+      "trigger_symbol": "BBTC",
+      "universe_flag": "TOP500"
+    },
+    {
+      "affected_symbol": "PURVA",
+      "baseline_rank": 501,
+      "candidate_rank": 499,
+      "date": "2013-01-31",
+      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "trigger_security_id": "SEC_f7317d97391b8a64",
+      "trigger_symbol": "BBTC",
+      "universe_flag": "TOP500"
+    },
+    {
+      "affected_symbol": "SHALPAINTS",
+      "baseline_rank": 574,
+      "candidate_rank": 476,
+      "date": "2013-01-31",
+      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
+      "trigger_security_id": "SEC_f7317d97391b8a64",
+      "trigger_symbol": "BBTC",
+      "universe_flag": "TOP500"
+    },
+    {
+      "affected_symbol": "ANIKINDS",
+      "baseline_rank": 755,
+      "candidate_rank": 748,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "ASAHIINDIA",
+      "baseline_rank": 753,
+      "candidate_rank": 746,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "DAAWAT",
+      "baseline_rank": 756,
+      "candidate_rank": 749,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "KSBPUMPS",
+      "baseline_rank": 757,
+      "candidate_rank": 750,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "M50",
+      "baseline_rank": 751,
+      "candidate_rank": 744,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "SAKHTISUG",
+      "baseline_rank": 754,
+      "candidate_rank": 747,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "VISAKAIND",
+      "baseline_rank": 752,
+      "candidate_rank": 745,
+      "date": "2013-01-31",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_0c218cfeafa428d6",
+      "trigger_symbol": "MGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "affected_symbol": "DHANUS",
+      "baseline_rank": 1008,
+      "candidate_rank": 1000,
+      "date": "2013-02-28",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_04d6751683afe66f",
+      "trigger_symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "DICIND",
+      "baseline_rank": 1007,
+      "candidate_rank": 999,
+      "date": "2013-02-28",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_04d6751683afe66f",
+      "trigger_symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "GALLISPAT",
+      "baseline_rank": 1002,
+      "candidate_rank": 994,
+      "date": "2013-02-28",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_04d6751683afe66f",
+      "trigger_symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "HINDUJAFO",
+      "baseline_rank": 1003,
+      "candidate_rank": 995,
+      "date": "2013-02-28",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_04d6751683afe66f",
+      "trigger_symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "JVLAGRO",
+      "baseline_rank": 1006,
+      "candidate_rank": 998,
+      "date": "2013-02-28",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_04d6751683afe66f",
+      "trigger_symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "affected_symbol": "ROSSELLIND",
+      "baseline_rank": 1005,
+      "candidate_rank": 997,
+      "date": "2013-02-28",
+      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
+      "trigger_security_id": "SEC_04d6751683afe66f",
+      "trigger_symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    }
+  ],
+  "signal_artifact_sha256": "b149f29f7f26484498126493d6d1ab3909b43f751b4b77dea2683cb157a716db",
+  "signal_price": {
+    "cause_counts": [
+      {
+        "cause": "ADDED_OFFICIAL_MATERIAL_ACTION_FORWARD_FACTOR",
+        "rows": 26
+      }
+    ],
+    "explained": 26,
+    "total": 26,
+    "unexplained": 0
+  },
+  "top_symbols": [
+    {
+      "rows": 101,
+      "symbol": "KOTAKGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "rows": 83,
+      "symbol": "GOLDSHARE",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "rows": 68,
+      "symbol": "KOTAKGOLD",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 50,
+      "symbol": "GOLDSHARE",
+      "universe_flag": "TOP750"
+    },
+    {
+      "rows": 48,
+      "symbol": "KOTAKGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "rows": 47,
+      "symbol": "GOLDSHARE",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 46,
+      "symbol": "RELGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "rows": 37,
+      "symbol": "QGOLDHALF",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "rows": 30,
+      "symbol": "AXISGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "rows": 28,
+      "symbol": "AVANTIFEED",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 28,
+      "symbol": "FILATEX",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 28,
+      "symbol": "RELGOLD",
+      "universe_flag": "TOP750"
+    },
+    {
+      "rows": 27,
+      "symbol": "JBMA",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 27,
+      "symbol": "KPRMILL",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 27,
+      "symbol": "NBCC",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 26,
+      "symbol": "BAJFINANCE",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 26,
+      "symbol": "JAMNAAUTO",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 26,
+      "symbol": "VBL",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 25,
+      "symbol": "GPIL",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 24,
+      "symbol": "JINDWORLD",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 23,
+      "symbol": "RELGOLD",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 22,
+      "symbol": "KOTAKGOLD",
+      "universe_flag": "TOP500"
+    },
+    {
+      "rows": 21,
+      "symbol": "AJANTPHARM",
+      "universe_flag": "LIQUID_V1"
+    },
+    {
+      "rows": 20,
+      "symbol": "IDBIGOLD",
+      "universe_flag": "TOP1000"
+    },
+    {
+      "rows": 20,
+      "symbol": "MGOLD",
+      "universe_flag": "TOP1000"
+    }
+  ],
+  "totals": {
+    "LIQUID_V1": 3813,
+    "TOP1000": 898,
+    "TOP500": 332,
+    "TOP750": 626
+  },
+  "unexplained": {}
+}

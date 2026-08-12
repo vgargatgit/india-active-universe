@@ -17,6 +17,7 @@ jobs:
       - run: PYTHONPATH=.:src pytest -q --junitxml=test-results.xml
       - run: PYTHONPATH=.:src python scripts/validate_pit.py
       - run: PYTHONPATH=.:src python scripts/validate_manual_identity_overrides.py --input data/reference/manual_identity_overrides.yaml
+      - run: PYTHONPATH=.:src python scripts/validate_corporate_action_evidence.py --resolutions data/reference/corporate_action_resolutions.yaml --evidence data/reference/corporate_action_evidence.yaml
       - run: PYTHONPATH=.:src python scripts/validate_project_boundaries.py
       - uses: actions/upload-artifact@v4
         if: always()

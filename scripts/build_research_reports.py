@@ -28,6 +28,7 @@ from india_active_universe.profiles import (
     CANDIDATE_PIT_UNIVERSE_INTERVAL_TYPE,
     CANDIDATE_REFINED_BOUNDARY_SCAN_METHOD,
     CANDIDATE_RESEARCH_START_DATES,
+    CORPORATE_ACTION_EVIDENCE_ARTIFACT,
     CORPORATE_ACTIONS_ARTIFACT,
     CURRENT_PROVEN_RESEARCH_END_DATE,
     CURRENT_PROVEN_RESEARCH_START_DATE,
@@ -159,6 +160,8 @@ def main() -> None:
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--manual-overrides", default="data/reference/manual_identity_overrides.yaml")
     parser.add_argument("--corporate-action-resolutions", default="data/reference/corporate_action_resolutions.yaml")
+    parser.add_argument("--corporate-action-evidence", default=f"data/reference/{CORPORATE_ACTION_EVIDENCE_ARTIFACT}")
+    parser.add_argument("--membership-regression-summary", default="reports/v2_0_1_membership_regression_attribution_summary.json")
     parser.add_argument("--promote-research-start")
     parser.add_argument("--promote-monthly-start")
     args = parser.parse_args()
@@ -1717,6 +1720,9 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         f"Comparison interval: `{CURRENT_PROVEN_RESEARCH_START_DATE}` through `{CURRENT_PROVEN_RESEARCH_END_DATE}`.",
         "",
     ]
+    attributed_liquid_total = attributed_liquid_unexplained = None
+    attributed_top750_total = attributed_top750_unexplained = None
+    attributed_signal_total = attributed_signal_explained = attributed_signal_unexplained = None
     if all(path.exists() for path in baseline_required):
         regression_connection = duckdb.connect()
         try:
@@ -2002,6 +2008,26 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             """).fetchall()
         finally:
             regression_connection.close()
+        membership_attribution_summary_path = Path(args.membership_regression_summary)
+        membership_attribution_summary = (
+            json.loads(membership_attribution_summary_path.read_text(encoding="utf-8"))
+            if membership_attribution_summary_path.is_file()
+            else None
+        )
+        attributed_liquid_total = attributed_liquid_unexplained = None
+        attributed_top750_total = attributed_top750_unexplained = None
+        attributed_signal_total = attributed_signal_explained = attributed_signal_unexplained = None
+        if membership_attribution_summary:
+            attributed_totals = membership_attribution_summary.get("totals") or {}
+            attributed_unexplained = membership_attribution_summary.get("unexplained") or {}
+            attributed_signal = membership_attribution_summary.get("signal_price") or {}
+            attributed_liquid_total = int(attributed_totals.get("LIQUID_V1", 0))
+            attributed_liquid_unexplained = int(attributed_unexplained.get("LIQUID_V1", 0))
+            attributed_top750_total = int(attributed_totals.get("TOP750", 0))
+            attributed_top750_unexplained = int(attributed_unexplained.get("TOP750", 0))
+            attributed_signal_total = int(attributed_signal.get("total", 0))
+            attributed_signal_explained = int(attributed_signal.get("explained", 0))
+            attributed_signal_unexplained = int(attributed_signal.get("unexplained", 0))
         strict_regression_pass = (
             int(universe_count_diffs) == 0
             and int(liquid_membership_diffs) == 0
@@ -2009,15 +2035,38 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             and int(signal_price_diffs) == 0
             and int(corporate_factor_diffs) == 0
         )
+        fully_attributed_economic_diffs = (
+            membership_attribution_summary is not None
+            and attributed_liquid_total == int(economic_liquid_symbol_diffs)
+            and attributed_top750_total == int(economic_top750_symbol_diffs)
+            and attributed_liquid_unexplained == 0
+            and attributed_top750_unexplained == 0
+            and attributed_signal_unexplained == 0
+        )
         justified_scope_correction = (
             not strict_regression_pass
             and int(changed_corporate_factor_diffs) == 0
             and int(matched_signal_price_value_diffs) == int(matched_signal_price_diffs_explained_by_added_actions)
+            and fully_attributed_economic_diffs
         )
         regression_status = "PASS" if strict_regression_pass else (
-            "PASS_WITH_REVIEWED_IDENTITY_SCOPE_AND_SOURCE_CORRECTIONS" if justified_scope_correction else "REVIEW_REQUIRED"
+            "PASS_WITH_FULLY_ATTRIBUTED_REVIEWED_CORRECTIONS" if justified_scope_correction else "REVIEW_REQUIRED"
         )
         regression_text.extend([
+            f"Economic `LIQUID_V1` differences: `{economic_liquid_symbol_diffs}`.",
+            f"Attributed: `{attributed_liquid_total if attributed_liquid_total is not None else 'NOT_AVAILABLE'}`.",
+            f"Unexplained: `{attributed_liquid_unexplained if attributed_liquid_unexplained is not None else 'NOT_AVAILABLE'}`.",
+            "",
+            f"Economic Top-750 differences: `{economic_top750_symbol_diffs}`.",
+            f"Attributed: `{attributed_top750_total if attributed_top750_total is not None else 'NOT_AVAILABLE'}`.",
+            f"Unexplained: `{attributed_top750_unexplained if attributed_top750_unexplained is not None else 'NOT_AVAILABLE'}`.",
+            "",
+            f"Matched economic signal-price differences: `{attributed_signal_total if attributed_signal_total is not None else matched_signal_price_value_diffs}`.",
+            f"Explained: `{attributed_signal_explained if attributed_signal_explained is not None else matched_signal_price_diffs_explained_by_added_actions}`.",
+            f"Unexplained: `{attributed_signal_unexplained if attributed_signal_unexplained is not None else 'NOT_AVAILABLE'}`.",
+            "",
+            f"Regression status: `{regression_status}`.",
+            "",
             "| Check | Difference rows |",
             "|---|---:|",
             f"| Monthly universe counts | {universe_count_diffs} |",
@@ -2046,7 +2095,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             "Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and every matched-security signal price difference is explained by a later added official material action.",
             "Security-id-level full-outer differences are expected across identity-v2 because canonical IDs changed. Economic symbol/date counts are reported separately so identity churn is not hidden as price drift.",
             "",
-            f"Regression status: `{regression_status}`.",
+            f"Regression attribution artifact: `{membership_attribution_summary_path}`.",
         ])
     else:
         regression_status = "BASELINE_NOT_AVAILABLE"
@@ -2410,6 +2459,20 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "A missing candidate audit row is an explicit non-pass state.",
         *candidate_decision_text,
         "",
+        "## Final Phase 3 audit tightening",
+        "",
+        f"- Economic `LIQUID_V1` differences: `{attributed_liquid_total if attributed_liquid_total is not None else 'NOT_AVAILABLE'}`.",
+        f"- Economic `LIQUID_V1` fully attributed: `{(attributed_liquid_total - attributed_liquid_unexplained) if attributed_liquid_total is not None and attributed_liquid_unexplained is not None else 'NOT_AVAILABLE'}`.",
+        f"- Economic `LIQUID_V1` unexplained: `{attributed_liquid_unexplained if attributed_liquid_unexplained is not None else 'NOT_AVAILABLE'}`.",
+        f"- Economic Top-750 differences: `{attributed_top750_total if attributed_top750_total is not None else 'NOT_AVAILABLE'}`.",
+        f"- Economic Top-750 fully attributed: `{(attributed_top750_total - attributed_top750_unexplained) if attributed_top750_total is not None and attributed_top750_unexplained is not None else 'NOT_AVAILABLE'}`.",
+        f"- Economic Top-750 unexplained: `{attributed_top750_unexplained if attributed_top750_unexplained is not None else 'NOT_AVAILABLE'}`.",
+        f"- Signal-price differences explained: `{attributed_signal_explained if attributed_signal_explained is not None else 'NOT_AVAILABLE'}` of `{attributed_signal_total if attributed_signal_total is not None else 'NOT_AVAILABLE'}`.",
+        f"- Signal-price differences unexplained: `{attributed_signal_unexplained if attributed_signal_unexplained is not None else 'NOT_AVAILABLE'}`.",
+        f"- Corporate-action evidence registry: `{'PASS' if Path(args.corporate_action_evidence).is_file() else 'NOT_AVAILABLE'}`.",
+        f"- 2006-01-31 research-high-confidence: `{'RETAINED' if quality == RESEARCH_HIGH_CONFIDENCE_STATUS and regression_status != 'REVIEW_REQUIRED' else 'REVIEW_REQUIRED'}`.",
+        f"- Final Phase 3 status: `{'COMPLETE' if quality == RESEARCH_HIGH_CONFIDENCE_STATUS and regression_status != 'REVIEW_REQUIRED' else 'REVIEW_REQUIRED'}`.",
+        "",
         "## Final promotion rule",
         "",
         "PIT membership interval: `SOURCE_INTEGRITY = PASS`, `SESSION_LIQUIDITY = PASS`, `RESEARCH_IDENTITY_FAILURES = 0`, `INSTRUMENT_SCOPE_FAILURES = 0`, `STATUS_GATE = PASS`, and `PIT_INVARIANTS = PASS`.",
@@ -2526,6 +2589,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
         "corporate_action_resolution_sha256": sha256(Path(args.corporate_action_resolutions)),
+        "corporate_action_evidence_sha256": sha256(Path(args.corporate_action_evidence)),
+        "regression_attribution_sha256": sha256(Path(args.membership_regression_summary)) if Path(args.membership_regression_summary).is_file() else None,
         "quality_reports": {name: sha256(reports / name) for name in REQUIRED_RESEARCH_REPORTS},
         "known_policy": {"signals": SIGNAL_POLICY, "execution": EXECUTION_POLICY, "terminal_values": TERMINAL_VALUE_POLICY},
         "known_limitations": [

@@ -1,0 +1,192 @@
+evidence:
+  - evidence_id: CAE_LAKSHVILAS_20061117_01
+    event_id: NSE_CA_001069
+    symbol: LAKSHVILAS
+    event_date: 2006-11-17
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Economic Times
+    source_url: https://economictimes.indiatimes.com/lakshmi-vilas-bank-ltdamalgmated/infocompanyrights/companyid-12257.cms
+    accessed_at: 2026-08-12
+    facts:
+      rights_ratio: 1:1
+      record_date: 2006-11-24
+      ex_rights_date: 2006-11-17
+      rights_subscription_price_inr: 50
+      rights_premium_inr: 40
+      rights_entitlement_basis: excludes proposed bonus shares
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
+  - evidence_id: CAE_LAKSHVILAS_20061117_02
+    event_id: NSE_CA_001069
+    symbol: LAKSHVILAS
+    event_date: 2006-11-17
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Trendlyne
+    source_url: https://trendlyne.com/equity/corporate-actions/LAKSHVILAS/1029/lakshmi-vilas-bank-ltd-amalgamated-/
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 1:2
+      ex_bonus_date: 2006-11-17
+      record_date: 2006-11-24
+    evidence_quality: MARKET_DATA_VENDOR_CORROBORATION
+  - evidence_id: CAE_KWALITY_20100615_01
+    event_id: NSE_CA_006139
+    symbol: KWALITY
+    event_date: 2010-06-15
+    source_type: COMPANY_DIRECTORS_REPORT_ARCHIVE
+    publisher: Goodreturns
+    source_url: https://www.goodreturns.in/company/kwality/director-report.html
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 5:7
+      eligibility_scope: non-promoter shareholders only
+      record_date: 2010-06-16
+      pre_event_total_shares: 182000000
+      post_event_total_shares: 203186434
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
+  - evidence_id: CAE_EXIDEIND_20060908_01
+    event_id: NSE_CA_000702
+    symbol: EXIDEIND
+    event_date: 2006-09-08
+    source_type: COMPANY_CORPORATE_BENEFITS_HISTORY
+    publisher: Exide Industries
+    source_url: https://www.exideindustries.com/investors/corporate-benefits.aspx
+    accessed_at: 2026-08-12
+    facts:
+      old_face_value_inr: 10
+      new_face_value_inr: 1
+      split_ratio: 10-for-1
+      equity_history_period: 2006-07
+    evidence_quality: OTHER_OFFICIAL_COMPANY_SOURCE
+  - evidence_id: CAE_EXIDEIND_20060908_02
+    event_id: NSE_CA_000702
+    symbol: EXIDEIND
+    event_date: 2006-09-08
+    source_type: EXCHANGE_RELEASE_ARCHIVE
+    publisher: Business Standard
+    source_url: https://www.business-standard.com/article/companies/exide-industries-board-nod-for-1-10-stock-split-106061600019_1.html
+    accessed_at: 2026-08-12
+    facts:
+      old_face_value_inr: 10
+      new_face_value_inr: 1
+      split_ratio: 10-for-1
+      source_note: reports board and BSE release approval of stock split
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
+  - evidence_id: CAE_JINDALSTEL_20080121_01
+    event_id: NSE_CA_002743
+    symbol: JINDALSTEL
+    event_date: 2008-01-21
+    source_type: EXCHANGE_RELEASE_ARCHIVE
+    publisher: Rediff Money
+    source_url: https://www.rediff.com/money/report/jind/20071228.htm
+    accessed_at: 2026-08-12
+    facts:
+      old_face_value_inr: 5
+      new_face_value_inr: 1
+      split_ratio: 5-for-1
+      record_date: 2008-01-28
+      source_note: reports stock split decision filed with BSE
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
+  - evidence_id: CAE_SHREEASHTA_20100201_01
+    event_id: NSE_CA_005857
+    symbol: SHREEASHTA
+    event_date: 2010-02-01
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Trendlyne
+    source_url: https://trendlyne.com/equity/corporate-actions/SHREEASHTA/83504/shree-ashtavinayak-cine-vision-ltd/
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 4:1
+      ex_bonus_date: 2010-02-01
+      record_date: 2010-02-02
+    evidence_quality: MARKET_DATA_VENDOR_CORROBORATION
+  - evidence_id: CAE_SHREEASHTA_20100201_02
+    event_id: NSE_CA_005857
+    symbol: SHREEASHTA
+    event_date: 2010-02-01
+    source_type: COMPANY_ACTION_NEWS_ARCHIVE
+    publisher: Rediff Business
+    source_url: https://m.rediff.com/business/report/ashtavinayak-lines-up-rs-457-cr-expansion/20100119.htm
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 4:1
+      source_note: reports shareholder approval of four bonus shares for every one share held
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
+  - evidence_id: CAE_FCSSOFT_20100226_01
+    event_id: NSE_CA_005923
+    symbol: FCSSOFT
+    event_date: 2010-02-26
+    source_type: COMPANY_BOARD_MEETING_ARCHIVE
+    publisher: Trendlyne
+    source_url: https://trendlyne.com/equity/board-meeting/FCSSOFT/409/fcs-software-solutions-ltd-board_meeting/
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 1:1
+      record_date: 2010-03-02
+      allotment_note: board allotted bonus shares in ratio 1:1
+    evidence_quality: MARKET_DATA_VENDOR_CORROBORATION
+  - evidence_id: CAE_FCSSOFT_20100226_02
+    event_id: NSE_CA_005923
+    symbol: FCSSOFT
+    event_date: 2010-02-26
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Suresh Rathi
+    source_url: https://www.sureshrathi.com/fundamental/investor-returns/fcs-software-solutions-ltd
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 1:1
+      ex_bonus_date: 2010-02-26
+    evidence_quality: MARKET_DATA_VENDOR_CORROBORATION
+  - evidence_id: CAE_BIRLAPOWER_20101020_01
+    event_id: NSE_CA_007424
+    symbol: BIRLAPOWER
+    event_date: 2010-10-20
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Economic Times
+    source_url: https://economictimes.indiatimes.com/birla-power-solutions-ltd/infocompanybonus/companyid-13962.cms
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 1:5
+      ex_bonus_date: 2010-10-20
+      record_date: 2010-10-21
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
+  - evidence_id: CAE_BIRLAPOWER_20101020_02
+    event_id: NSE_CA_007424
+    symbol: BIRLAPOWER
+    event_date: 2010-10-20
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Trendlyne
+    source_url: https://trendlyne.com/equity/corporate-actions/BIRLAPOWER/202/birla-power-solutions-ltd/
+    accessed_at: 2026-08-12
+    facts:
+      bonus_ratio: 1:5
+      ex_bonus_date: 2010-10-20
+      record_date: 2010-10-21
+    evidence_quality: MARKET_DATA_VENDOR_CORROBORATION
+  - evidence_id: CAE_NELCAST_20110906_01
+    event_id: NSE_CA_008635
+    symbol: NELCAST
+    event_date: 2011-09-06
+    source_type: HISTORICAL_CORPORATE_ACTION_RECORD
+    publisher: Financial Express
+    source_url: https://www.financialexpress.com/market/nelcast-ltd-share-price/splits/
+    accessed_at: 2026-08-12
+    facts:
+      old_face_value_inr: 10
+      new_face_value_inr: 2
+      split_ratio: 5-for-1
+      ex_split_date: 2011-09-06
+    evidence_quality: MARKET_DATA_VENDOR_CORROBORATION
+  - evidence_id: CAE_NELCAST_20110906_02
+    event_id: NSE_CA_008635
+    symbol: NELCAST
+    event_date: 2011-09-06
+    source_type: COMPANY_BOARD_ACTION_NEWS_ARCHIVE
+    publisher: Business Standard
+    source_url: https://www.business-standard.com/article/companies/nelcast-board-approves-stock-split-111062000135_1.html
+    accessed_at: 2026-08-12
+    facts:
+      old_face_value_inr: 10
+      new_face_value_inr: 2
+      split_ratio: 5-for-1
+      source_note: reports board approval to split each Rs 10 share into five Rs 2 shares
+    evidence_quality: REPUTABLE_ARCHIVAL_SECONDARY_SOURCE
