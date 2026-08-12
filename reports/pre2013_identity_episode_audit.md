@@ -745,7 +745,7 @@ It detects symbol reuse, ISIN reuse, multi-episode rows, source-start left-censo
 | `SEC_5802aa11fb6822b9` | `GLODYNE` | `None` | 2007-11-19 | 2014-11-05 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_58ca57b43082b453` | `20MICRONS` | `20 MICRONS LTD` | 2008-10-06 | 2026-08-10 | 1 | 1 | 2 | 1 | 1 | 2 | 1 | 1 | 1 | `SYMBOL_MULTIPLE_ISIN` |
 | `SEC_5ec08ae8f2bae9a7` | `PGHH` | `P&G HYGIENE & HEALTH CARE` | 2004-07-08 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
-| `SEC_6060af6599afd2ee` | `HERCULES` | `HERCULES INVESTMENTS LTD` | 2008-02-20 | 2026-01-01 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
+| `SEC_6060af6599afd2ee` | `HERCULES` | `HERCULES HOI. LTD.` | 2008-02-20 | 2026-01-01 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_616ceae37f35fa3a` | `STAR` | `STRIDES PHARMA SCI LTD` | 2004-01-01 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `LEFT_CENSORED_SOURCE_START` |
 | `SEC_6314d7f27e31f9ee` | `ISFT` | `INTRASOFT TECH. LTD` | 2010-04-12 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |
 | `SEC_64cd0355bcc5bb91` | `HONAUT` | `HONEYWELL AUTOMATION IND` | 2005-03-24 | 2026-08-10 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `NO_EPISODE_RISK_DETECTED` |

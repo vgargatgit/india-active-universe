@@ -2213,32 +2213,36 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             json.dumps(release_manifest, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-    manual_resolution_rows = connection.execute(f"""
-      SELECT ca.symbol_at_event,
-        ca.event_id,
-        ca.security_id,
-        ca.event_date,
-        ca.event_type,
-        ca.subject,
-        ca.resolution_type,
-        ca.review_classification,
-        ca.classification_confidence,
-        ca.price_factor,
-        ca.share_factor,
-        v.pre_event_close,
-        v.post_event_open,
-        v.post_event_close,
-        v.residual_adjusted_return,
-        v.holder_value_ratio,
-        v.validation_status,
-        ca.factor_quality,
-        ca.evidence_references,
-        ca.review_rationale
-      FROM read_parquet('{r}/corporate_actions.parquet') ca
-      LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v USING (event_id)
-      WHERE ca.resolution_type IS NOT NULL
-      ORDER BY ca.event_date, ca.symbol_at_event
-    """).fetchall()
+    manual_connection = duckdb.connect()
+    try:
+        manual_resolution_rows = manual_connection.execute(f"""
+          SELECT ca.symbol_at_event,
+            ca.event_id,
+            ca.security_id,
+            ca.event_date,
+            ca.event_type,
+            ca.subject,
+            ca.resolution_type,
+            ca.review_classification,
+            ca.classification_confidence,
+            ca.price_factor,
+            ca.share_factor,
+            v.pre_event_close,
+            v.post_event_open,
+            v.post_event_close,
+            v.residual_adjusted_return,
+            v.holder_value_ratio,
+            v.validation_status,
+            ca.factor_quality,
+            ca.evidence_references,
+            ca.review_rationale
+          FROM read_parquet('{r}/corporate_actions.parquet') ca
+          LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v USING (event_id)
+          WHERE ca.resolution_type IS NOT NULL
+          ORDER BY ca.event_date, ca.symbol_at_event
+        """).fetchall()
+    finally:
+        manual_connection.close()
     manual_resolution_text = [
         "# Manual price-action resolution",
         "",
