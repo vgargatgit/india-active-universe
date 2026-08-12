@@ -1,6 +1,6 @@
 """Published universe profile contracts."""
 
-TARGET_RELEASE_ID = "india_equity_data_v2.2.6"
+TARGET_RELEASE_ID = "india_equity_data_v2.2.7"
 SOURCE_BUILD_MODE = "SOURCE_BUILD"
 CACHED_PROMOTION_BUILD_MODE = "CACHED_PROMOTION"
 PROFILE_ID = "NSE_BROAD_LIQUID_PIT_V1"
@@ -223,6 +223,7 @@ REQUIRED_RESEARCH_REPORTS = (
     "pre2013_identity_priority.md",
     "pre2013_identity_episode_audit.md",
     "pre2013_research_identity_promotion.md",
+    "manual_price_action_resolution.md",
     "pre2013_adjusted_return_quality.md",
     "pre2013_instrument_classification_audit.md",
     "pre2013_terminal_event_priority.md",

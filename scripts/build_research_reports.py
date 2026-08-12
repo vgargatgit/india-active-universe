@@ -59,8 +59,9 @@ from india_active_universe.profiles import (
 )
 
 
-MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS')"
+MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS', 'BONUS_RIGHTS_COMPOSITE', 'SELECTIVE_BONUS')"
 HARD_BOUNDARY_STATUSES = "('WARNING_LARGE_BOUNDARY_MOVE', 'INVALID_PRE_EVENT_PRICE', 'NO_BOUNDARY_OBSERVATIONS', 'NO_BOUNDARY_VALIDATION')"
+NON_BLOCKING_BOUNDARY_STATUSES = "('PASS', 'ADVISORY_BOUNDARY_DRIFT', 'PASS_VERIFIED_GENUINE_MARKET_MOVE', 'PASS_REVIEWED_ECONOMIC_ACTION')"
 
 def path_sql(path: Path) -> str:
     return str(path.resolve()).replace("'", "''")
@@ -157,6 +158,7 @@ def main() -> None:
     parser.add_argument("--baseline-release", default="releases/india_equity_data_v2.0.1")
     parser.add_argument("--config", default="config/default.yaml")
     parser.add_argument("--manual-overrides", default="data/reference/manual_identity_overrides.yaml")
+    parser.add_argument("--corporate-action-resolutions", default="data/reference/corporate_action_resolutions.yaml")
     parser.add_argument("--promote-research-start")
     parser.add_argument("--promote-monthly-start")
     args = parser.parse_args()
@@ -575,14 +577,14 @@ def main() -> None:
           SELECT candidate_start,
             COUNT(DISTINCT event_id) AS material_events,
             COUNT(DISTINCT event_id) FILTER (WHERE price_factor IS NULL OR share_factor IS NULL) AS missing_factors,
-            COUNT(DISTINCT event_id) FILTER (WHERE validation_status <> 'PASS') AS non_pass_boundaries,
+            COUNT(DISTINCT event_id) FILTER (WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}) AS non_pass_boundaries,
             COUNT(DISTINCT event_id) FILTER (WHERE validation_status IN ('NO_PRE_EVENT_OBSERVATION', 'LEFT_CENSORED_BOUNDARY_VALIDATION')) AS left_censored_boundaries,
             COUNT(DISTINCT event_id) FILTER (
-              WHERE validation_status <> 'PASS'
+              WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}
                 AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
             ) AS possible_signal_window_non_pass_boundaries,
             COUNT(DISTINCT event_id) FILTER (
-              WHERE validation_status <> 'PASS'
+              WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}
                 AND event_session_index >= decision_session_index - {max(FEATURE_READINESS_WINDOWS.values())}
                 AND any_pre_adjusted_date IS NULL
                 AND any_post_adjusted_date IS NOT NULL
@@ -2211,6 +2213,54 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             json.dumps(release_manifest, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+    manual_resolution_rows = connection.execute(f"""
+      SELECT ca.symbol_at_event,
+        ca.event_id,
+        ca.security_id,
+        ca.event_date,
+        ca.event_type,
+        ca.subject,
+        ca.resolution_type,
+        ca.review_classification,
+        ca.classification_confidence,
+        ca.price_factor,
+        ca.share_factor,
+        v.pre_event_close,
+        v.post_event_open,
+        v.post_event_close,
+        v.residual_adjusted_return,
+        v.holder_value_ratio,
+        v.validation_status,
+        ca.factor_quality,
+        ca.evidence_references,
+        ca.review_rationale
+      FROM read_parquet('{r}/corporate_actions.parquet') ca
+      LEFT JOIN read_parquet('{r}/corporate_action_boundary_validation.parquet') v USING (event_id)
+      WHERE ca.resolution_type IS NOT NULL
+      ORDER BY ca.event_date, ca.symbol_at_event
+    """).fetchall()
+    manual_resolution_text = [
+        "# Manual price-action resolution",
+        "",
+        "This report records reviewed corporate-action resolutions used by the deterministic pipeline.",
+        "Reviewed genuine market moves remain visible; they are not converted to ordinary `PASS` rows.",
+        "",
+        "| Symbol | Event | Date | Type | Subject | Resolution | Classification | Confidence | Price factor | Share factor | Pre close | Post open | Post close | Residual adjusted return | Holder value ratio | Boundary status | Factor quality | Evidence | Blocking after review? |",
+        "|---|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|",
+    ]
+    for symbol, event_id, security_id, event_date, event_type, subject, resolution_type, review_classification, confidence, price_factor, share_factor, pre_close, post_open, post_close, residual, holder_ratio, validation_status, factor_quality, evidence_refs, rationale in manual_resolution_rows:
+        blocking = "YES" if validation_status in {"WARNING_LARGE_BOUNDARY_MOVE", "INVALID_PRE_EVENT_PRICE", "NO_BOUNDARY_OBSERVATIONS", "NO_BOUNDARY_VALIDATION"} else "NO"
+        evidence = ", ".join(evidence_refs or [])
+        manual_resolution_text.append(f"| `{symbol}` | `{event_id}` | {event_date} | `{event_type}` | {subject} | `{resolution_type}` | `{review_classification}` | `{confidence}` | {price_factor} | {share_factor} | {pre_close} | {post_open} | {post_close} | {residual} | {holder_ratio} | `{validation_status}` | `{factor_quality}` | {evidence} | `{blocking}` |")
+    manual_resolution_text.extend([
+        "",
+        "## Rationale",
+        "",
+    ])
+    for symbol, event_id, _security_id, _event_date, _event_type, _subject, _resolution_type, _review_classification, _confidence, _price_factor, _share_factor, _pre_close, _post_open, _post_close, _residual, _holder_ratio, _validation_status, _factor_quality, _evidence_refs, rationale in manual_resolution_rows:
+        manual_resolution_text.append(f"- `{event_id}` `{symbol}`: {rationale}")
+    write(reports / "manual_price_action_resolution.md", "\n".join(manual_resolution_text))
+
     executive_text = [
         "# Extended history research readiness",
         "",
@@ -2366,6 +2416,7 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         ],
         "config_sha256": sha256(Path(args.config)),
         "manual_override_sha256": sha256(Path(args.manual_overrides)),
+        "corporate_action_resolution_sha256": sha256(Path(args.corporate_action_resolutions)),
         "quality_reports": {name: sha256(reports / name) for name in REQUIRED_RESEARCH_REPORTS},
         "known_policy": {"signals": SIGNAL_POLICY, "execution": EXECUTION_POLICY, "terminal_values": TERMINAL_VALUE_POLICY},
         "known_limitations": [

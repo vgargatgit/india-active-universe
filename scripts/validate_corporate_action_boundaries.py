@@ -25,6 +25,11 @@ SCHEMA = pa.schema([
     pa.field("post_event_close", pa.float64()),
     pa.field("holder_value_ratio", pa.float64()),
     pa.field("validation_status", pa.string()),
+    pa.field("review_classification", pa.string()),
+    pa.field("classification_confidence", pa.string()),
+    pa.field("factor_quality", pa.string()),
+    pa.field("cash_aware_holder_value_ratio", pa.float64()),
+    pa.field("residual_adjusted_return", pa.float64()),
     pa.field("boundary_price_factor", pa.float64()),
     pa.field("boundary_share_factor", pa.float64()),
     pa.field("boundary_event_count", pa.int64()),
@@ -67,6 +72,10 @@ def classify_boundary(
     return ratio, status
 
 
+def cash_aware_holder_value_ratio(pre_close: float, post_price: float, post_shares: float, cash_contribution: float) -> float:
+    return float((post_shares * post_price - cash_contribution) / pre_close)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--events", required=True)
@@ -86,10 +95,11 @@ def main() -> None:
             FROM read_parquet(?)
         ), events AS (
             SELECT event_id, security_id, event_type, coalesce(ex_date, event_date) AS ex_date,
-                   price_factor, share_factor
+                   price_factor, share_factor, review_classification, classification_confidence, factor_quality,
+                   post_share_count_per_old_share, cash_contribution_per_old_share
             FROM read_parquet(?)
             WHERE security_id IS NOT NULL
-              AND event_type IN ('SPLIT', 'REVERSE_SPLIT', 'BONUS')
+              AND event_type IN ('SPLIT', 'REVERSE_SPLIT', 'BONUS', 'BONUS_RIGHTS_COMPOSITE', 'SELECTIVE_BONUS')
               AND price_factor IS NOT NULL
               AND share_factor IS NOT NULL
               AND coalesce(ex_date, event_date) IS NOT NULL
@@ -104,7 +114,8 @@ def main() -> None:
             GROUP BY security_id, ex_date
         )
         SELECT e.event_id, e.security_id, e.event_type, e.ex_date,
-               e.price_factor, e.share_factor,
+                   e.price_factor, e.share_factor, e.review_classification, e.classification_confidence, e.factor_quality,
+                   e.post_share_count_per_old_share, e.cash_contribution_per_old_share,
                max_by(p.date, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_date,
                max_by(p.raw_close, p.date) FILTER (WHERE p.date < e.ex_date) AS pre_event_close,
                min_by(p.date, p.date) FILTER (WHERE p.date >= e.ex_date) AS post_event_date,
@@ -120,11 +131,13 @@ def main() -> None:
         LEFT JOIN calendar ec ON ec.session_date = CAST(p.date AS DATE)
         LEFT JOIN calendar ce ON ce.session_date = CAST(e.ex_date AS DATE)
         GROUP BY e.event_id, e.security_id, e.event_type, e.ex_date, e.price_factor, e.share_factor,
+                 e.review_classification, e.classification_confidence, e.factor_quality,
+                 e.post_share_count_per_old_share, e.cash_contribution_per_old_share,
                  g.boundary_price_factor, g.boundary_share_factor, g.boundary_event_count, g.boundary_event_ids, ce.session_no
     """
     raw = con.execute(query, [args.calendar, args.events, args.prices]).fetchall()
     rows = []
-    for event_id, security_id, event_type, ex_date, price_factor, share_factor, pre_date, pre_close, post_date, post_open, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids, pre_session_no, post_session_no, event_session_no in raw:
+    for event_id, security_id, event_type, ex_date, price_factor, share_factor, review_classification, classification_confidence, factor_quality, post_share_count, cash_contribution, pre_date, pre_close, post_date, post_open, post_close, boundary_price_factor, boundary_share_factor, boundary_event_count, boundary_event_ids, pre_session_no, post_session_no, event_session_no in raw:
         pre_gap = event_session_no - pre_session_no if event_session_no is not None and pre_session_no is not None else None
         post_gap = post_session_no - event_session_no if event_session_no is not None and post_session_no is not None else None
         post_boundary_price = post_open if post_open is not None else post_close
@@ -138,12 +151,27 @@ def main() -> None:
             args.max_boundary_sessions,
             args.hard_failure_threshold,
         )
+        cash_ratio = None
+        if pre_close is not None and post_boundary_price is not None and post_share_count is not None and cash_contribution is not None and pre_close > 0:
+            cash_ratio = cash_aware_holder_value_ratio(pre_close, post_boundary_price, post_share_count, cash_contribution)
+            ratio = cash_ratio
+            status = "PASS" if abs(cash_ratio - 1.0) <= args.warning_threshold else status
+        residual = None
+        if pre_close is not None and post_boundary_price is not None and pre_close > 0 and price_factor is not None and price_factor > 0:
+            residual = float(post_boundary_price / (pre_close * price_factor) - 1.0)
+        if status == "WARNING_LARGE_BOUNDARY_MOVE" and review_classification == "VERIFIED_FACTOR_GENUINE_MARKET_MOVE":
+            status = "PASS_VERIFIED_GENUINE_MARKET_MOVE"
+        if review_classification in {"RESOLVED_COMPOSITE_ACTION", "RESOLVED_SELECTIVE_BONUS"} and status == "WARNING_LARGE_BOUNDARY_MOVE":
+            status = "PASS_REVIEWED_ECONOMIC_ACTION"
         rows.append({
             "event_id": event_id, "security_id": security_id, "event_type": event_type, "ex_date": ex_date,
             "price_factor": price_factor, "share_factor": share_factor,
             "pre_event_date": pre_date, "pre_event_close": pre_close,
             "post_event_date": post_date, "post_event_open": post_open, "post_event_close": post_close,
             "holder_value_ratio": ratio, "validation_status": status,
+            "review_classification": review_classification, "classification_confidence": classification_confidence,
+            "factor_quality": factor_quality, "cash_aware_holder_value_ratio": cash_ratio,
+            "residual_adjusted_return": residual,
             "boundary_price_factor": boundary_price_factor, "boundary_share_factor": boundary_share_factor,
             "boundary_event_count": boundary_event_count, "boundary_event_ids": boundary_event_ids,
             "pre_event_session_gap": pre_gap, "post_event_session_gap": post_gap,

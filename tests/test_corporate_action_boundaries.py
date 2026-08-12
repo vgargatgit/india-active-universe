@@ -1,5 +1,11 @@
-from scripts.normalize_corporate_actions import classify, face_value_transition, has_unsupported_rights_component
-from scripts.validate_corporate_action_boundaries import classify_boundary
+from scripts.normalize_corporate_actions import (
+    classify,
+    composite_rights_price_factor,
+    face_value_transition,
+    has_unsupported_rights_component,
+    selective_bonus_price_factor,
+)
+from scripts.validate_corporate_action_boundaries import cash_aware_holder_value_ratio, classify_boundary
 
 
 def test_boundary_classification_preserves_missing_side_semantics():
@@ -70,3 +76,23 @@ def test_bonus_rights_composite_requires_factor_review():
 
 def test_plain_bonus_does_not_require_rights_review():
     assert has_unsupported_rights_component("Bonus 1:2", "BONUS") is False
+
+
+def test_lakshvilas_composite_rights_factor_is_cash_aware():
+    factor = composite_rights_price_factor(163.60, bonus_ratio=0.5, rights_ratio=1.0, subscription_price=50.0)
+    assert round(factor, 10) == 0.5222493888
+    assert round(1.0 / factor, 6) != 2.5
+    ratio = cash_aware_holder_value_ratio(163.60, 83.95, post_shares=2.5, cash_contribution=50.0)
+    assert round(ratio, 3) == 0.977
+
+
+def test_kwality_selective_bonus_uses_aggregate_dilution_not_nominal_ratio():
+    factor = selective_bonus_price_factor(182000000, 203186434)
+    assert round(factor, 10) == 0.8957290918
+    assert round(factor, 10) != round(7 / 12, 10)
+
+
+def test_large_move_boundary_remains_distinct_before_review_layer():
+    ratio, status = classify_boundary(100.0, 130.0, 1.0, 0.15)
+    assert ratio == 1.3
+    assert status == "WARNING_LARGE_BOUNDARY_MOVE"

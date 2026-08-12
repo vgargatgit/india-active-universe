@@ -1,0 +1,131 @@
+resolutions:
+  - event_id: NSE_CA_001069
+    symbol: LAKSHVILAS
+    event_date: 2006-11-17
+    resolution_type: COMPOSITE_BONUS_RIGHTS
+    review_status: APPROVED
+    resolved_event_type: BONUS_RIGHTS_COMPOSITE
+    resolved_price_factor: 0.5222493888
+    resolved_share_factor: 2.5
+    bonus_ratio: 0.5
+    rights_ratio: 1.0
+    rights_subscription_price: 50.0
+    post_share_count_per_old_share: 2.5
+    cash_contribution_per_old_share: 50.0
+    rights_entitlement_basis: OLD_SHARES_EXCLUDES_BONUS
+    factor_quality: OFFICIAL_TERMS_COMPOSITE_RESOLVED
+    review_classification: RESOLVED_COMPOSITE_ACTION
+    classification_confidence: HIGH
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_LAKSHVILAS_BONUS_1_FOR_2_RIGHTS_1_FOR_1_RS50
+    rationale: >
+      Reviewed terms show one bonus share for every two old shares plus one rights
+      share for every one old share at Rs 50. Rights entitlement applies to old
+      shares and excludes bonus shares. Price-return adjustment uses the
+      cash-aware theoretical ex-price formula.
+  - event_id: NSE_CA_006139
+    symbol: KWALITY
+    event_date: 2010-06-15
+    resolution_type: SELECTIVE_BONUS
+    review_status: APPROVED
+    resolved_event_type: SELECTIVE_BONUS
+    resolved_price_factor: 0.8957290918
+    resolved_share_factor: 1.1164089780
+    bonus_ratio_numerator: 5
+    bonus_ratio_denominator: 7
+    eligibility_scope: NON_PROMOTER_SHAREHOLDERS_ONLY
+    pre_event_total_shares: 182000000
+    post_event_total_shares: 203186434
+    public_holder_share_factor: 1.7142857143
+    promoter_holder_share_factor: 1.0
+    factor_quality: OFFICIAL_CAPITAL_CHANGE_RESOLVED
+    review_classification: RESOLVED_SELECTIVE_BONUS
+    classification_confidence: HIGH
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_KWALITY_SELECTIVE_NON_PROMOTER_BONUS_CAPITAL_CHANGE
+    rationale: >
+      Reviewed capital-change evidence shows the 5:7 bonus was issued only to
+      non-promoter shareholders. Market price-return adjustment therefore uses
+      aggregate dilution from total shares before and after the event, not the
+      public-holder entitlement ratio.
+  - event_id: NSE_CA_000702
+    symbol: EXIDEIND
+    event_date: 2006-09-08
+    resolution_type: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    review_status: APPROVED
+    review_classification: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    classification_confidence: MEDIUM_HIGH
+    factor_quality: OFFICIAL_SPLIT_FACTOR_VERIFIED
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_EXIDEIND_SPLIT_10_TO_1_VERIFIED
+    rationale: >
+      Official split factor is correct. The residual boundary return is a
+      genuine market move and must not alter the price-return factor.
+  - event_id: NSE_CA_002743
+    symbol: JINDALSTEL
+    event_date: 2008-01-21
+    resolution_type: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    review_status: APPROVED
+    review_classification: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    classification_confidence: VERY_HIGH
+    factor_quality: OFFICIAL_SPLIT_FACTOR_VERIFIED
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_JINDALSTEL_SPLIT_DURING_2008_MARKET_CRASH
+    rationale: >
+      Official split factor is correct. The residual boundary return occurred
+      during the January 2008 market crash and is treated as a genuine market
+      move, not an adjustment defect.
+  - event_id: NSE_CA_005857
+    symbol: SHREEASHTA
+    event_date: 2010-02-01
+    resolution_type: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    review_status: APPROVED
+    review_classification: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    classification_confidence: HIGH
+    factor_quality: OFFICIAL_BONUS_FACTOR_VERIFIED
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_SHREEASHTA_BONUS_4_FOR_1_VERIFIED
+    rationale: >
+      Official 4:1 bonus factor is correct. The residual boundary return is a
+      genuine market move and must not alter the price-return factor.
+  - event_id: NSE_CA_005923
+    symbol: FCSSOFT
+    event_date: 2010-02-26
+    resolution_type: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    review_status: APPROVED
+    review_classification: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    classification_confidence: HIGH
+    factor_quality: OFFICIAL_BONUS_FACTOR_VERIFIED
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_FCSSOFT_BONUS_1_FOR_1_VERIFIED
+    rationale: >
+      Official 1:1 bonus factor is correct. Vendor representation as a 2-for-1
+      split does not invalidate the factor. The residual boundary return is a
+      genuine market move.
+  - event_id: NSE_CA_007424
+    symbol: BIRLAPOWER
+    event_date: 2010-10-20
+    resolution_type: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    review_status: APPROVED
+    review_classification: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    classification_confidence: MEDIUM
+    factor_quality: OFFICIAL_BONUS_FACTOR_VERIFIED
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_BIRLAPOWER_BONUS_1_FOR_5_VERIFIED
+    rationale: >
+      Official 1:5 bonus factor is correct. No reviewed evidence indicates a
+      concurrent adjustment. The residual boundary return is a genuine market
+      move.
+  - event_id: NSE_CA_008635
+    symbol: NELCAST
+    event_date: 2011-09-06
+    resolution_type: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    review_status: APPROVED
+    review_classification: VERIFIED_FACTOR_GENUINE_MARKET_MOVE
+    classification_confidence: MEDIUM_HIGH
+    factor_quality: OFFICIAL_SPLIT_FACTOR_VERIFIED
+    evidence_references:
+      - PHASE3_FORENSIC_RESEARCH_NOTE_2026-08-12_NELCAST_SPLIT_10_TO_2_VERIFIED
+    rationale: >
+      Official split factor is correct. The residual boundary return is a
+      genuine market move and must not alter the price-return factor.

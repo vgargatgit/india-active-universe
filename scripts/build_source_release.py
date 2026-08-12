@@ -46,6 +46,7 @@ def main() -> None:
     parser.add_argument("--baseline-release", default="releases/india_equity_data_v2.0.1")
     parser.add_argument("--raw", default="data/raw/nse/bhavcopy")
     parser.add_argument("--corporate-actions", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
+    parser.add_argument("--corporate-action-resolutions", default="data/reference/corporate_action_resolutions.yaml")
     parser.add_argument("--suspension-events", default="data/derived/suspension_events_resolved_v1.parquet")
     parser.add_argument("--ci-run-id", help="GitHub Actions run ID to convert into release CI evidence.")
     parser.add_argument("--ci-status-report", help="Existing ci_status_<release_id>.json evidence file to copy into reports.")
@@ -69,12 +70,15 @@ def main() -> None:
         raise SystemExit(f"manual override file does not exist: {manual_overrides}")
     if not source_manifest.is_file():
         raise SystemExit(f"source manifest does not exist: {source_manifest}")
+    if not (root / args.corporate_action_resolutions).is_file():
+        raise SystemExit(f"corporate action resolutions file does not exist: {root / args.corporate_action_resolutions}")
     if not args.dry_run and not args.ci_run_id and not args.ci_status_report:
         raise SystemExit("build-source-release requires --ci-run-id or --ci-status-report because v2.0 completion audit requires CI evidence")
     if args.ci_run_id and args.ci_status_report:
         raise SystemExit("provide only one of --ci-run-id or --ci-status-report")
     raw = root / args.raw
     corporate_actions = root / args.corporate_actions
+    corporate_action_resolutions = root / args.corporate_action_resolutions
     reports = root / "reports"
     ci_status_target = reports / f"ci_status_{args.release_id}.json"
     commands = []
@@ -89,7 +93,7 @@ def main() -> None:
         [sys.executable, str(root / "scripts/build_trading_calendar.py"), "--prices", str(raw_prices), "--out", str(release / TRADING_CALENDAR_ARTIFACT)],
         [sys.executable, str(root / "scripts/rebuild_liquidity_features_duckdb.py"), "--prices", str(raw_prices), "--calendar", str(release / TRADING_CALENDAR_ARTIFACT), "--out", str(liquidity_features)],
         [sys.executable, str(root / "scripts/publish_identity_artifacts.py"), "--master", str(work / "canonical/security_master.jsonl"), "--release", str(release)],
-        [sys.executable, str(root / "scripts/normalize_corporate_actions.py"), "--raw", str(corporate_actions), "--master", str(work / "canonical/security_master.jsonl"), "--out", str(work / "canonical/corporate_actions.jsonl")],
+        [sys.executable, str(root / "scripts/normalize_corporate_actions.py"), "--raw", str(corporate_actions), "--master", str(work / "canonical/security_master.jsonl"), "--out", str(work / "canonical/corporate_actions.jsonl"), "--resolutions", str(corporate_action_resolutions)],
         [sys.executable, str(root / "scripts/publish_corporate_actions.py"), "--input", str(work / "canonical/corporate_actions.jsonl"), "--out", str(work / "derived" / CORPORATE_ACTIONS_ARTIFACT)],
         [sys.executable, str(root / "scripts/publish_extensions.py"), "--data", str(work), "--release", str(release), "--corporate-actions", str(work / "derived" / CORPORATE_ACTIONS_ARTIFACT), "--terminal-events", str(terminal)],
         [sys.executable, str(root / "scripts/apply_corporate_action_adjustments.py"), "--prices", str(work / "canonical/daily_prices_raw.jsonl"), "--events", str(work / "canonical/corporate_actions.jsonl"), "--out", str(release / ADJUSTED_PRICE_ARTIFACT)],
@@ -105,7 +109,7 @@ def main() -> None:
         [sys.executable, str(root / "scripts/audit_raw_integrity.py"), "--root", str(raw), "--out", str(root / "reports" / "raw_integrity_audit.md")],
         [sys.executable, str(root / "scripts/build_source_coverage_audit.py"), "--release", str(release), "--manifest", str(source_manifest), "--out", str(root / "reports/data_source_coverage.md")],
         [sys.executable, str(root / "scripts/recon_pre2006_sources.py"), "--report", str(root / "reports/pre2006_source_reconnaissance.md")],
-        [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--baseline-release", str(root / args.baseline_release), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml")],
+        [sys.executable, str(root / "scripts/build_research_reports.py"), "--release", str(release), "--reports", str(root / "reports"), "--baseline-release", str(root / args.baseline_release), "--config", str(root / "config/default.yaml"), "--manual-overrides", str(root / "data/reference/manual_identity_overrides.yaml"), "--corporate-action-resolutions", str(corporate_action_resolutions)],
         [sys.executable, str(root / "scripts/build_completion_audit.py"), "--release", str(release), "--out", str(root / "reports" / f"completion_audit_{args.release_id}.md")],
     ])
     if args.end:

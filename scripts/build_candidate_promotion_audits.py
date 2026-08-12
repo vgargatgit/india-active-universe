@@ -21,8 +21,9 @@ from india_active_universe.profiles import (
 )
 
 
-MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS')"
+MATERIAL_ACTIONS = "('SPLIT', 'REVERSE_SPLIT', 'BONUS', 'BONUS_RIGHTS_COMPOSITE', 'SELECTIVE_BONUS')"
 HARD_BOUNDARY_STATUSES = "('WARNING_LARGE_BOUNDARY_MOVE', 'INVALID_PRE_EVENT_PRICE', 'NO_BOUNDARY_OBSERVATIONS', 'NO_BOUNDARY_VALIDATION')"
+NON_BLOCKING_BOUNDARY_STATUSES = "('PASS', 'ADVISORY_BOUNDARY_DRIFT', 'PASS_VERIFIED_GENUINE_MARKET_MOVE', 'PASS_REVIEWED_ECONOMIC_ACTION')"
 
 
 def path_sql(path: Path) -> str:
@@ -174,12 +175,12 @@ def main() -> None:
               COUNT(DISTINCT event_id) AS material_events,
               COUNT(DISTINCT event_id) FILTER (WHERE price_factor IS NULL OR share_factor IS NULL) AS material_missing_factors,
               COUNT(DISTINCT event_id) FILTER (
-                WHERE validation_status <> 'PASS'
+                WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}
                   AND event_session_index >= decision_session_index - {max_window}
               ) AS signal_window_non_pass_boundaries
               ,
               COUNT(DISTINCT event_id) FILTER (
-                WHERE validation_status <> 'PASS'
+                WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}
                   AND event_session_index >= decision_session_index - {max_window}
                   AND any_pre_adjusted_date IS NULL
                   AND any_post_adjusted_date IS NOT NULL
@@ -273,12 +274,12 @@ def main() -> None:
               boundary_date,
               COUNT(DISTINCT event_id) FILTER (WHERE price_factor IS NULL OR share_factor IS NULL) AS material_missing_factors,
               COUNT(DISTINCT event_id) FILTER (
-                WHERE validation_status <> 'PASS'
+                WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}
                   AND event_session_index >= boundary_session_index - {max_window}
               ) AS signal_window_non_pass_boundaries
               ,
               COUNT(DISTINCT event_id) FILTER (
-                WHERE validation_status <> 'PASS'
+                WHERE validation_status NOT IN {NON_BLOCKING_BOUNDARY_STATUSES}
                   AND event_session_index >= boundary_session_index - {max_window}
                   AND any_pre_adjusted_date IS NULL
                   AND any_post_adjusted_date IS NOT NULL
