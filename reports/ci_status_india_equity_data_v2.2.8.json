@@ -1,0 +1,11 @@
+{
+  "conclusion": "success",
+  "created_at": "2026-08-12T04:44:10Z",
+  "head_sha": "121984c5367b77fdcece96adf30763140a396622",
+  "release_id": "india_equity_data_v2.2.8",
+  "run_id": 31564216379,
+  "run_url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31564216379",
+  "status": "completed",
+  "updated_at": "2026-08-12T04:44:48Z",
+  "workflow_name": "ci"
+}
