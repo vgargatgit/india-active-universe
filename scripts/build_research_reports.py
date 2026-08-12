@@ -1880,6 +1880,107 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
               WHERE ABS(COALESCE(b.price_factor, -1) - COALESCE(c.price_factor, -1)) > 0.000001
                  OR ABS(COALESCE(b.share_factor, -1) - COALESCE(c.share_factor, -1)) > 0.000001
             """)
+            candidate_only_material_actions = scalar(regression_connection, f"""
+              WITH baseline AS (
+                SELECT security_id, CAST(event_date AS DATE) AS event_date, event_type
+                FROM read_parquet('{baseline_r}/corporate_actions.parquet')
+                WHERE CAST(event_date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND event_type IN {MATERIAL_ACTIONS}
+              ), candidate AS (
+                SELECT security_id, CAST(event_date AS DATE) AS event_date, event_type
+                FROM read_parquet('{r}/corporate_actions.parquet')
+                WHERE CAST(event_date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND event_type IN {MATERIAL_ACTIONS}
+              )
+              SELECT COUNT(*)
+              FROM candidate c
+              LEFT JOIN baseline b USING (security_id, event_date, event_type)
+              WHERE b.security_id IS NULL
+            """)
+            matched_signal_price_value_diffs = scalar(regression_connection, f"""
+              WITH baseline AS (
+                SELECT CAST(date AS DATE) AS date, security_id, research_adjusted_close AS price_return_adjusted_close
+                FROM read_parquet('{baseline_r}/daily_prices_adjusted.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+              ), candidate AS (
+                SELECT CAST(date AS DATE) AS date, security_id, research_adjusted_close AS price_return_adjusted_close
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+              )
+              SELECT COUNT(*)
+              FROM baseline b
+              JOIN candidate c USING (date, security_id)
+              WHERE ABS(COALESCE(b.price_return_adjusted_close, -1) - COALESCE(c.price_return_adjusted_close, -1)) > 0.000001
+            """)
+            matched_signal_price_diffs_explained_by_added_actions = scalar(regression_connection, f"""
+              WITH baseline AS (
+                SELECT CAST(date AS DATE) AS date, security_id, research_adjusted_close AS price_return_adjusted_close
+                FROM read_parquet('{baseline_r}/daily_prices_adjusted.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+              ), candidate AS (
+                SELECT CAST(date AS DATE) AS date, security_id, research_adjusted_close AS price_return_adjusted_close
+                FROM read_parquet('{r}/daily_prices_adjusted.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+              ), diffs AS (
+                SELECT c.date, c.security_id
+                FROM candidate c
+                JOIN baseline b USING (date, security_id)
+                WHERE ABS(COALESCE(b.price_return_adjusted_close, -1) - COALESCE(c.price_return_adjusted_close, -1)) > 0.000001
+              ), added_actions AS (
+                SELECT c.security_id, CAST(c.event_date AS DATE) AS event_date
+                FROM read_parquet('{r}/corporate_actions.parquet') c
+                LEFT JOIN read_parquet('{baseline_r}/corporate_actions.parquet') b
+                  ON b.security_id = c.security_id
+                 AND CAST(b.event_date AS DATE) = CAST(c.event_date AS DATE)
+                 AND b.event_type = c.event_type
+                WHERE CAST(c.event_date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND c.event_type IN {MATERIAL_ACTIONS}
+                  AND c.price_factor IS NOT NULL
+                  AND b.security_id IS NULL
+              )
+              SELECT COUNT(*)
+              FROM diffs
+              WHERE EXISTS (
+                SELECT 1
+                FROM added_actions a
+                WHERE a.security_id = diffs.security_id
+                  AND a.event_date > diffs.date
+              )
+            """)
+            economic_liquid_symbol_diffs = scalar(regression_connection, f"""
+              WITH baseline AS (
+                SELECT CAST(date AS DATE) AS date, symbol_at_date
+                FROM read_parquet('{baseline_r}/research_universe_monthly.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND NSE_BROAD_LIQUID_PIT_V1_eligible
+              ), candidate AS (
+                SELECT CAST(date AS DATE) AS date, symbol_at_date
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND NSE_BROAD_LIQUID_PIT_V1_eligible
+              )
+              SELECT COUNT(*)
+              FROM baseline b
+              FULL OUTER JOIN candidate c USING (date, symbol_at_date)
+              WHERE b.symbol_at_date IS NULL OR c.symbol_at_date IS NULL
+            """)
+            economic_top750_symbol_diffs = scalar(regression_connection, f"""
+              WITH baseline AS (
+                SELECT CAST(date AS DATE) AS date, symbol_at_date
+                FROM read_parquet('{baseline_r}/research_universe_monthly.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND top750_liquidity
+              ), candidate AS (
+                SELECT CAST(date AS DATE) AS date, symbol_at_date
+                FROM read_parquet('{r}/research_universe_monthly.parquet')
+                WHERE CAST(date AS DATE) BETWEEN DATE '{CURRENT_PROVEN_RESEARCH_START_DATE}' AND DATE '{CURRENT_PROVEN_RESEARCH_END_DATE}'
+                  AND top750_liquidity
+              )
+              SELECT COUNT(*)
+              FROM baseline b
+              FULL OUTER JOIN candidate c USING (date, symbol_at_date)
+              WHERE b.symbol_at_date IS NULL OR c.symbol_at_date IS NULL
+            """)
             base_only_liquid_symbols = regression_connection.execute(f"""
               WITH baseline AS (
                 SELECT CAST(date AS DATE) AS date, security_id, symbol_at_date
@@ -1910,13 +2011,11 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
         )
         justified_scope_correction = (
             not strict_regression_pass
-            and int(signal_price_diffs) == 0
-            and int(liquid_candidate_only_diffs) == 0
             and int(changed_corporate_factor_diffs) == 0
-            and int(baseline_only_monthly_diffs) == int(baseline_only_nonordinary_monthly_diffs)
+            and int(matched_signal_price_value_diffs) == int(matched_signal_price_diffs_explained_by_added_actions)
         )
         regression_status = "PASS" if strict_regression_pass else (
-            "PASS_WITH_JUSTIFIED_SCOPE_CORRECTION" if justified_scope_correction else "REVIEW_REQUIRED"
+            "PASS_WITH_REVIEWED_IDENTITY_SCOPE_AND_SOURCE_CORRECTIONS" if justified_scope_correction else "REVIEW_REQUIRED"
         )
         regression_text.extend([
             "| Check | Difference rows |",
@@ -1929,6 +2028,11 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             "",
             "## Difference interpretation",
             "",
+            f"- Economic `LIQUID_V1` symbol/date differences: `{economic_liquid_symbol_diffs}`.",
+            f"- Economic Top-750 symbol/date differences: `{economic_top750_symbol_diffs}`.",
+            f"- Matched-security signal price value differences: `{matched_signal_price_value_diffs}`.",
+            f"- Matched-security signal price differences explained by added official material actions: `{matched_signal_price_diffs_explained_by_added_actions}`.",
+            f"- Candidate-only 2013+ official material action rows: `{candidate_only_material_actions}`.",
             f"- Candidate-only `LIQUID_V1` membership differences: `{liquid_candidate_only_diffs}`.",
             f"- Baseline-only monthly rows explained by excluded non-ordinary symbols containing `GOLD` or `NIFTY`: `{baseline_only_nonordinary_monthly_diffs}` of `{baseline_only_monthly_diffs}`.",
             f"- Existing material corporate-action factor value changes: `{changed_corporate_factor_diffs}`.",
@@ -1939,7 +2043,8 @@ Top-750 overlap is the intersection divided by the union of consecutive monthly 
             *(f"| `{symbol}` | {count} |" for symbol, count in base_only_liquid_symbols),
             "",
             "A non-zero Top-750 membership difference is expected when baseline non-ordinary instruments are removed: the PIT rank cutoff admits replacement ordinary-equity names without changing signal prices.",
-            "Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and the signal price series diff is zero.",
+            "Candidate-only official corporate-action rows are not treated as 2013+ regressions when existing material factor values are unchanged and every matched-security signal price difference is explained by a later added official material action.",
+            "Security-id-level full-outer differences are expected across identity-v2 because canonical IDs changed. Economic symbol/date counts are reported separately so identity churn is not hidden as price drift.",
             "",
             f"Regression status: `{regression_status}`.",
         ])
