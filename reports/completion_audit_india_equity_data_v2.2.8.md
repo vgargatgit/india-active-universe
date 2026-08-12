@@ -21,8 +21,8 @@
 - Source coverage validation: `{"status": "PASS"}`.
 - Research invariant validation: `{"failure_count": 0, "failures": {}, "missing_metrics": [], "status": "PASS"}`.
 - Candidate promotion audits: `{"candidate_count": 4, "duplicate_candidate_starts": [], "malformed_candidate_audits": [], "malformed_candidate_report": [], "missing_candidate_starts": [], "unexpected_candidate_starts": []}`.
-- Test results: `{"early_model_arena_handoff_passed": true, "errors": 0, "failures": 0, "model_arena_handoff_passed": true, "multi_era_source_fixture_passed": true, "skipped": 0, "tests": 117}`.
-- GitHub Actions CI: `{"conclusion": "success", "descends_from_release_git_commit": true, "failed_jobs": [], "head_sha": "2bc56e861ee659ce0e49cf9111c4e7a9396a1196", "job_count": 1, "matches_release_git_commit": true, "release_git_commit": "2bc56e861ee659ce0e49cf9111c4e7a9396a1196", "run_id": "LOCAL-PRE-PUSH", "run_url": null, "status": "completed", "workflow_name": "local deterministic test suite before remote CI"}`.
+- Test results: `{"early_model_arena_handoff_passed": true, "errors": 0, "failures": 0, "model_arena_handoff_passed": true, "multi_era_source_fixture_passed": true, "skipped": 0, "tests": 118}`.
+- GitHub Actions CI: `{"conclusion": "success", "descends_from_release_git_commit": true, "failed_jobs": [], "head_sha": "2cc631b3dcaa4f8c9f132163d31414ca12c029d6", "job_count": 0, "matches_release_git_commit": true, "release_git_commit": "2cc631b3dcaa4f8c9f132163d31414ca12c029d6", "run_id": 31562683887, "run_url": "https://github.com/vgargatgit/india-active-universe/actions/runs/31562683887", "status": "completed", "workflow_name": "ci"}`.
 - Partitioned sidecar layout: `{"artifact_count": 4, "failed_artifacts": [], "file_count": 92, "layout": "YEAR_PARTITIONED_SIDECAR_V1", "missing_required_artifacts": [], "partitioned_artifacts": ["daily_prices_raw.parquet", "daily_prices_adjusted.parquet", "liquidity_features.parquet", "active_universe_daily.parquet"], "status": "PASS"}`.
 
 ## Required artifact checks

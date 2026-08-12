@@ -1,5 +1,5 @@
 {
-  "artifact_sha256": "4f72c9bf9b8f3d59d2f7443199ca596d11cd7138d4f8fe1c843c316ee17e0c94",
+  "artifact_sha256": "fb9bfc5b3b33cbed0ed6418681d335b1119256910bb07a1810d0d02afe91e82d",
   "attribution_counts": [
     {
       "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
@@ -12,33 +12,28 @@
       "universe_flag": "LIQUID_V1"
     },
     {
-      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
+      "primary_attribution": "SESSION_CORRECT_HISTORY_RECALCULATION",
       "rows": 1,
       "universe_flag": "LIQUID_V1"
     },
     {
       "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "rows": 86,
+      "rows": 75,
       "universe_flag": "TOP1000"
     },
     {
       "primary_attribution": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "rows": 351,
-      "universe_flag": "TOP1000"
-    },
-    {
-      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
-      "rows": 12,
+      "rows": 352,
       "universe_flag": "TOP1000"
     },
     {
       "primary_attribution": "RANK_CUTOFF_SECOND_ORDER_EFFECT",
-      "rows": 449,
+      "rows": 471,
       "universe_flag": "TOP1000"
     },
     {
       "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "rows": 101,
+      "rows": 96,
       "universe_flag": "TOP500"
     },
     {
@@ -47,33 +42,23 @@
       "universe_flag": "TOP500"
     },
     {
-      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
-      "rows": 6,
-      "universe_flag": "TOP500"
-    },
-    {
       "primary_attribution": "RANK_CUTOFF_SECOND_ORDER_EFFECT",
-      "rows": 166,
+      "rows": 177,
       "universe_flag": "TOP500"
     },
     {
       "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "rows": 118,
+      "rows": 102,
       "universe_flag": "TOP750"
     },
     {
       "primary_attribution": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "rows": 185,
-      "universe_flag": "TOP750"
-    },
-    {
-      "primary_attribution": "OTHER_REVIEWED_CORRECTION",
-      "rows": 10,
+      "rows": 191,
       "universe_flag": "TOP750"
     },
     {
       "primary_attribution": "RANK_CUTOFF_SECOND_ORDER_EFFECT",
-      "rows": 313,
+      "rows": 333,
       "universe_flag": "TOP750"
     }
   ],
@@ -431,8 +416,8 @@
       "diff_side": "BASELINE_ONLY",
       "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
       "symbol": "BBTC",
-      "trigger_reason": null,
-      "trigger_symbol": null,
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_symbol": "MBSWITCH, POLYPLEX, PURVA, SHALPAINTS",
       "universe_flag": "TOP500"
     },
     {
@@ -641,8 +626,8 @@
       "diff_side": "BASELINE_ONLY",
       "primary_attribution": "IDENTITY_V2_CONTINUITY_CORRECTION",
       "symbol": "BBTC",
-      "trigger_reason": null,
-      "trigger_symbol": null,
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_symbol": "MBSWITCH, NAVNETPUBL, SELAN, ZENSARTECH",
       "universe_flag": "TOP500"
     },
     {
@@ -967,9 +952,9 @@
       "baseline_rank": 1004,
       "candidate_rank": 997,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -977,9 +962,9 @@
       "baseline_rank": 1003,
       "candidate_rank": 996,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -987,9 +972,9 @@
       "baseline_rank": 1007,
       "candidate_rank": 1000,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -997,9 +982,9 @@
       "baseline_rank": 1069,
       "candidate_rank": 985,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1007,9 +992,9 @@
       "baseline_rank": 1005,
       "candidate_rank": 998,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1017,9 +1002,9 @@
       "baseline_rank": 1002,
       "candidate_rank": 995,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1027,9 +1012,9 @@
       "baseline_rank": 1001,
       "candidate_rank": 994,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1037,9 +1022,9 @@
       "baseline_rank": 1006,
       "candidate_rank": 999,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1047,9 +1032,9 @@
       "baseline_rank": 528,
       "candidate_rank": 467,
       "date": "2013-01-31",
-      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "trigger_security_id": "SEC_f7317d97391b8a64",
-      "trigger_symbol": "BBTC",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_f7317d97391b8a64, SEC_04d6751683afe66f, SEC_f30fb230beabc7e3, SEC_2f5d12c134043087",
+      "trigger_symbol": "BBTC, GOLDSHARE, KOTAKGOLD, RELGOLD",
       "universe_flag": "TOP500"
     },
     {
@@ -1057,9 +1042,9 @@
       "baseline_rank": 502,
       "candidate_rank": 500,
       "date": "2013-01-31",
-      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "trigger_security_id": "SEC_f7317d97391b8a64",
-      "trigger_symbol": "BBTC",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_f7317d97391b8a64, SEC_04d6751683afe66f, SEC_f30fb230beabc7e3, SEC_2f5d12c134043087",
+      "trigger_symbol": "BBTC, GOLDSHARE, KOTAKGOLD, RELGOLD",
       "universe_flag": "TOP500"
     },
     {
@@ -1067,9 +1052,9 @@
       "baseline_rank": 501,
       "candidate_rank": 499,
       "date": "2013-01-31",
-      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "trigger_security_id": "SEC_f7317d97391b8a64",
-      "trigger_symbol": "BBTC",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_f7317d97391b8a64, SEC_04d6751683afe66f, SEC_f30fb230beabc7e3, SEC_2f5d12c134043087",
+      "trigger_symbol": "BBTC, GOLDSHARE, KOTAKGOLD, RELGOLD",
       "universe_flag": "TOP500"
     },
     {
@@ -1077,9 +1062,9 @@
       "baseline_rank": 574,
       "candidate_rank": 476,
       "date": "2013-01-31",
-      "trigger_reason": "IDENTITY_V2_CONTINUITY_CORRECTION",
-      "trigger_security_id": "SEC_f7317d97391b8a64",
-      "trigger_symbol": "BBTC",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_f7317d97391b8a64, SEC_04d6751683afe66f, SEC_f30fb230beabc7e3, SEC_2f5d12c134043087",
+      "trigger_symbol": "BBTC, GOLDSHARE, KOTAKGOLD, RELGOLD",
       "universe_flag": "TOP500"
     },
     {
@@ -1087,9 +1072,9 @@
       "baseline_rank": 755,
       "candidate_rank": 748,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1097,9 +1082,9 @@
       "baseline_rank": 753,
       "candidate_rank": 746,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1107,9 +1092,9 @@
       "baseline_rank": 756,
       "candidate_rank": 749,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1117,9 +1102,9 @@
       "baseline_rank": 757,
       "candidate_rank": 750,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1127,9 +1112,9 @@
       "baseline_rank": 751,
       "candidate_rank": 744,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1137,9 +1122,9 @@
       "baseline_rank": 754,
       "candidate_rank": 747,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1147,9 +1132,9 @@
       "baseline_rank": 752,
       "candidate_rank": 745,
       "date": "2013-01-31",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_0c218cfeafa428d6",
-      "trigger_symbol": "MGOLD",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP750"
     },
     {
@@ -1157,9 +1142,9 @@
       "baseline_rank": 1008,
       "candidate_rank": 1000,
       "date": "2013-02-28",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_04d6751683afe66f",
-      "trigger_symbol": "GOLDSHARE",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1167,9 +1152,9 @@
       "baseline_rank": 1007,
       "candidate_rank": 999,
       "date": "2013-02-28",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_04d6751683afe66f",
-      "trigger_symbol": "GOLDSHARE",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1177,9 +1162,9 @@
       "baseline_rank": 1002,
       "candidate_rank": 994,
       "date": "2013-02-28",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_04d6751683afe66f",
-      "trigger_symbol": "GOLDSHARE",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1187,9 +1172,9 @@
       "baseline_rank": 1003,
       "candidate_rank": 995,
       "date": "2013-02-28",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_04d6751683afe66f",
-      "trigger_symbol": "GOLDSHARE",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1197,9 +1182,9 @@
       "baseline_rank": 1006,
       "candidate_rank": 998,
       "date": "2013-02-28",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_04d6751683afe66f",
-      "trigger_symbol": "GOLDSHARE",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     },
     {
@@ -1207,9 +1192,9 @@
       "baseline_rank": 1005,
       "candidate_rank": 997,
       "date": "2013-02-28",
-      "trigger_reason": "NON_ORDINARY_INSTRUMENT_REMOVAL",
-      "trigger_security_id": "SEC_04d6751683afe66f",
-      "trigger_symbol": "GOLDSHARE",
+      "trigger_reason": "OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET",
+      "trigger_security_id": "SEC_ee6b9775082944a8, SEC_04d6751683afe66f, SEC_61b33d7674b3b4d5, SEC_3d4f7227e8c4c789, SEC_f30fb230beabc7e3, SEC_0c218cfeafa428d6, SEC_5ace4461bc3b5352, SEC_2f5d12c134043087",
+      "trigger_symbol": "AXISGOLD, GOLDSHARE, IDBIGOLD, IIFLNIFTY, KOTAKGOLD, MGOLD, QGOLDHALF, RELGOLD",
       "universe_flag": "TOP1000"
     }
   ],

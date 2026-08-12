@@ -156,11 +156,10 @@ def build_differences(
             """)
         con.execute("CREATE OR REPLACE TEMP VIEW raw_diffs AS " + " UNION ALL ".join(union_sql))
         con.execute(f"""
-          CREATE OR REPLACE TEMP VIEW primary_triggers AS
+          CREATE OR REPLACE TEMP VIEW primary_trigger_rows AS
           SELECT date, universe_flag,
-            any_value(symbol_at_date) AS trigger_symbol,
-            any_value(COALESCE(baseline_security_id, candidate_security_id)) AS trigger_security_id,
-            any_value(
+            symbol_at_date AS trigger_symbol,
+            COALESCE(baseline_security_id, candidate_security_id) AS trigger_security_id,
               CASE
                 WHEN COALESCE(baseline_instrument_type, '') <> 'ORDINARY_EQUITY'
                   OR {' OR '.join([f"symbol_at_date LIKE '%{marker}%'" for marker in NON_ORDINARY_MARKERS])}
@@ -169,24 +168,53 @@ def build_differences(
                   AND abs(candidate_history_sessions - baseline_history_sessions) >= 100
                   THEN 'IDENTITY_V2_CONTINUITY_CORRECTION'
                 ELSE 'PRIMARY_ELIGIBILITY_CORRECTION'
-              END
-            ) AS trigger_reason
+              END AS trigger_reason
           FROM raw_diffs
           WHERE universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
             AND baseline_member AND NOT candidate_member
-          GROUP BY 1, 2
+        """)
+        con.execute("""
+          CREATE OR REPLACE TEMP VIEW rank_displacement_triggers AS
+          SELECT date, universe_flag,
+            CASE
+              WHEN baseline_member AND NOT candidate_member THEN 'BASELINE_ONLY'
+              WHEN NOT baseline_member AND candidate_member THEN 'CANDIDATE_ONLY'
+              ELSE 'CHANGED'
+            END AS trigger_side,
+            string_agg(symbol_at_date, ', ' ORDER BY symbol_at_date) AS trigger_symbol,
+            string_agg(COALESCE(COALESCE(baseline_security_id, candidate_security_id), ''), ', ' ORDER BY symbol_at_date) AS trigger_security_id
+          FROM raw_diffs
+          WHERE universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
+          GROUP BY 1, 2, 3
         """)
         con.execute(f"""
           CREATE OR REPLACE TEMP VIEW attributed AS
           SELECT d.*,
             CASE
+              WHEN COALESCE(d.baseline_instrument_type, d.candidate_instrument_type, '') <> 'ORDINARY_EQUITY'
+                OR {' OR '.join([f"d.symbol_at_date LIKE '%{marker}%'" for marker in NON_ORDINARY_MARKERS])}
+                THEN 'NON_ORDINARY_INSTRUMENT_REMOVAL'
+              WHEN d.universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
+                AND d.baseline_security_id IS NOT NULL
+                AND d.candidate_security_id IS NOT NULL
+                AND d.baseline_security_id = d.candidate_security_id
+                AND d.baseline_rank IS NOT NULL
+                AND d.candidate_rank IS NOT NULL
+                AND (
+                  (
+                    d.baseline_rank <= CASE d.universe_flag WHEN 'TOP500' THEN 500 WHEN 'TOP750' THEN 750 ELSE 1000 END
+                    AND d.candidate_rank > CASE d.universe_flag WHEN 'TOP500' THEN 500 WHEN 'TOP750' THEN 750 ELSE 1000 END
+                  )
+                  OR (
+                    d.candidate_rank <= CASE d.universe_flag WHEN 'TOP500' THEN 500 WHEN 'TOP750' THEN 750 ELSE 1000 END
+                    AND d.baseline_rank > CASE d.universe_flag WHEN 'TOP500' THEN 500 WHEN 'TOP750' THEN 750 ELSE 1000 END
+                  )
+                )
+                THEN 'RANK_CUTOFF_SECOND_ORDER_EFFECT'
               WHEN d.universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
                 AND NOT d.baseline_member AND d.candidate_member
                 AND t.trigger_symbol IS NOT NULL
                 THEN 'RANK_CUTOFF_SECOND_ORDER_EFFECT'
-              WHEN COALESCE(d.baseline_instrument_type, d.candidate_instrument_type, '') <> 'ORDINARY_EQUITY'
-                OR {' OR '.join([f"d.symbol_at_date LIKE '%{marker}%'" for marker in NON_ORDINARY_MARKERS])}
-                THEN 'NON_ORDINARY_INSTRUMENT_REMOVAL'
               WHEN d.baseline_security_id IS NOT NULL AND d.candidate_security_id IS NOT NULL
                 AND d.baseline_security_id <> d.candidate_security_id
                 THEN 'IDENTITY_V2_CONTINUITY_CORRECTION'
@@ -196,6 +224,14 @@ def build_differences(
               WHEN d.candidate_history_sessions IS NOT NULL AND d.baseline_history_sessions IS NOT NULL
                 AND abs(d.candidate_history_sessions - d.baseline_history_sessions) >= 100
                 THEN 'IDENTITY_V2_CONTINUITY_CORRECTION'
+              WHEN d.universe_flag = 'LIQUID_V1'
+                AND d.baseline_listing_age_sessions IS NOT NULL
+                AND d.candidate_listing_age_sessions IS NOT NULL
+                AND (
+                  (d.baseline_listing_age_sessions >= 272 AND d.candidate_listing_age_sessions < 272)
+                  OR (d.candidate_listing_age_sessions >= 272 AND d.baseline_listing_age_sessions < 272)
+                )
+                THEN 'SESSION_CORRECT_HISTORY_RECALCULATION'
               WHEN d.candidate_listing_age_sessions IS NOT NULL AND d.baseline_listing_age_sessions IS NOT NULL
                 AND abs(d.candidate_listing_age_sessions - d.baseline_listing_age_sessions) >= 100
                 THEN 'LISTING_HISTORY_CONTINUITY_CORRECTION'
@@ -216,7 +252,7 @@ def build_differences(
                 THEN 'ADDED_OFFICIAL_SOURCE_RECORD'
               WHEN d.baseline_security_id IS NOT NULL AND d.candidate_security_id IS NULL
                 THEN 'SOURCE_OBSERVATION_CORRECTION'
-              ELSE 'OTHER_REVIEWED_CORRECTION'
+              ELSE 'UNEXPLAINED'
             END AS primary_attribution,
             CASE
               WHEN d.baseline_member AND NOT d.candidate_member THEN 'BASELINE_ONLY'
@@ -225,27 +261,34 @@ def build_differences(
             END AS diff_side,
             CASE
               WHEN d.universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
-                AND NOT d.baseline_member AND d.candidate_member
+                AND COALESCE(d.baseline_member, false) <> COALESCE(d.candidate_member, false)
                 AND t.trigger_symbol IS NOT NULL
                 THEN t.trigger_symbol
               ELSE NULL
             END AS trigger_symbol,
             CASE
               WHEN d.universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
-                AND NOT d.baseline_member AND d.candidate_member
+                AND COALESCE(d.baseline_member, false) <> COALESCE(d.candidate_member, false)
                 AND t.trigger_security_id IS NOT NULL
                 THEN t.trigger_security_id
               ELSE NULL
             END AS trigger_security_id,
             CASE
               WHEN d.universe_flag IN ('TOP500', 'TOP750', 'TOP1000')
-                AND NOT d.baseline_member AND d.candidate_member
-                AND t.trigger_reason IS NOT NULL
-                THEN t.trigger_reason
+                AND COALESCE(d.baseline_member, false) <> COALESCE(d.candidate_member, false)
+                AND t.trigger_symbol IS NOT NULL
+                THEN 'OPPOSITE_SIDE_RANK_BOUNDARY_DIFF_SET'
               ELSE NULL
             END AS trigger_reason
           FROM raw_diffs d
-          LEFT JOIN primary_triggers t USING (date, universe_flag)
+          LEFT JOIN rank_displacement_triggers t
+            ON t.date = d.date
+           AND t.universe_flag = d.universe_flag
+           AND t.trigger_side = CASE
+              WHEN d.baseline_member AND NOT d.candidate_member THEN 'CANDIDATE_ONLY'
+              WHEN NOT d.baseline_member AND d.candidate_member THEN 'BASELINE_ONLY'
+              ELSE 'CHANGED'
+            END
         """)
         con.execute(f"COPY attributed TO '{o}' (FORMAT PARQUET)")
         con.execute(f"""

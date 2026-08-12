@@ -103,3 +103,20 @@ def test_signal_price_unexplained_is_reported(tmp_path: Path):
     summary = build_differences(baseline, candidate, tmp_path / "diffs.parquet", tmp_path / "signal.parquet")
 
     assert summary["signal_price"]["unexplained"] == 1
+
+
+def test_unmatched_membership_difference_is_unexplained(tmp_path: Path):
+    baseline = tmp_path / "baseline"
+    candidate = tmp_path / "candidate"
+    baseline_row = monthly("ABC", top750=True, liquid=True)
+    candidate_row = monthly("ABC", top750=True, liquid=False)
+    candidate_row["top500_liquidity"] = True
+    candidate_row["top1000_liquidity"] = True
+    candidate_row["eligibility_result"] = "ELIGIBILITY_FLIPPED_WITH_NO_INPUT_EVIDENCE"
+    write_release(baseline, [baseline_row], [price("ABC")])
+    write_release(candidate, [candidate_row], [price("ABC")])
+
+    summary = build_differences(baseline, candidate, tmp_path / "diffs.parquet", tmp_path / "signal.parquet")
+
+    assert summary["totals"]["LIQUID_V1"] == 1
+    assert summary["unexplained"]["LIQUID_V1"] == 1
