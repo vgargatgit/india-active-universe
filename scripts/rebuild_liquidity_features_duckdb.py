@@ -21,6 +21,15 @@ def main() -> None:
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
     destination = sql_path(output)
+    connection = duckdb.connect()
+    try:
+        columns = {
+            row[0].lower()
+            for row in connection.execute(f"DESCRIBE SELECT * FROM read_parquet('{prices}')").fetchall()
+        }
+    finally:
+        connection.close()
+    series_filter = "WHERE COALESCE(CAST(p.series AS VARCHAR), 'EQ') = 'EQ'" if "series" in columns else ""
     query = f"""
     COPY (
       WITH sessions AS (
@@ -32,6 +41,7 @@ def main() -> None:
         SELECT p.*, CAST(p.date AS DATE) AS price_date, s.session_number
         FROM read_parquet('{prices}') p
         JOIN sessions s ON CAST(p.date AS DATE) = s.session_date
+        {series_filter}
       ),
       bounds AS (
         SELECT security_id, MIN(session_number) AS first_session,

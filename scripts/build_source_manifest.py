@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from india_active_universe.nse import candidate_urls
+from india_active_universe.profiles import PARSER_VERSIONS
 
 
 def sha256(path: Path) -> str:
@@ -38,7 +39,7 @@ def main() -> None:
             "retrieved_at_utc": datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat(),
             "retrieval_timestamp_basis": "LOCAL_FILE_MTIME",
             "sha256": sha256(path),
-            "parser_version": "nse-bhavcopy-v2",
+            "parser_version": PARSER_VERSIONS["nse_bhavcopy"],
             "download_status": "DOWNLOADED_VALID_ARCHIVE",
             "content_type": "application/zip",
             "http_etag": None,

@@ -8,6 +8,8 @@ from typing import Any, Iterator
 
 from .models import DailyObservation
 
+RAW_EXECUTION_SERIES = {"EQ", "BE"}
+
 
 def legacy_url(point: date) -> str:
     month = point.strftime("%b").upper()
@@ -60,7 +62,7 @@ def parse_bhavcopy(content: bytes, trade_date: date, source_file_id: str, source
     for original in reader:
         row = {key.strip().upper().replace(" ", "_"): value for key, value in original.items() if key}
         series = (_first(row, "SERIES", "SCTYSRS") or "").strip().upper()
-        if series != "EQ":
+        if series not in RAW_EXECUTION_SERIES:
             continue
         symbol = (_first(row, "SYMBOL", "TCKRSYMB") or "").strip().upper()
         if not symbol:

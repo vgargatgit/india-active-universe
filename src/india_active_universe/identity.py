@@ -22,6 +22,33 @@ def continuity_chains(
 ) -> dict[int, int]:
     """Map discovered-row positions to conservative same-symbol continuity chains."""
     chain_by_index: dict[int, int] = {}
+    parent: dict[int, int] = {}
+
+    def find(value: int) -> int:
+        parent.setdefault(value, value)
+        if parent[value] != value:
+            parent[value] = find(parent[value])
+        return parent[value]
+
+    def union(left: int, right: int) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root != right_root:
+            parent[right_root] = left_root
+
+    def adjacent(previous_last: date, current_first: date) -> bool:
+        if current_first <= previous_last:
+            return False
+        if session_index_by_date:
+            previous_session = session_index_by_date.get(previous_last)
+            current_session = session_index_by_date.get(current_first)
+            return (
+                previous_session is not None
+                and current_session is not None
+                and 0 < current_session - previous_session <= max_gap_sessions
+            )
+        return 0 < (current_first - previous_last).days <= 7
+
     grouped: dict[tuple[str, str, str], list[tuple[int, dict[str, Any]]]] = defaultdict(list)
     for index, row in enumerate(discovered_rows):
         grouped[(row["exchange"], row["symbol"], row["series"])].append((index, row))
@@ -33,24 +60,33 @@ def continuity_chains(
         for index, row in values:
             join_previous = False
             if previous_row is not None and current_chain is not None:
-                previous_last = previous_row["last_seen"]
-                current_first = row["first_seen"]
-                if current_first > previous_last:
-                    if session_index_by_date:
-                        previous_session = session_index_by_date.get(previous_last)
-                        current_session = session_index_by_date.get(current_first)
-                        join_previous = (
-                            previous_session is not None
-                            and current_session is not None
-                            and 0 < current_session - previous_session <= max_gap_sessions
-                        )
-                    else:
-                        join_previous = 0 < (current_first - previous_last).days <= 7
+                join_previous = adjacent(previous_row["last_seen"], row["first_seen"])
             if not join_previous:
                 current_chain = next_chain
                 next_chain += 1
             chain_by_index[index] = current_chain
+            parent.setdefault(current_chain, current_chain)
             previous_row = row
+    isin_grouped: dict[tuple[str, str, str], list[tuple[int, dict[str, Any]]]] = defaultdict(list)
+    for index, row in enumerate(discovered_rows):
+        isin = row.get("candidate_isin")
+        if isin:
+            isin_grouped[(row["exchange"], row["series"], str(isin).upper())].append((index, row))
+    for values in isin_grouped.values():
+        values.sort(key=lambda item: (item[1]["first_seen"], item[1]["last_seen"], item[1]["symbol"]))
+        previous_index: int | None = None
+        previous_row: dict[str, Any] | None = None
+        for index, row in values:
+            if previous_index is not None and previous_row is not None and adjacent(previous_row["last_seen"], row["first_seen"]):
+                union(chain_by_index[previous_index], chain_by_index[index])
+            previous_index = index
+            previous_row = row
+    root_map: dict[int, int] = {}
+    for chain in sorted(set(chain_by_index.values())):
+        root = find(chain)
+        root_map.setdefault(root, len(root_map))
+    for index, chain in list(chain_by_index.items()):
+        chain_by_index[index] = root_map[find(chain)]
     return chain_by_index
 
 

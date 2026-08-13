@@ -63,6 +63,23 @@ def test_symbol_rename_is_date_sensitive():
     assert master.resolve_symbol("XYZ", "2019-01-01")["security_id"] == "SEC1"
 
 
+def test_adjacent_same_isin_symbol_change_preserves_stable_security_id():
+    observations = [
+        DailyObservation(date(2025, 5, 30), "NSE", "AMIORG", "EQ", None, 10.0, 11.0, 9.0, 10.5, 100, 1050.0, "a.zip", "sha", "NSE_OFFICIAL_BHAVCOPY", "INE00FF01025", "AMI ORGANICS LIMITED"),
+        DailyObservation(date(2025, 6, 2), "NSE", "ACUTAAS", "EQ", None, 10.0, 11.0, 9.0, 10.5, 100, 1050.0, "b.zip", "sha", "NSE_OFFICIAL_BHAVCOPY", "INE00FF01025", "ACUTAAS CHEMICALS LIMITED"),
+    ]
+    discovered = discover_securities(observations)
+    rows = build_identity_rows(
+        discovered,
+        canonicalization_version="identity-v2",
+        session_index_by_date={date(2025, 5, 30): 1, date(2025, 6, 2): 2},
+    )
+
+    assert {row["symbol"] for row in rows} == {"AMIORG", "ACUTAAS"}
+    assert len({row["security_id"] for row in rows}) == 1
+    assert {row["identity_source"] for row in rows} == {"RECONSTRUCTED_ADJACENT_SYMBOL_ISIN_CONTINUITY"}
+
+
 def test_effective_company_and_isin_histories_are_date_sensitive():
     names = CompanyNameHistoryStore([
         {"issuer_id": "ISS1", "company_name": "OLD NAME", "effective_from": "2010-01-01", "effective_to": "2015-12-31"},

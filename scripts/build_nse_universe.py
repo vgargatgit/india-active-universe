@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import hashlib
 import json
 from datetime import date
@@ -9,7 +10,12 @@ from pathlib import Path
 from india_active_universe.identity import apply_manual_overrides, build_identity_rows, load_manual_overrides
 from india_active_universe.nse import parse_bhavcopy
 from india_active_universe.pipeline import build_active_snapshot, discover_securities, validate_observations
+from india_active_universe.profiles import PARSER_VERSIONS
 from india_active_universe.storage import _encode, write_jsonl
+
+
+IDENTITY_SERIES = "EQ"
+RAW_EXECUTION_SERIES_ALIASES = {"BE": IDENTITY_SERIES}
 
 
 def sha256(path: Path) -> str:
@@ -47,6 +53,12 @@ def parse_daily(path: Path, point: date, findings: list[dict], *, validate: bool
     return items
 
 
+def identity_observation(item):
+    """Use BE observations as identity continuity evidence without changing the source raw series."""
+    alias = RAW_EXECUTION_SERIES_ALIASES.get(item.series)
+    return replace(item, series=alias) if alias else item
+
+
 def write_row(handle, row: dict) -> None:
     handle.write(json.dumps(_encode(row), sort_keys=True, separators=(",", ":")) + "\n")
 
@@ -74,7 +86,7 @@ def main() -> None:
             for item in parse_daily(path, point, findings, validate=True):
                 yield item
 
-    discovered = discover_securities(observations())
+    discovered = discover_securities(identity_observation(item) for item in observations())
     v1_identities = build_identity_rows(discovered, canonicalization_version="identity-v1")
     identities = build_identity_rows(discovered, canonicalization_version=args.canonicalization_version, session_index_by_date=session_index_by_date)
     overrides = load_manual_overrides(args.manual_overrides)
@@ -100,21 +112,22 @@ def main() -> None:
         for path, point in paths:
             day_rows = []
             for item in parse_daily(path, point, findings, validate=False):
-                applicable = [override for override in overrides if override["exchange"] == item.exchange and override["series"] == item.series and override["symbol"] == item.symbol and override["effective_from"] <= item.date <= override["effective_to"]]
+                identity_series = RAW_EXECUTION_SERIES_ALIASES.get(item.series, item.series)
+                applicable = [override for override in overrides if override["exchange"] == item.exchange and override["series"] == identity_series and override["symbol"] == item.symbol and override["effective_from"] <= item.date <= override["effective_to"]]
                 if len(applicable) > 1:
                     candidates = []
                 elif applicable:
                     candidates = [row for row in identities if row["security_id"] == applicable[0]["security_id"] and row["effective_from"] <= item.date <= row["effective_to"]]
                 else:
-                    exact = by_key.get((item.exchange, item.symbol, item.series, item.isin or ""), [])
-                    candidates = exact or (by_symbol.get((item.exchange, item.symbol, item.series), []) if not item.isin else [])
+                    exact = by_key.get((item.exchange, item.symbol, identity_series, item.isin or ""), [])
+                    candidates = exact or (by_symbol.get((item.exchange, item.symbol, identity_series), []) if not item.isin else [])
                 if len(candidates) != 1:
                     findings.append({"source_file_id": item.source_file_id, "severity": "ERROR", "check": "IDENTITY_AMBIGUOUS", "security_id": None, "observed_date": item.date.isoformat(), "message": f"No unique identity for {item.exchange}:{item.symbol}:{item.series} with ISIN {item.isin!r}"})
                     write_row(unresolved_handle, {"date": item.date, "exchange": item.exchange, "symbol": item.symbol, "series": item.series, "isin": item.isin, "company_name": item.company_name, "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "source_quality": item.source_quality, "resolution_status": "UNRESOLVED", "candidate_security_ids": [row["security_id"] for row in candidates]})
                     unresolved_count += 1
                     continue
                 identity = candidates[0]
-                row = {"date": item.date, "security_id": identity["security_id"], "issuer_id": identity["issuer_id"], "listing_episode_id": identity["listing_episode_id"], "symbol_at_date": item.symbol, "isin": item.isin, "company_name": item.company_name, "series": item.series, "instrument_type": identity["instrument_type"], "instrument_type_quality": identity.get("instrument_type_quality"), "instrument_type_source": identity.get("instrument_type_source"), "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source": item.source_quality, "quality": "OFFICIAL_SOURCE_UNREVIEWED", "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "parser_version": "nse-bhavcopy-v2", "canonicalization_version": args.canonicalization_version}
+                row = {"date": item.date, "security_id": identity["security_id"], "issuer_id": identity["issuer_id"], "listing_episode_id": identity["listing_episode_id"], "symbol_at_date": item.symbol, "isin": item.isin, "company_name": item.company_name, "series": item.series, "instrument_type": identity["instrument_type"], "instrument_type_quality": identity.get("instrument_type_quality"), "instrument_type_source": identity.get("instrument_type_source"), "raw_open": item.open, "raw_high": item.high, "raw_low": item.low, "raw_close": item.close, "volume": item.volume, "traded_value": item.traded_value, "source": item.source_quality, "quality": "OFFICIAL_SOURCE_UNREVIEWED", "source_file_id": item.source_file_id, "source_sha256": item.source_sha256, "parser_version": PARSER_VERSIONS["nse_bhavcopy"], "canonicalization_version": args.canonicalization_version}
                 day_rows.append(row)
                 write_row(raw_handle, row)
                 raw_count += 1
