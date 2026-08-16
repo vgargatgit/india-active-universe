@@ -102,6 +102,16 @@ def _load_known_missing(previous_manifest: str | Path | None) -> set[str]:
     return set(values)
 
 
+def _fetch_candidates(point: date, fetch: Callable[[str], FetchResult]) -> list[FetchResult]:
+    results: list[FetchResult] = []
+    for url in candidate_urls(point):
+        result = fetch(url)
+        results.append(result)
+        if result.status == "VALID":
+            break
+    return results
+
+
 def acquire_range(
     *,
     root: str | Path,
@@ -131,7 +141,7 @@ def acquire_range(
             known_missing_skips += 1
             continue
 
-        results = [fetch(url) for url in candidate_urls(point)]
+        results = _fetch_candidates(point, fetch)
         valid_result = next((result for result in results if result.status == "VALID"), None)
         if valid_result is not None and valid_result.content is not None:
             with tempfile.NamedTemporaryFile(dir=root_path, prefix=f".{iso}.", suffix=".part", delete=False) as handle:
@@ -148,7 +158,7 @@ def acquire_range(
             continue
 
         statuses = {result.status for result in results}
-        if statuses == {"NOT_FOUND"}:
+        if len(results) == len(candidate_urls(point)) and statuses == {"NOT_FOUND"}:
             known_missing.add(iso)
             newly_missing += 1
             continue
