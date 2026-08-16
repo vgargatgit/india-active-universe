@@ -53,6 +53,7 @@ def test_acquire_reuses_files_and_remembers_confirmed_missing_dates(tmp_path: Pa
     assert first["newly_missing"] == 1
     assert (root / "2026-01-01.zip").is_file()
     assert first["known_missing_dates"] == ["2026-01-02"]
+    assert len(calls) == 3  # one successful legacy request + two confirmed 404s
 
     manifest_path = tmp_path / "manifest.json"
     build_year_manifest(
@@ -73,6 +74,23 @@ def test_acquire_reuses_files_and_remembers_confirmed_missing_dates(tmp_path: Pa
     assert second["known_missing_skips"] == 1
     assert second["downloaded"] == 0
     assert calls == []
+
+
+def test_acquire_stops_after_first_valid_official_url(tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    def fetch(url: str) -> FetchResult:
+        calls.append(url)
+        return FetchResult("VALID", _archive(), url=url)
+
+    result = acquire_range(
+        root=tmp_path,
+        start=date(2026, 1, 5),
+        end=date(2026, 1, 5),
+        fetch=fetch,
+    )
+    assert result["downloaded"] == 1
+    assert len(calls) == 1
 
 
 def test_acquire_uses_second_official_url_when_first_is_missing(tmp_path: Path) -> None:
