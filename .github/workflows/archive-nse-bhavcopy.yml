@@ -1,0 +1,193 @@
+name: archive-nse-bhavcopy
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: First official-source date to retain
+        required: true
+        default: '2006-01-01'
+      end_date:
+        description: Last official-source date to retain
+        required: true
+        default: '2026-08-10'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archive-nse-bhavcopy
+  cancel-in-progress: false
+
+env:
+  RAW_RELEASE_TAG: india-active-universe-raw-nse-v1
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      years: ${{ steps.matrix.outputs.years }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        env:
+          START_DATE: ${{ inputs.start_date }}
+          END_DATE: ${{ inputs.end_date }}
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from datetime import date
+          start=date.fromisoformat(os.environ['START_DATE'])
+          end=date.fromisoformat(os.environ['END_DATE'])
+          if start > end:
+              raise SystemExit('start_date must be on or before end_date')
+          print('years=' + json.dumps(list(range(start.year, end.year + 1)), separators=(',', ':')))
+          PY
+      - name: Ensure immutable raw-source release exists
+        run: |
+          if ! gh release view "$RAW_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RAW_RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title 'Official NSE raw market archive v1' \
+              --notes 'Immutable year-sharded source archive used to reproduce point-in-time India equity releases. Each generation carries and verifies a SHA-256 manifest; old generations are retained.'
+          fi
+
+  archive-year:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        year: ${{ fromJSON(needs.prepare.outputs.years) }}
+    env:
+      YEAR: ${{ matrix.year }}
+      START_DATE: ${{ inputs.start_date }}
+      END_DATE: ${{ inputs.end_date }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: Resolve bounded dates for year
+        run: |
+          python - <<'PY' >> "$GITHUB_ENV"
+          import os
+          from datetime import date
+          year=int(os.environ['YEAR'])
+          start=max(date.fromisoformat(os.environ['START_DATE']), date(year, 1, 1))
+          end=min(date.fromisoformat(os.environ['END_DATE']), date(year, 12, 31))
+          print(f'YEAR_START={start.isoformat()}')
+          print(f'YEAR_END={end.isoformat()}')
+          PY
+
+      - name: Restore newest valid immutable year generation
+        run: |
+          rm -rf /tmp/nse-year-restore /tmp/nse-year-candidate data/raw/nse/bhavcopy
+          mkdir -p /tmp/nse-year-restore data/raw/nse/bhavcopy reports/raw-bhavcopy-${YEAR}
+          restored=0
+          prefix="nse-bhavcopy-${YEAR}-run-"
+          assets="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RAW_RELEASE_TAG}" \
+            --jq ".assets | sort_by(.created_at) | reverse | .[].name | select(startswith(\"${prefix}\"))")"
+          while IFS= read -r asset; do
+            [ -n "$asset" ] || continue
+            echo "Trying raw archive generation: $asset"
+            rm -rf /tmp/nse-year-candidate /tmp/nse-year-restore/*
+            mkdir -p /tmp/nse-year-candidate
+            if ! gh release download "$RAW_RELEASE_TAG" \
+                --repo "$GITHUB_REPOSITORY" \
+                --pattern "$asset" \
+                --dir /tmp/nse-year-restore; then
+              continue
+            fi
+            if ! tar -xzf "/tmp/nse-year-restore/$asset" -C /tmp/nse-year-candidate; then
+              continue
+            fi
+            if python -m india_active_universe.raw_bhavcopy_archive verify \
+                --root /tmp/nse-year-candidate/payload \
+                --manifest /tmp/nse-year-candidate/year_manifest.json; then
+              cp -a /tmp/nse-year-candidate/payload/. data/raw/nse/bhavcopy/
+              cp /tmp/nse-year-candidate/year_manifest.json "/tmp/previous_manifest_${YEAR}.json"
+              echo "RESTORED_ASSET=$asset" >> "$GITHUB_ENV"
+              restored=1
+              break
+            fi
+          done <<< "$assets"
+          echo "RESTORED=$restored" >> "$GITHUB_ENV"
+          if [ "$restored" -eq 0 ]; then
+            echo "No valid retained generation exists for ${YEAR}; cold acquisition for this year."
+          fi
+
+      - name: Download only unretained official dates
+        run: |
+          previous=()
+          if [ -f "/tmp/previous_manifest_${YEAR}.json" ]; then
+            previous=(--previous-manifest "/tmp/previous_manifest_${YEAR}.json")
+          fi
+          python -m india_active_universe.raw_bhavcopy_archive acquire \
+            --root data/raw/nse/bhavcopy \
+            --start "$YEAR_START" \
+            --end "$YEAR_END" \
+            "${previous[@]}" \
+            --output "reports/raw-bhavcopy-${YEAR}/acquisition.json"
+
+      - name: Build and verify immutable year package
+        run: |
+          rm -rf /tmp/nse-year-package
+          mkdir -p /tmp/nse-year-package/payload
+          find data/raw/nse/bhavcopy -maxdepth 1 -type f -name "${YEAR}-*.zip" -exec cp {} /tmp/nse-year-package/payload/ \;
+          python -m india_active_universe.raw_bhavcopy_archive build-manifest \
+            --root /tmp/nse-year-package/payload \
+            --year "$YEAR" \
+            --state "reports/raw-bhavcopy-${YEAR}/acquisition.json" \
+            --output /tmp/nse-year-package/year_manifest.json
+          python -m india_active_universe.raw_bhavcopy_archive verify \
+            --root /tmp/nse-year-package/payload \
+            --manifest /tmp/nse-year-package/year_manifest.json
+          cp /tmp/nse-year-package/year_manifest.json "reports/raw-bhavcopy-${YEAR}/year_manifest.json"
+
+      - name: Publish only changed year generations
+        run: |
+          changed="$(python - <<'PY'
+          import json, os
+          state=json.load(open(f"reports/raw-bhavcopy-{os.environ['YEAR']}/acquisition.json"))
+          print('1' if os.environ['RESTORED'] != '1' or state['downloaded'] or state['newly_missing'] else '0')
+          PY
+          )"
+          if [ "$changed" = "0" ]; then
+            echo "Year ${YEAR} is unchanged; retaining existing immutable generation ${RESTORED_ASSET}."
+            exit 0
+          fi
+          asset="nse-bhavcopy-${YEAR}-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}.tar.gz"
+          tar -czf "/tmp/$asset" -C /tmp/nse-year-package payload year_manifest.json
+          gh release upload "$RAW_RELEASE_TAG" "/tmp/$asset" --repo "$GITHUB_REPOSITORY"
+          echo "Published immutable year generation: $asset"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: raw-bhavcopy-${{ matrix.year }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/raw-bhavcopy-${{ matrix.year }}/
+          retention-days: 30
+
+      - name: Fail after retaining partial progress on transient source errors
+        if: always()
+        run: |
+          if [ ! -f "reports/raw-bhavcopy-${YEAR}/acquisition.json" ]; then
+            exit 1
+          fi
+          python - <<'PY'
+          import json, os
+          path=f"reports/raw-bhavcopy-{os.environ['YEAR']}/acquisition.json"
+          state=json.load(open(path))
+          if state['transient_failures']:
+              raise SystemExit(
+                  f"{state['transient_failures']} dates had transient/invalid source failures; "
+                  "valid progress was retained and a rerun will retry only those dates"
+              )
+          PY
