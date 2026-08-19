@@ -1,0 +1,191 @@
+name: validate-pit-handoff-recovery
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-pit-handoff-recovery.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  SOURCE_RUN_ID: '32274168273'
+  SOURCE_RUN_ATTEMPT: '1'
+  SOURCE_START: '2004-01-01'
+  RESEARCH_START: '2006-01-31'
+  RESEARCH_END: '2026-08-10'
+  HANDOFF_ID: india_active_universe_fundamentals_pit_v1
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project
+        run: python -m pip install -e '.[data,dev]'
+      - name: Run focused recovery tests
+        run: pytest -q tests/test_collect_nse_corporate_actions.py
+
+      - name: Download retained green source shards
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pit-years
+          mkdir -p /tmp/pit-years
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --pattern "pit-raw-*-${SOURCE_RUN_ID}-${SOURCE_RUN_ATTEMPT}" \
+            --dir /tmp/pit-years
+          count="$(find /tmp/pit-years -type f -name year_manifest.json | wc -l)"
+          test "$count" -eq 23
+
+      - name: Assemble and verify official source history
+        run: |
+          set -euo pipefail
+          rm -rf data/raw/nse/bhavcopy data/raw/manifests
+          mkdir -p data/raw/nse/bhavcopy data/raw/manifests
+          find /tmp/pit-years -type f -path '*/payload/*.zip' -exec cp {} data/raw/nse/bhavcopy/ \;
+          python scripts/build_source_manifest.py \
+            --root data/raw/nse/bhavcopy \
+            --out data/raw/manifests/source_manifest.json
+          python - <<'PY'
+          import json
+          rows=json.load(open('data/raw/manifests/source_manifest.json'))
+          dates=[row['source_date'] for row in rows]
+          if not rows or min(dates) > '2004-01-30' or max(dates) < '2026-08-10':
+              raise SystemExit(f'insufficient official source coverage: {min(dates) if dates else None}..{max(dates) if dates else None}')
+          if len(dates) != len(set(dates)):
+              raise SystemExit('duplicate official source dates')
+          print({'source_files': len(rows), 'first': min(dates), 'last': max(dates)})
+          PY
+
+      - name: Build source-backed identity and liquidity layers
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pit-build /tmp/pit-release /tmp/pit-handoff data/raw/nse/corporate_actions
+          mkdir -p /tmp/pit-build /tmp/pit-release
+          python scripts/build_nse_universe.py \
+            --raw data/raw/nse/bhavcopy --out /tmp/pit-build \
+            --manual-overrides data/reference/manual_identity_overrides.yaml \
+            --start "$SOURCE_START" --end "$RESEARCH_END"
+          python scripts/publish_parquet.py --data /tmp/pit-build --release /tmp/pit-release
+          python scripts/build_trading_calendar.py \
+            --prices /tmp/pit-release/daily_prices_raw.parquet \
+            --out /tmp/pit-release/trading_calendar.parquet
+          python scripts/rebuild_liquidity_features_duckdb.py \
+            --prices /tmp/pit-release/daily_prices_raw.parquet \
+            --calendar /tmp/pit-release/trading_calendar.parquet \
+            --out /tmp/pit-release/liquidity_features.parquet
+          python scripts/publish_identity_artifacts.py \
+            --master /tmp/pit-build/canonical/security_master.jsonl \
+            --release /tmp/pit-release
+
+      - name: Reacquire official corporate actions
+        run: |
+          set -euo pipefail
+          python scripts/collect_nse_corporate_actions.py \
+            --start "$SOURCE_START" --end "$RESEARCH_END" \
+            --output data/raw/nse/corporate_actions/corporate_actions_2006_2026.json \
+            --manifest data/raw/nse/corporate_actions/source_manifest.json
+          python - <<'PY'
+          import json
+          m=json.load(open('data/raw/nse/corporate_actions/source_manifest.json'))
+          if int(m['merged_row_count']) < 30000:
+              raise SystemExit(f"corporate-action source coverage unexpectedly small: {m['merged_row_count']}")
+          print({'corporate_action_source_rows': m['merged_row_count']})
+          PY
+
+      - name: Build price-action and status evidence
+        run: |
+          set -euo pipefail
+          python scripts/normalize_corporate_actions.py \
+            --raw data/raw/nse/corporate_actions/corporate_actions_2006_2026.json \
+            --master /tmp/pit-build/canonical/security_master.jsonl \
+            --out /tmp/pit-build/canonical/corporate_actions.jsonl \
+            --resolutions data/reference/corporate_action_resolutions.yaml
+          python scripts/publish_corporate_actions.py \
+            --input /tmp/pit-build/canonical/corporate_actions.jsonl \
+            --out /tmp/pit-build/derived/corporate_actions.parquet
+          python scripts/build_unknown_terminal_events.py \
+            --master /tmp/pit-build/canonical/security_master.jsonl \
+            --coverage-end "$RESEARCH_END" --out /tmp/pit-terminal-events.parquet
+          python scripts/publish_extensions.py \
+            --data /tmp/pit-build --release /tmp/pit-release \
+            --corporate-actions /tmp/pit-build/derived/corporate_actions.parquet \
+            --terminal-events /tmp/pit-terminal-events.parquet
+          python scripts/apply_corporate_action_adjustments.py \
+            --prices /tmp/pit-build/canonical/daily_prices_raw.jsonl \
+            --events /tmp/pit-build/canonical/corporate_actions.jsonl \
+            --out /tmp/pit-release/daily_prices_adjusted.parquet
+          python scripts/validate_corporate_action_boundaries.py \
+            --events /tmp/pit-release/corporate_actions.parquet \
+            --prices /tmp/pit-release/daily_prices_raw.parquet \
+            --calendar /tmp/pit-release/trading_calendar.parquet \
+            --out /tmp/pit-release/corporate_action_boundary_validation.parquet
+          python scripts/build_status_intervals.py \
+            --master /tmp/pit-build/canonical/security_master.jsonl \
+            --terminal-events /tmp/pit-release/terminal_events.parquet \
+            --out /tmp/pit-release/trading_status_intervals.parquet
+
+      - name: Reacquire and apply official suspension evidence
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pit-suspensions
+          python scripts/collect_nse_suspension_evidence.py \
+            --raw-dir /tmp/pit-suspensions \
+            --out /tmp/pit-suspension-events.parquet \
+            --start 2006-01-01 --end "$RESEARCH_END"
+          python - <<'PY'
+          import json
+          m=json.load(open('/tmp/pit-suspensions/source_manifest.json'))
+          failed=[row for row in m if row.get('fetch_status') == 'FAILED'] if isinstance(m, list) else []
+          if failed:
+              raise SystemExit(f'suspension source acquisition has {len(failed)} failed pages')
+          PY
+          python scripts/build_verified_suspension_status.py \
+            --events /tmp/pit-suspension-events.parquet \
+            --master /tmp/pit-release/security_master.parquet \
+            --base-intervals /tmp/pit-release/trading_status_intervals.parquet \
+            --prices /tmp/pit-release/daily_prices_raw.parquet \
+            --events-out /tmp/pit-release/suspension_events_resolved.parquet \
+            --intervals-out /tmp/pit-release/trading_status_intervals.parquet
+
+      - name: Materialize and gate Phase 3 PIT universe
+        run: |
+          set -euo pipefail
+          python scripts/build_identity_history_artifacts.py \
+            --master /tmp/pit-release/security_master.parquet \
+            --out-dir /tmp/pit-release
+          python scripts/build_research_universe.py \
+            --release /tmp/pit-release --start "$RESEARCH_START" --end "$RESEARCH_END"
+          python scripts/validate_research_release.py \
+            --release /tmp/pit-release --research-start "$RESEARCH_START" \
+            --monthly-start "$RESEARCH_START" --out /tmp/pit-invariant.json
+          python scripts/build_candidate_promotion_audits.py \
+            --release /tmp/pit-release --control-start 2013-01-01 \
+            --out /tmp/pit-candidate-audit.json
+          python scripts/build_fundamentals_pit_handoff.py \
+            --release /tmp/pit-release --invariant /tmp/pit-invariant.json \
+            --candidate-audit /tmp/pit-candidate-audit.json \
+            --source-manifest data/raw/manifests/source_manifest.json \
+            --corporate-action-source-manifest data/raw/nse/corporate_actions/source_manifest.json \
+            --suspension-source-manifest /tmp/pit-suspensions/source_manifest.json \
+            --output /tmp/pit-handoff --handoff-id "$HANDOFF_ID" \
+            --research-start "$RESEARCH_START" --research-end "$RESEARCH_END"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pit-handoff-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/pit-handoff/
+            /tmp/pit-invariant.json
+            /tmp/pit-candidate-audit.json
+            data/raw/nse/corporate_actions/source_manifest.json
+            /tmp/pit-suspensions/source_manifest.json
+          retention-days: 90
+          if-no-files-found: error
