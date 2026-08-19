@@ -67,6 +67,13 @@ def sha256(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
 
 
+def source_failure_count(rows: list[dict[str, object]]) -> int:
+    return sum(
+        str(row.get("download_status") or "").startswith("FAILED:")
+        for row in rows
+    )
+
+
 def article_date(text: str) -> str | None:
     match = re.search(r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b", text, re.I)
     if not match:
@@ -112,6 +119,11 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     parser.add_argument("--start", default="2006-01-01")
     parser.add_argument("--end", default="2026-08-10")
+    parser.add_argument(
+        "--fail-on-source-error",
+        action="store_true",
+        help="Fail after preserving the source manifest if any selected official page failed to download.",
+    )
     args = parser.parse_args()
 
     raw_dir = Path(args.raw_dir)
@@ -168,8 +180,13 @@ def main() -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     schema = pa.schema([pa.field("evidence_id", pa.string()), pa.field("source_file_id", pa.string()), pa.field("source_url", pa.string()), pa.field("published_date", pa.string()), pa.field("event_type", pa.string()), pa.field("effective_date", pa.string()), pa.field("historical_company_names", pa.list_(pa.string())), pa.field("identity_quality", pa.string()), pa.field("source_quality", pa.string()), pa.field("text_excerpt", pa.string())])
     pq.write_table(pa.Table.from_pylist(rows, schema=schema), output, compression="zstd", use_dictionary=True)
-    (raw_dir / "source_manifest.json").write_text(json.dumps(source_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"archive_links": len(selected), "evidence_rows": len(rows), "raw_source_rows": len(source_rows)}, sort_keys=True))
+    source_manifest_path.write_text(json.dumps(source_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    failures = source_failure_count(source_rows)
+    print(json.dumps({"archive_links": len(selected), "evidence_rows": len(rows), "raw_source_rows": len(source_rows), "source_failures": failures}, sort_keys=True))
+    if args.fail_on_source_error and failures:
+        raise SystemExit(
+            f"official suspension source acquisition has {failures} failed pages; see {source_manifest_path}"
+        )
 
 
 if __name__ == "__main__":
