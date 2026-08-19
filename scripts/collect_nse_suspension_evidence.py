@@ -53,14 +53,35 @@ class TextParser(HTMLParser):
             self.parts.append(value)
 
 
-def fetch(url: str) -> bytes:
-    request = urllib.request.Request(url, headers={"User-Agent": "india-active-universe/0.1"})
+def _fetch_once(url: str) -> bytes:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 india-active-universe/0.1",
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    )
     with urllib.request.urlopen(request, timeout=60) as response:
         content = response.read()
         content_type = response.headers.get("Content-Type", "")
     if not content or b"<html" not in content[:4096].lower() or "html" not in content_type.lower():
         raise ValueError(f"source is not an HTML document: {url}")
     return content
+
+
+def fetch(url: str, *, attempts: int = 4) -> bytes:
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return _fetch_once(url)
+        except Exception as exc:
+            last_error = exc
+            if attempt == attempts:
+                break
+            time.sleep(min(8.0, 0.75 * (2 ** (attempt - 1))))
+    assert last_error is not None
+    raise last_error
 
 
 def sha256(content: bytes) -> str:
@@ -164,6 +185,7 @@ def main() -> None:
                 raise IOError(f"raw source changed: {target}")
             if not target.exists():
                 target.write_bytes(content)
+            source_rows.append({"source_url": item["source_url"], "source_file_id": target.name, "sha256": digest, "download_status": "DOWNLOADED", "parser_version": "nse-suspension-v1"})
             parser_text = TextParser()
             parser_text.feed(content.decode("utf-8", errors="replace"))
             text = "\n".join(parser_text.parts)
@@ -171,7 +193,6 @@ def main() -> None:
             if not re.search(r"suspension|suspended|revocation|recommencement", text, re.I):
                 continue
             rows.append({"evidence_id": f"NSE_SUSP_{index:06d}", "source_file_id": target.name, "source_url": item["source_url"], "published_date": published, "event_type": event_type(text), "effective_date": effective_date(text), "historical_company_names": candidate_names(text), "identity_quality": "IDENTITY_REVIEW_REQUIRED", "source_quality": "NSE_OFFICIAL_PRESS_ARCHIVE", "text_excerpt": text[:1200]})
-            source_rows.append({"source_url": item["source_url"], "source_file_id": target.name, "sha256": digest, "download_status": "DOWNLOADED", "parser_version": "nse-suspension-v1"})
             time.sleep(0.05)
         except Exception as exc:
             source_rows.append({"source_url": item["source_url"], "source_file_id": None, "sha256": None, "download_status": f"FAILED:{type(exc).__name__}", "parser_version": "nse-suspension-v1"})
@@ -182,6 +203,11 @@ def main() -> None:
     pq.write_table(pa.Table.from_pylist(rows, schema=schema), output, compression="zstd", use_dictionary=True)
     source_manifest_path.write_text(json.dumps(source_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     failures = source_failure_count(source_rows)
+    expected_sources = len(selected) + 1
+    if len(source_rows) != expected_sources:
+        raise SystemExit(
+            f"suspension source manifest is not exhaustive: expected {expected_sources} rows, got {len(source_rows)}"
+        )
     print(json.dumps({"archive_links": len(selected), "evidence_rows": len(rows), "raw_source_rows": len(source_rows), "source_failures": failures}, sort_keys=True))
     if failures and not args.allow_source_errors:
         raise SystemExit(
