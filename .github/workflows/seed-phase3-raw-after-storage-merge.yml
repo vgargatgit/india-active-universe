@@ -1,0 +1,26 @@
+name: seed-phase3-raw-after-storage-merge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/seed-phase3-raw-after-storage-merge.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-raw-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch durable 2006-2026 NSE archive seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run archive-nse-bhavcopy.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f start_date=2006-01-01 \
+            -f end_date=2026-08-10
+          echo "Dispatched archive-nse-bhavcopy.yml for 2006-01-01 through 2026-08-10"
