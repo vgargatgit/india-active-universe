@@ -21,7 +21,9 @@ load_pass_candidate = MODULE.load_pass_candidate
 def candidate_payload(**overrides):
     row = {
         "candidate_start": "2006-01-01",
-        "refined_earliest_passing_snapshot": "2006-01-31",
+        "first_expected_snapshot": "2006-01-31",
+        "first_materialized_snapshot": "2006-01-31",
+        "refined_earliest_passing_snapshot": "2006-02-28",
         "pit_universe_gate_pass": True,
         "research_candidate_gate_pass": False,
         "status": "FAIL",
@@ -61,6 +63,7 @@ def test_narrow_handoff_accepts_pit_pass_even_when_full_research_gate_fails(
     assert row["pit_universe_gate_pass"] is True
     assert row["research_candidate_gate_pass"] is False
     assert row["status"] == "FAIL"
+    assert row["refined_earliest_passing_snapshot"] == "2006-02-28"
 
 
 def test_narrow_handoff_rejects_any_pit_hard_failure(tmp_path: Path) -> None:
@@ -72,10 +75,12 @@ def test_narrow_handoff_rejects_any_pit_hard_failure(tmp_path: Path) -> None:
         load_pass_candidate(path, "2006-01-01", "2006-01-31")
 
 
-def test_narrow_handoff_rejects_shifted_refined_boundary(tmp_path: Path) -> None:
-    path = write_payload(
-        tmp_path,
-        candidate_payload(refined_earliest_passing_snapshot="2006-02-28"),
-    )
-    with pytest.raises(PitHandoffError, match="refined boundary"):
+def test_narrow_handoff_rejects_missing_start_snapshot(tmp_path: Path) -> None:
+    payload = candidate_payload(first_materialized_snapshot="2006-02-28")
+    payload["candidate_audits"][0]["hard_failures"][
+        "candidate_start_snapshot_missing"
+    ] = True
+    payload["candidate_audits"][0]["pit_universe_gate_pass"] = False
+    path = write_payload(tmp_path, payload)
+    with pytest.raises(PitHandoffError, match="candidate_start_snapshot_missing"):
         load_pass_candidate(path, "2006-01-01", "2006-01-31")
