@@ -8,11 +8,12 @@ The canonical downstream release tag is the `release_id` recorded by both `data_
 
 Each canonical GitHub Release contains:
 
-- `<release_id>-complete.tar.gz` — the complete materialized release directory plus release-specific audit evidence;
-- `<release_id>-complete.tar.gz.sha256` — SHA-256 for the complete archive;
+- `<release_id>-complete.tar.gz.part-NNN` — ordered chunks of the complete materialized release directory plus release-specific audit evidence; chunks are capped below the GitHub Release per-asset size bound;
+- `<release_id>-complete.parts.sha256` — SHA-256 for every uploaded chunk;
+- `<release_id>-complete.tar.gz.sha256` — SHA-256 for the reconstructed complete archive;
 - directly downloadable downstream artifacts: `data_release_manifest.json`, `research_release_manifest.json`, `partitioned_artifacts_manifest.json`, identity artifacts, trading calendar/status artifacts, `research_universe_monthly.parquet`, and `required_research_security.parquet`.
 
-The complete archive contains `github_storage_manifest.json`. Every archived file has an exact relative path, byte count, and SHA-256. Publication succeeds only after the archive is downloaded back from GitHub and every entry is re-hashed successfully.
+Concatenating the ordered `part-NNN` files reconstructs `<release_id>-complete.tar.gz`. The complete archive contains `github_storage_manifest.json`. Every archived file has an exact relative path, byte count, and SHA-256. Publication succeeds only after every chunk is downloaded back from GitHub, the complete archive is reconstructed and verified, and every archived entry is re-hashed successfully.
 
 The complete archive intentionally includes the full release directory rather than only the small downstream subset. This retains all Parquet outputs and year-partitioned sidecars created by `build_partitioned_release_artifacts.py`.
 
@@ -36,7 +37,7 @@ GitHub Actions artifacts are diagnostics only. They are not a source of truth fo
 4. research invariants are `PASS`;
 5. `validate_release_manifest_hashes.py` verifies the materialized release;
 6. the GitHub Release tag does not already exist;
-7. the uploaded complete archive passes a download-and-rehash round trip.
+7. the uploaded chunks and reconstructed complete archive pass a download-and-rehash round trip.
 
 These gates are intentionally fail-closed. Missing historical source data must be reacquired or explicitly recovered; hashes or quality gates must never be relaxed merely to create a release.
 
@@ -49,4 +50,4 @@ These gates are intentionally fail-closed. Missing historical source data must b
 - the SHA-256 of `research_release_manifest.json`;
 - the upstream profile/version and accepted research-quality interval.
 
-Consumers may download the small Parquet assets directly from the GitHub Release or fetch the complete archive and verify `github_storage_manifest.json`. They should never depend on an Actions artifact retention window.
+Consumers may download the small Parquet assets directly from the GitHub Release or fetch the complete archive chunks and verify `github_storage_manifest.json`. They should never depend on an Actions artifact retention window.
