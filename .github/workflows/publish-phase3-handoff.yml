@@ -117,6 +117,13 @@ jobs:
           PY
           tar -czf "/tmp/${RELEASE_ID}-complete.tar.gz" -C /tmp/phase3-github-package .
           sha256sum "/tmp/${RELEASE_ID}-complete.tar.gz" > "/tmp/${RELEASE_ID}-complete.tar.gz.sha256"
+          # GitHub Release assets are bounded in size. Always split so the same
+          # path works for small and large canonical releases.
+          split -b 1900m -d -a 3 \
+            "/tmp/${RELEASE_ID}-complete.tar.gz" \
+            "/tmp/${RELEASE_ID}-complete.tar.gz.part-"
+          sha256sum /tmp/"${RELEASE_ID}"-complete.tar.gz.part-* \
+            > "/tmp/${RELEASE_ID}-complete.parts.sha256"
 
       - name: Create immutable canonical GitHub Release
         env:
@@ -130,9 +137,10 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "$RELEASE_ID" \
-            --notes "Canonical Phase 3 downstream handoff. The complete audited release directory and audit evidence are stored as immutable GitHub Release assets. Verify github_storage_manifest.json and both release manifests before consumption."
+            --notes "Canonical Phase 3 downstream handoff. The complete audited release directory and audit evidence are stored as immutable GitHub Release assets. Verify the part hashes, reconstructed archive hash, github_storage_manifest.json, and both release manifests before consumption."
           gh release upload "$RELEASE_ID" \
-            "/tmp/${RELEASE_ID}-complete.tar.gz" \
+            /tmp/"${RELEASE_ID}"-complete.tar.gz.part-* \
+            "/tmp/${RELEASE_ID}-complete.parts.sha256" \
             "/tmp/${RELEASE_ID}-complete.tar.gz.sha256" \
             --repo "$GITHUB_REPOSITORY"
 
@@ -167,9 +175,11 @@ jobs:
           mkdir -p /tmp/phase3-roundtrip
           gh release download "$RELEASE_ID" \
             --repo "$GITHUB_REPOSITORY" \
-            --pattern "${RELEASE_ID}-complete.tar.gz*" \
+            --pattern "${RELEASE_ID}-complete*" \
             --dir /tmp/phase3-roundtrip
           cd /tmp/phase3-roundtrip
+          sha256sum -c "${RELEASE_ID}-complete.parts.sha256"
+          cat "${RELEASE_ID}"-complete.tar.gz.part-* > "${RELEASE_ID}-complete.tar.gz"
           sha256sum -c "${RELEASE_ID}-complete.tar.gz.sha256"
           mkdir unpacked
           tar -xzf "${RELEASE_ID}-complete.tar.gz" -C unpacked
@@ -186,8 +196,11 @@ jobs:
               path = root / row['path']
               if not path.is_file() or path.stat().st_size != row['bytes']:
                   raise SystemExit(f'missing/size mismatch after GitHub round trip: {row["path"]}')
-              digest = hashlib.sha256(path.read_bytes()).hexdigest()
-              if digest != row['sha256']:
+              digest = hashlib.sha256()
+              with path.open('rb') as handle:
+                  for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                      digest.update(chunk)
+              if digest.hexdigest() != row['sha256']:
                   raise SystemExit(f'hash mismatch after GitHub round trip: {row["path"]}')
           print(f'verified {len(manifest["files"])} files from GitHub Release storage')
           PY
