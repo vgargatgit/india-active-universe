@@ -120,9 +120,9 @@ def main() -> None:
     parser.add_argument("--start", default="2006-01-01")
     parser.add_argument("--end", default="2026-08-10")
     parser.add_argument(
-        "--fail-on-source-error",
+        "--allow-source-errors",
         action="store_true",
-        help="Fail after preserving the source manifest if any selected official page failed to download.",
+        help="Exploratory-only escape hatch: preserve partial results even when selected official pages fail to download.",
     )
     args = parser.parse_args()
 
@@ -183,7 +183,7 @@ def main() -> None:
     source_manifest_path.write_text(json.dumps(source_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     failures = source_failure_count(source_rows)
     print(json.dumps({"archive_links": len(selected), "evidence_rows": len(rows), "raw_source_rows": len(source_rows), "source_failures": failures}, sort_keys=True))
-    if args.fail_on_source_error and failures:
+    if failures and not args.allow_source_errors:
         raise SystemExit(
             f"official suspension source acquisition has {failures} failed pages; see {source_manifest_path}"
         )
