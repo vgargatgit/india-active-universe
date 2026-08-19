@@ -13,6 +13,7 @@ from india_active_universe.profiles import PRIORITY_SCOPE, PROFILE_ID, PROFILE_V
 
 
 HANDOFF_CONTRACT = "fundamentals-pit-handoff-v1"
+PIT_QUALITY_STATUS = "PIT_UNIVERSE_HIGH_CONFIDENCE"
 REQUIRED_ARTIFACTS = (
     "security_master.parquet",
     "symbol_history.parquet",
@@ -78,14 +79,13 @@ def _is_active_failure(value: object) -> bool:
 
 
 def load_pass_candidate(path: Path, candidate_start: str, research_start: str) -> dict:
-    """Require the candidate's PIT-universe gate, not unrelated full-release gates.
+    """Require only the candidate evidence that defines PIT-universe usability.
 
-    The narrow handoff exists specifically to let downstream consumers materialize
-    historical universe membership. Full research-candidate PASS additionally
-    depends on price-action and feature/model-readiness gates that belong to the
-    canonical price release tracked separately by issue #2. Those results remain
-    recorded in provenance but cannot veto a membership handoff when the PIT gate,
-    refined boundary, and independent monthly-universe invariants all pass.
+    The canonical research-candidate audit also evaluates price-action boundary
+    review and feature/model warm-up. Those are intentionally retained in
+    provenance but do not redefine the monthly membership handoff. The PIT handoff
+    instead requires: the candidate's PIT gate, no PIT hard failures, and an exact
+    materialized first monthly snapshot at the requested handoff start.
     """
 
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -110,6 +110,8 @@ def load_pass_candidate(path: Path, candidate_start: str, research_start: str) -
             "pit_universe_gate_pass": row.get("pit_universe_gate_pass"),
             "research_candidate_gate_pass": row.get("research_candidate_gate_pass"),
             "status": row.get("status"),
+            "first_expected_snapshot": row.get("first_expected_snapshot"),
+            "first_materialized_snapshot": row.get("first_materialized_snapshot"),
             "refined_earliest_passing_snapshot": row.get(
                 "refined_earliest_passing_snapshot"
             ),
@@ -122,11 +124,15 @@ def load_pass_candidate(path: Path, candidate_start: str, research_start: str) -
             "earliest candidate PIT-universe gate is not PASS: "
             + json.dumps(diagnostic, sort_keys=True)
         )
-    if row.get("refined_earliest_passing_snapshot") != research_start:
+    if row.get("first_expected_snapshot") != research_start:
         raise PitHandoffError(
-            "candidate refined boundary does not equal the promoted handoff start: "
-            f"candidate={row.get('refined_earliest_passing_snapshot')!r}, "
-            f"expected={research_start!r}"
+            "candidate expected first monthly snapshot does not equal handoff start: "
+            f"candidate={row.get('first_expected_snapshot')!r}, expected={research_start!r}"
+        )
+    if row.get("first_materialized_snapshot") != research_start:
+        raise PitHandoffError(
+            "candidate materialized first monthly snapshot does not equal handoff start: "
+            f"candidate={row.get('first_materialized_snapshot')!r}, expected={research_start!r}"
         )
     return row
 
@@ -257,7 +263,7 @@ def build_handoff(
         shutil.copy2(release / name, output_release / name)
 
     artifacts = {
-        f"release/{name}": sha256_file(output_release / name)
+        name: sha256_file(output_release / name)
         for name in REQUIRED_ARTIFACTS
     }
     provenance = {
@@ -274,7 +280,13 @@ def build_handoff(
         "research_invariant_validation_sha256": sha256_file(invariant),
         "candidate_promotion_audit_sha256": sha256_file(candidate_audit),
         "candidate_start": candidate_start,
-        "candidate_refined_boundary": candidate["refined_earliest_passing_snapshot"],
+        "candidate_first_expected_snapshot": candidate.get("first_expected_snapshot"),
+        "candidate_first_materialized_snapshot": candidate.get(
+            "first_materialized_snapshot"
+        ),
+        "candidate_refined_boundary": candidate.get(
+            "refined_earliest_passing_snapshot"
+        ),
         "candidate_pit_universe_gate_pass": candidate.get("pit_universe_gate_pass"),
         "candidate_research_gate_pass": candidate.get("research_candidate_gate_pass"),
         "candidate_overall_status": candidate.get("status"),
@@ -299,7 +311,7 @@ def build_handoff(
             {
                 "start": research_start,
                 "end": research_end,
-                "status": "RESEARCH_HIGH_CONFIDENCE",
+                "status": PIT_QUALITY_STATUS,
                 "profile": PROFILE_ID,
                 "profile_version": PROFILE_VERSION,
                 "priority_scope": PRIORITY_SCOPE,
@@ -317,7 +329,7 @@ def build_handoff(
         "research_quality": {
             "start": research_start,
             "end": research_end,
-            "status": "RESEARCH_HIGH_CONFIDENCE",
+            "status": PIT_QUALITY_STATUS,
             "universe_profile": PROFILE_ID,
             "profile_version": PROFILE_VERSION,
             "priority_scope": PRIORITY_SCOPE,
@@ -338,6 +350,7 @@ def build_handoff(
     handoff_manifest = {
         "contract": HANDOFF_CONTRACT,
         "handoff_id": handoff_id,
+        "quality_status": PIT_QUALITY_STATUS,
         "profile_id": PROFILE_ID,
         "profile_version": PROFILE_VERSION,
         "priority_scope": PRIORITY_SCOPE,
