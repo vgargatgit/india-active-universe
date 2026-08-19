@@ -25,6 +25,15 @@ REQUIRED_ARTIFACTS = (
     "trading_calendar.parquet",
     "trading_status_intervals.parquet",
 )
+PIT_HARD_FAILURE_KEYS = (
+    "not_materialized",
+    "candidate_start_snapshot_missing",
+    "decision_window_snapshots_missing",
+    "identity_failures",
+    "instrument_failures",
+    "status_failures",
+    "session_liquidity_window_failures",
+)
 
 
 class PitHandoffError(RuntimeError):
@@ -62,7 +71,23 @@ def load_pass_invariant(path: Path) -> dict:
     return value
 
 
+def _is_active_failure(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    return int(value or 0) != 0
+
+
 def load_pass_candidate(path: Path, candidate_start: str, research_start: str) -> dict:
+    """Require the candidate's PIT-universe gate, not unrelated full-release gates.
+
+    The narrow handoff exists specifically to let downstream consumers materialize
+    historical universe membership. Full research-candidate PASS additionally
+    depends on price-action and feature/model-readiness gates that belong to the
+    canonical price release tracked separately by issue #2. Those results remain
+    recorded in provenance but cannot veto a membership handoff when the PIT gate,
+    refined boundary, and independent monthly-universe invariants all pass.
+    """
+
     value = json.loads(path.read_text(encoding="utf-8"))
     candidates = [
         row
@@ -74,21 +99,35 @@ def load_pass_candidate(path: Path, candidate_start: str, research_start: str) -
             f"expected exactly one candidate audit for {candidate_start}; found {len(candidates)}"
         )
     row = candidates[0]
-    if row.get("status") != "PASS" or row.get("pit_universe_gate_pass") is not True:
-        raise PitHandoffError("earliest candidate PIT-universe gate is not PASS")
+    hard = row.get("hard_failures") or {}
+    pit_active = {
+        key: hard.get(key)
+        for key in PIT_HARD_FAILURE_KEYS
+        if _is_active_failure(hard.get(key))
+    }
+    if row.get("pit_universe_gate_pass") is not True or pit_active:
+        diagnostic = {
+            "pit_universe_gate_pass": row.get("pit_universe_gate_pass"),
+            "research_candidate_gate_pass": row.get("research_candidate_gate_pass"),
+            "status": row.get("status"),
+            "refined_earliest_passing_snapshot": row.get(
+                "refined_earliest_passing_snapshot"
+            ),
+            "pit_hard_failures": pit_active,
+            "all_hard_failures": hard,
+            "feature_readiness": row.get("feature_readiness"),
+            "price_action_evidence": row.get("price_action_evidence"),
+        }
+        raise PitHandoffError(
+            "earliest candidate PIT-universe gate is not PASS: "
+            + json.dumps(diagnostic, sort_keys=True)
+        )
     if row.get("refined_earliest_passing_snapshot") != research_start:
         raise PitHandoffError(
-            "candidate refined boundary does not equal the promoted handoff start"
+            "candidate refined boundary does not equal the promoted handoff start: "
+            f"candidate={row.get('refined_earliest_passing_snapshot')!r}, "
+            f"expected={research_start!r}"
         )
-    hard = row.get("hard_failures") or {}
-    active = {
-        key: item
-        for key, item in hard.items()
-        if (isinstance(item, bool) and item)
-        or (not isinstance(item, bool) and int(item or 0) != 0)
-    }
-    if active:
-        raise PitHandoffError(f"candidate audit has active hard failures: {active}")
     return row
 
 
@@ -236,7 +275,12 @@ def build_handoff(
         "candidate_promotion_audit_sha256": sha256_file(candidate_audit),
         "candidate_start": candidate_start,
         "candidate_refined_boundary": candidate["refined_earliest_passing_snapshot"],
-        "candidate_pit_universe_gate_pass": True,
+        "candidate_pit_universe_gate_pass": candidate.get("pit_universe_gate_pass"),
+        "candidate_research_gate_pass": candidate.get("research_candidate_gate_pass"),
+        "candidate_overall_status": candidate.get("status"),
+        "candidate_feature_readiness": candidate.get("feature_readiness"),
+        "candidate_price_action_evidence": candidate.get("price_action_evidence"),
+        "candidate_all_hard_failures": candidate.get("hard_failures"),
     }
     data_manifest = {
         "release_id": handoff_id,
