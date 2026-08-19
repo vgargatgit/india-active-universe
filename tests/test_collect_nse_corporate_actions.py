@@ -1,15 +1,23 @@
 from __future__ import annotations
 
 from datetime import date
+import importlib.util
+from pathlib import Path
 
 import pytest
 
-from scripts.collect_nse_corporate_actions import (
-    CorporateActionRecoveryError,
-    build_url,
-    merge_rows,
-    validate_payload,
-)
+
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts/collect_nse_corporate_actions.py"
+SPEC = importlib.util.spec_from_file_location("collect_nse_corporate_actions", SCRIPT)
+if SPEC is None or SPEC.loader is None:
+    raise RuntimeError(f"cannot load {SCRIPT}")
+MODULE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MODULE)
+
+CorporateActionRecoveryError = MODULE.CorporateActionRecoveryError
+build_url = MODULE.build_url
+merge_rows = MODULE.merge_rows
+validate_payload = MODULE.validate_payload
 
 
 def row(**overrides):
