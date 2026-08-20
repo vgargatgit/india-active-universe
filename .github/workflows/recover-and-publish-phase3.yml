@@ -1,0 +1,218 @@
+name: recover-and-publish-phase3
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [archive-nse-bhavcopy]
+    types: [completed]
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  RAW_RELEASE_TAG: india-active-universe-raw-nse-v1
+  RELEASE_ID: india_equity_data_v2.2.9
+
+concurrency:
+  group: recover-and-publish-phase3
+  cancel-in-progress: false
+
+jobs:
+  recover-build-publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install project
+        run: python -m pip install -e '.[data,dev]'
+
+      - name: Restore all durable raw NSE years
+        run: |
+          rm -rf data/raw/nse/bhavcopy /tmp/raw-years
+          mkdir -p data/raw/nse/bhavcopy /tmp/raw-years
+          missing=0
+          for year in $(seq 2004 2026); do
+            prefix="nse-bhavcopy-${year}-run-"
+            asset="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RAW_RELEASE_TAG}" --jq ".assets | sort_by(.created_at) | reverse | .[].name | select(startswith(\"${prefix}\"))" | head -n 1)"
+            if [ -z "$asset" ]; then
+              echo "MISSING durable raw year ${year}"
+              missing=1
+              continue
+            fi
+            rm -rf "/tmp/raw-years/${year}" "/tmp/raw-years/${year}.download"
+            mkdir -p "/tmp/raw-years/${year}" "/tmp/raw-years/${year}.download"
+            gh release download "$RAW_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "/tmp/raw-years/${year}.download"
+            tar -xzf "/tmp/raw-years/${year}.download/$asset" -C "/tmp/raw-years/${year}"
+            python -m india_active_universe.raw_bhavcopy_archive verify --root "/tmp/raw-years/${year}/payload" --manifest "/tmp/raw-years/${year}/year_manifest.json"
+            cp -a "/tmp/raw-years/${year}/payload/." data/raw/nse/bhavcopy/
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Not all 2004-2026 raw years are durable yet; a later archive completion will retrigger recovery." >&2
+            exit 1
+          fi
+          python scripts/build_source_manifest.py --root data/raw/nse/bhavcopy --out data/raw/manifests/source_manifest.json
+
+      - name: Reacquire official corporate-action evidence
+        run: |
+          python scripts/collect_nse_corporate_actions.py --start 2006-01-01 --end 2026-08-10
+          test -s data/raw/nse/corporate_actions/corporate_actions_2006_2026.json
+          test -s data/raw/nse/corporate_actions/source_manifest.json
+
+      - name: Bootstrap identity from recovered raw market history
+        run: |
+          rm -rf data/build/phase3-bootstrap
+          python scripts/build_nse_universe.py \
+            --raw data/raw/nse/bhavcopy \
+            --out data/build/phase3-bootstrap \
+            --manual-overrides data/reference/manual_identity_overrides.yaml \
+            --start 2004-01-01 \
+            --end 2026-08-10
+          test -s data/build/phase3-bootstrap/canonical/security_master.jsonl
+
+      - name: Rebuild conservative terminal-event evidence
+        run: |
+          mkdir -p data/derived
+          python scripts/build_unknown_terminal_events.py \
+            --master data/build/phase3-bootstrap/canonical/security_master.jsonl \
+            --coverage-end 2026-08-10 \
+            --out data/derived/recovered_terminal_events.parquet
+
+      - name: Reacquire and resolve official suspension evidence
+        run: |
+          python scripts/collect_nse_suspension_evidence.py \
+            --raw-dir data/raw/nse/notices/suspensions \
+            --out data/derived/suspension_evidence_recovered.parquet \
+            --start 2006-01-01 \
+            --end 2026-08-10
+          python scripts/resolve_suspension_evidence.py \
+            --evidence data/derived/suspension_evidence_recovered.parquet \
+            --master data/build/phase3-bootstrap/canonical/security_master.jsonl \
+            --out data/derived/suspension_events_resolved_v1.parquet
+          cp data/raw/nse/notices/suspensions/source_manifest.json data/derived/suspension_source_manifest.json
+
+      - name: Resolve successful CI evidence for this main commit
+        run: |
+          sha="$(git rev-parse HEAD)"
+          ci_run="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&status=success&per_page=50" --jq ".workflow_runs[] | select(.head_sha == \"${sha}\") | .id" | head -n 1)"
+          if [ -z "$ci_run" ]; then
+            echo "No successful ci.yml run exists yet for ${sha}" >&2
+            exit 1
+          fi
+          echo "CI_RUN_ID=$ci_run" >> "$GITHUB_ENV"
+
+      - name: Build canonical Phase 3 release from recovered evidence
+        run: |
+          rm -rf "releases/${RELEASE_ID}" "data/build/${RELEASE_ID}"
+          python scripts/build_source_release.py \
+            --release-id "$RELEASE_ID" \
+            --terminal-events data/derived/recovered_terminal_events.parquet \
+            --suspension-events data/derived/suspension_events_resolved_v1.parquet \
+            --corporate-actions data/raw/nse/corporate_actions/corporate_actions_2006_2026.json \
+            --start 2004-01-01 \
+            --end 2026-08-10 \
+            --research-monthly-start 2006-01-31 \
+            --ci-run-id "$CI_RUN_ID"
+
+      - name: Require the promoted Phase 3 downstream contract
+        run: |
+          python scripts/validate_release_manifest_hashes.py --release "releases/${RELEASE_ID}"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          release=Path('releases')/os.environ['RELEASE_ID']
+          research=json.loads((release/'research_release_manifest.json').read_text())
+          if research.get('release_id') != os.environ['RELEASE_ID']:
+              raise SystemExit('research manifest release_id mismatch')
+          intervals=research.get('research_quality_intervals') or []
+          target=[row for row in intervals if row.get('status')=='RESEARCH_HIGH_CONFIDENCE' and row.get('start')=='2006-01-31' and row.get('end')=='2026-08-10']
+          if not target:
+              raise SystemExit('missing promoted 2006-01-31..2026-08-10 RESEARCH_HIGH_CONFIDENCE interval')
+          required={'profile':'NSE_BROAD_LIQUID_PIT_V1','profile_version':'LIQUID_V1','priority_scope':'LIQUID_V1_OR_HISTORICAL_TOP750'}
+          if any(target[0].get(k)!=v for k,v in required.items()):
+              raise SystemExit('promoted interval profile contract mismatch')
+          print('PHASE3_PROMOTION_CONTRACT_VALID')
+          PY
+
+      - name: Package complete release and recovery evidence
+        run: |
+          rm -rf /tmp/phase3-package /tmp/phase3-assets
+          mkdir -p /tmp/phase3-package/release /tmp/phase3-package/evidence /tmp/phase3-package/source-manifests /tmp/phase3-assets
+          cp -a "releases/${RELEASE_ID}/." /tmp/phase3-package/release/
+          find reports -maxdepth 1 -type f \( -name "*${RELEASE_ID}*" -o -name 'data_source_coverage.md' -o -name 'raw_integrity_audit.md' \) -exec cp {} /tmp/phase3-package/evidence/ \;
+          cp data/raw/manifests/source_manifest.json /tmp/phase3-package/source-manifests/market_source_manifest.json
+          cp data/raw/nse/corporate_actions/source_manifest.json /tmp/phase3-package/source-manifests/corporate_actions_source_manifest.json
+          cp data/raw/nse/notices/suspensions/source_manifest.json /tmp/phase3-package/source-manifests/suspension_source_manifest.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('/tmp/phase3-package')
+          rows=[]
+          for p in sorted(x for x in root.rglob('*') if x.is_file()):
+              h=hashlib.sha256()
+              with p.open('rb') as f:
+                  for c in iter(lambda:f.read(1024*1024),b''): h.update(c)
+              rows.append({'path':p.relative_to(root).as_posix(),'bytes':p.stat().st_size,'sha256':h.hexdigest()})
+          (root/'github_storage_manifest.json').write_text(json.dumps({'contract':'phase3-github-storage-v1','files':rows},indent=2,sort_keys=True)+'\n')
+          PY
+          tar -czf "/tmp/phase3-assets/${RELEASE_ID}-complete.tar.gz" -C /tmp/phase3-package .
+          cd /tmp/phase3-assets
+          sha256sum "${RELEASE_ID}-complete.tar.gz" > "${RELEASE_ID}-complete.tar.gz.sha256"
+          split -b 1900m -d -a 3 "${RELEASE_ID}-complete.tar.gz" "${RELEASE_ID}-complete.tar.gz.part-"
+          sha256sum "${RELEASE_ID}-complete.tar.gz.part-"* > "${RELEASE_ID}-parts.sha256"
+          rm "${RELEASE_ID}-complete.tar.gz"
+
+      - name: Publish immutable canonical GitHub Release
+        run: |
+          if gh release view "$RELEASE_ID" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Refusing to overwrite existing immutable release ${RELEASE_ID}" >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_ID" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$RELEASE_ID" --notes 'Canonical Phase 3 downstream handoff. Complete release, audit evidence, and source manifests are stored and SHA-256 verified. Raw NSE market archives remain under india-active-universe-raw-nse-v1.'
+          gh release upload "$RELEASE_ID" /tmp/phase3-assets/* --repo "$GITHUB_REPOSITORY"
+          for name in data_release_manifest.json research_release_manifest.json partitioned_artifacts_manifest.json security_master.parquet symbol_history.parquet isin_history.parquet company_name_history.parquet issuer_master.parquet listing_episodes.parquet trading_calendar.parquet trading_status_intervals.parquet research_universe_monthly.parquet required_research_security.parquet; do
+            gh release upload "$RELEASE_ID" "releases/${RELEASE_ID}/$name" --repo "$GITHUB_REPOSITORY"
+          done
+
+      - name: Verify GitHub storage round trip
+        run: |
+          rm -rf /tmp/roundtrip && mkdir -p /tmp/roundtrip
+          gh release download "$RELEASE_ID" --repo "$GITHUB_REPOSITORY" --pattern "${RELEASE_ID}-complete.tar.gz.part-*" --dir /tmp/roundtrip
+          gh release download "$RELEASE_ID" --repo "$GITHUB_REPOSITORY" --pattern "${RELEASE_ID}-parts.sha256" --dir /tmp/roundtrip
+          gh release download "$RELEASE_ID" --repo "$GITHUB_REPOSITORY" --pattern "${RELEASE_ID}-complete.tar.gz.sha256" --dir /tmp/roundtrip
+          cd /tmp/roundtrip
+          sha256sum -c "${RELEASE_ID}-parts.sha256"
+          cat "${RELEASE_ID}-complete.tar.gz.part-"* > "${RELEASE_ID}-complete.tar.gz"
+          sha256sum -c "${RELEASE_ID}-complete.tar.gz.sha256"
+          mkdir unpacked && tar -xzf "${RELEASE_ID}-complete.tar.gz" -C unpacked
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('/tmp/roundtrip/unpacked')
+          m=json.loads((root/'github_storage_manifest.json').read_text())
+          for row in m['files']:
+              p=root/row['path']
+              if not p.is_file() or p.stat().st_size!=row['bytes']:
+                  raise SystemExit(f"round-trip missing/size mismatch: {row['path']}")
+              h=hashlib.sha256()
+              with p.open('rb') as f:
+                  for c in iter(lambda:f.read(1024*1024),b''): h.update(c)
+              if h.hexdigest()!=row['sha256']:
+                  raise SystemExit(f"round-trip hash mismatch: {row['path']}")
+          print(f"ROUND_TRIP_VERIFIED files={len(m['files'])}")
+          PY
+
+      - name: Close Phase 3 handoff issue
+        run: |
+          gh issue comment 2 --repo "$GITHUB_REPOSITORY" --body "Canonical ${RELEASE_ID} has been rebuilt from durable/reacquired official evidence, published completely to GitHub Releases, and passed the download-and-SHA-256 round-trip verification. Closing #2."
+          gh issue close 2 --repo "$GITHUB_REPOSITORY" --reason completed
