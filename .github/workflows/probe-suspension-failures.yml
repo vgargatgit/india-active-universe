@@ -42,7 +42,7 @@ jobs:
                       href=dict(attrs).get('href')
                       if href: self.hrefs.append(href)
 
-          def get(url, attempts=4):
+          def get(url, attempts=1):
               last=None
               for attempt in range(attempts):
                   try:
@@ -60,9 +60,6 @@ jobs:
                           time.sleep(min(8.0, 0.75 * (2 ** attempt)))
               return {'ok':False,'error':last}
 
-          archive=get(ARCHIVE)
-          if not archive['ok']:
-              raise SystemExit(f'archive failed: {archive}')
           req=urllib.request.Request(ARCHIVE, headers=HEADERS)
           with urllib.request.urlopen(req, timeout=60) as response:
               body=response.read()
@@ -77,24 +74,30 @@ jobs:
               if '2006-01-01' <= date <= '2026-08-10' and url not in selected:
                   selected.append(url)
 
-          failures=[]
-          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-              future_map={pool.submit(get,url):url for url in selected}
+          first_failures=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=24) as pool:
+              future_map={pool.submit(get,url,1):url for url in selected}
               for future in concurrent.futures.as_completed(future_map):
                   url=future_map[future]
-                  result=future.result()
-                  if not result['ok']:
-                      parsed=urllib.parse.urlsplit(url)
-                      if parsed.netloc == 'nsearchives.nseindia.com':
-                          alt_host='www.nseindia.com'
-                      elif parsed.netloc == 'www.nseindia.com':
-                          alt_host='nsearchives.nseindia.com'
-                      else:
-                          alt_host='nsearchives.nseindia.com'
-                      alternate=urllib.parse.urlunsplit((parsed.scheme,alt_host,parsed.path,parsed.query,parsed.fragment))
-                      failures.append({'source_url':url,'primary':result,'alternate_url':alternate,'alternate':get(alternate)})
+                  if not future.result()['ok']:
+                      first_failures.append(url)
+
+          failures=[]
+          def retry(url):
+              result=get(url,4)
+              if result['ok']:
+                  return None
+              parsed=urllib.parse.urlsplit(url)
+              alt_host='www.nseindia.com' if parsed.netloc == 'nsearchives.nseindia.com' else 'nsearchives.nseindia.com'
+              alternate=urllib.parse.urlunsplit((parsed.scheme,alt_host,parsed.path,parsed.query,parsed.fragment))
+              return {'source_url':url,'primary':result,'alternate_url':alternate,'alternate':get(alternate,4)}
+
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+              for row in pool.map(retry, sorted(first_failures)):
+                  if row is not None:
+                      failures.append(row)
           failures.sort(key=lambda row: row['source_url'])
-          print(json.dumps({'selected':len(selected),'failed_count':len(failures),'failed_sources':failures}, indent=2, sort_keys=True))
+          print(json.dumps({'selected':len(selected),'first_pass_failures':len(first_failures),'failed_count':len(failures),'failed_sources':failures}, indent=2, sort_keys=True))
           if not failures:
-              print('ALL_LEGACY_PRESS_SOURCES_REACHABLE')
+              print('ALL_LEGACY_PRESS_SOURCES_REACHABLE_AFTER_RETRY')
           PY
