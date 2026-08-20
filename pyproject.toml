@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-data = ["pandas>=2.0", "pyarrow>=14", "duckdb>=0.10"]
+data = ["pandas>=2.0", "pyarrow>=14", "duckdb>=0.10", "pypdf>=5"]
 dev = ["pytest>=8", "PyYAML>=6.0"]
 
 [project.scripts]
