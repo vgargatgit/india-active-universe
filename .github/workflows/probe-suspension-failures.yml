@@ -16,27 +16,85 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install project
-        run: python -m pip install -e '.[data,dev]'
-      - name: Collect suspension sources and expose failures
+      - name: Probe legacy NSE press sources concurrently
         run: |
-          set -euo pipefail
-          rm -rf /tmp/suspension-probe
-          python scripts/collect_nse_suspension_evidence.py \
-            --raw-dir /tmp/suspension-probe \
-            --out /tmp/suspension-events.parquet \
-            --start 2006-01-01 --end 2026-08-10 \
-            --allow-source-errors
           python - <<'PY'
+          import concurrent.futures
           import json
-          rows=json.load(open('/tmp/suspension-probe/source_manifest.json'))
-          failed=[row for row in rows if str(row.get('download_status','')).startswith('FAILED:')]
-          print(json.dumps({'failed_count': len(failed), 'failed_sources': failed}, indent=2, sort_keys=True))
+          import re
+          import time
+          import urllib.parse
+          import urllib.request
+          from html.parser import HTMLParser
+
+          ARCHIVE='https://www.nseindia.com/static/resources/exchange-communication-press-releases-archives'
+          HEADERS={
+              'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 india-active-universe/0.1',
+              'Accept':'text/html,application/xhtml+xml',
+              'Accept-Language':'en-US,en;q=0.9',
+          }
+
+          class Links(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.hrefs=[]
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower()=='a':
+                      href=dict(attrs).get('href')
+                      if href: self.hrefs.append(href)
+
+          def get(url, attempts=4):
+              last=None
+              for attempt in range(attempts):
+                  try:
+                      req=urllib.request.Request(url, headers=HEADERS)
+                      with urllib.request.urlopen(req, timeout=60) as response:
+                          content=response.read()
+                          ctype=response.headers.get('Content-Type','')
+                          final=response.geturl()
+                      if not content or b'<html' not in content[:4096].lower() or 'html' not in ctype.lower():
+                          raise ValueError(f'not-html content_type={ctype!r} bytes={len(content)} final={final}')
+                      return {'ok':True,'final_url':final,'bytes':len(content),'content_type':ctype}
+                  except Exception as exc:
+                      last=f'{type(exc).__name__}: {exc}'
+                      if attempt + 1 < attempts:
+                          time.sleep(min(8.0, 0.75 * (2 ** attempt)))
+              return {'ok':False,'error':last}
+
+          archive=get(ARCHIVE)
+          if not archive['ok']:
+              raise SystemExit(f'archive failed: {archive}')
+          req=urllib.request.Request(ARCHIVE, headers=HEADERS)
+          with urllib.request.urlopen(req, timeout=60) as response:
+              body=response.read()
+          parser=Links(); parser.feed(body.decode('utf-8', errors='replace'))
+          selected=[]
+          for href in parser.hrefs:
+              url=urllib.parse.urljoin(ARCHIVE, href)
+              if '/content/press/' not in url: continue
+              match=re.search(r'/(\d{2})(\d{2})(\d{4})\.htm(?:$|\?)', url)
+              if not match: continue
+              date=f'{match.group(3)}-{match.group(2)}-{match.group(1)}'
+              if '2006-01-01' <= date <= '2026-08-10' and url not in selected:
+                  selected.append(url)
+
+          failures=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+              future_map={pool.submit(get,url):url for url in selected}
+              for future in concurrent.futures.as_completed(future_map):
+                  url=future_map[future]
+                  result=future.result()
+                  if not result['ok']:
+                      parsed=urllib.parse.urlsplit(url)
+                      if parsed.netloc == 'nsearchives.nseindia.com':
+                          alt_host='www.nseindia.com'
+                      elif parsed.netloc == 'www.nseindia.com':
+                          alt_host='nsearchives.nseindia.com'
+                      else:
+                          alt_host='nsearchives.nseindia.com'
+                      alternate=urllib.parse.urlunsplit((parsed.scheme,alt_host,parsed.path,parsed.query,parsed.fragment))
+                      failures.append({'source_url':url,'primary':result,'alternate_url':alternate,'alternate':get(alternate)})
+          failures.sort(key=lambda row: row['source_url'])
+          print(json.dumps({'selected':len(selected),'failed_count':len(failures),'failed_sources':failures}, indent=2, sort_keys=True))
+          if not failures:
+              print('ALL_LEGACY_PRESS_SOURCES_REACHABLE')
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: suspension-source-probe-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            /tmp/suspension-probe/source_manifest.json
-            /tmp/suspension-events.parquet
-          retention-days: 7
