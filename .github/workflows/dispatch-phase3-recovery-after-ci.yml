@@ -1,0 +1,55 @@
+name: dispatch-phase3-recovery-after-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dispatch-phase3-recovery-after-ci.yml'
+
+permissions:
+  actions: write
+  issues: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for exact main CI success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 60); do
+            state="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&per_page=50" \
+              --jq ".workflow_runs[] | select(.head_sha == \"${GITHUB_SHA}\") | [.status,.conclusion,.id] | @tsv" | head -n 1)"
+            status="$(printf '%s' "$state" | cut -f1)"
+            conclusion="$(printf '%s' "$state" | cut -f2)"
+            run_id="$(printf '%s' "$state" | cut -f3)"
+            echo "CI attempt ${attempt}: status=${status:-missing} conclusion=${conclusion:-missing} run=${run_id:-missing}"
+            if [ "$status" = "completed" ] && [ "$conclusion" = "success" ]; then
+              echo "CI_RUN_ID=$run_id" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            if [ "$status" = "completed" ] && [ -n "$conclusion" ] && [ "$conclusion" != "success" ]; then
+              echo "Exact main CI failed with conclusion ${conclusion}" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for exact main CI" >&2
+          exit 1
+
+      - name: Dispatch canonical recovery and report run ID
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run recover-and-publish-phase3.yml --repo "$GITHUB_REPOSITORY" --ref main
+          sleep 8
+          run_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/recover-and-publish-phase3.yml/runs?event=workflow_dispatch&branch=main&per_page=10" \
+            --jq '.workflow_runs[0].id')"
+          if [ -z "$run_id" ]; then
+            echo 'Recovery dispatch succeeded but run ID could not be resolved.' >&2
+            exit 1
+          fi
+          gh issue comment 2 --repo "$GITHUB_REPOSITORY" --body "Final Phase-3 recovery dispatched after exact main CI ${CI_RUN_ID} passed: Actions run ${run_id}, commit ${GITHUB_SHA}."
+          echo "RECOVERY_RUN_ID=${run_id}"
