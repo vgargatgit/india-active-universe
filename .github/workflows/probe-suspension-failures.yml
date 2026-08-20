@@ -16,105 +16,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probe exact legacy NSE press URL set
+      - name: Install project
+        run: python -m pip install -e '.[data,dev]'
+      - name: Run focused suspension collector tests
+        run: pytest -q tests/test_collect_nse_suspension_evidence.py
+      - name: Collect official suspension evidence
         run: |
+          set -euo pipefail
+          rm -rf /tmp/suspension-probe
+          mkdir -p /tmp/suspension-probe
+          python scripts/collect_nse_suspension_evidence.py \
+            --raw-dir /tmp/suspension-probe/raw \
+            --out /tmp/suspension-probe/suspension_events.parquet \
+            --start 2006-01-01 --end 2026-08-10 | tee /tmp/suspension-probe/summary.json
           python - <<'PY'
-          import concurrent.futures
           import json
-          import re
-          import time
-          import urllib.parse
-          import urllib.request
-          from html.parser import HTMLParser
-
-          ARCHIVE='https://www.nseindia.com/static/resources/exchange-communication-press-releases-archives'
-          BASE_HEADERS={
-              'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 india-active-universe/0.1',
-              'Accept':'text/html,application/xhtml+xml',
-              'Accept-Language':'en-US,en;q=0.9',
-          }
-
-          class Links(HTMLParser):
-              def __init__(self):
-                  super().__init__(); self.hrefs=[]
-              def handle_starttag(self, tag, attrs):
-                  if tag.lower() == 'a':
-                      href=dict(attrs).get('href')
-                      if href: self.hrefs.append(href)
-
-          def request(url, *, ranged=False, attempts=1, timeout=8):
-              last=None
-              for attempt in range(attempts):
-                  try:
-                      headers=dict(BASE_HEADERS)
-                      if ranged: headers['Range']='bytes=0-8191'
-                      req=urllib.request.Request(url, headers=headers)
-                      with urllib.request.urlopen(req, timeout=timeout) as response:
-                          content=response.read(16384 if ranged else -1)
-                          ctype=response.headers.get('Content-Type','')
-                          final=response.geturl()
-                          status=getattr(response,'status',None)
-                      if not content:
-                          raise ValueError('empty response')
-                      if b'<html' not in content[:4096].lower() or 'html' not in ctype.lower():
-                          prefix=content[:24].hex()
-                          raise ValueError(f'not-html content_type={ctype!r} bytes_read={len(content)} prefix_hex={prefix} final={final}')
-                      return {'ok':True,'status':status,'final_url':final,'bytes_read':len(content),'content_type':ctype}
-                  except Exception as exc:
-                      last=f'{type(exc).__name__}: {exc}'
-                      if attempt + 1 < attempts:
-                          time.sleep(min(4.0, 0.75 * (2 ** attempt)))
-              return {'ok':False,'error':last}
-
-          req=urllib.request.Request(ARCHIVE, headers=BASE_HEADERS)
-          with urllib.request.urlopen(req, timeout=30) as response:
-              archive=response.read()
-          parser=Links(); parser.feed(archive.decode('utf-8', errors='replace'))
-          urls=[]
-          for href in parser.hrefs:
-              url=urllib.parse.urljoin(ARCHIVE, href)
-              match=re.search(r'/(\d{2})(\d{2})(\d{4})\.htm(?:$|\?)', url, re.I)
-              if not match: continue
-              date=f'{match.group(3)}-{match.group(2)}-{match.group(1)}'
-              if '2006-01-01' <= date <= '2026-08-10' and url not in urls:
-                  urls.append(url)
-
-          first_failures=[]
-          with concurrent.futures.ThreadPoolExecutor(max_workers=64) as pool:
-              future_map={pool.submit(request,url,ranged=True,timeout=8):url for url in urls}
-              for future in concurrent.futures.as_completed(future_map):
-                  if not future.result()['ok']:
-                      first_failures.append(future_map[future])
-
-          def retry(url):
-              primary=request(url, ranged=False, attempts=4, timeout=20)
-              if primary['ok']:
-                  return {'source_url':url,'primary':primary,'resolved':'PRIMARY_RETRY'}
-              parsed=urllib.parse.urlsplit(url)
-              alt_host='www.nseindia.com' if parsed.netloc == 'nsearchives.nseindia.com' else 'nsearchives.nseindia.com'
-              alternate=urllib.parse.urlunsplit((parsed.scheme,alt_host,parsed.path,parsed.query,parsed.fragment))
-              alt=request(alternate,ranged=False,attempts=4,timeout=20)
-              return {'source_url':url,'primary':primary,'alternate_url':alternate,'alternate':alt,'resolved':'ALTERNATE' if alt['ok'] else 'FAILED'}
-
-          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-              retried=list(pool.map(retry,sorted(first_failures)))
-          persistent=[row for row in retried if row['resolved']=='FAILED']
-          recovered=[row for row in retried if row['resolved']!='FAILED']
-          result={
-              'selected_urls':len(urls),
-              'first_pass_failures':len(first_failures),
-              'recovered_after_retry':recovered,
-              'persistent_failure_count':len(persistent),
-              'persistent_failures':persistent,
-          }
-          with open('/tmp/suspension-failure-diagnostics.json','w',encoding='utf-8') as handle:
-              json.dump(result,handle,indent=2,sort_keys=True)
-              handle.write('\n')
-          print(json.dumps(result,indent=2,sort_keys=True))
+          from pathlib import Path
+          manifest=json.loads(Path('/tmp/suspension-probe/raw/source_manifest.json').read_text())
+          failed=[row for row in manifest if str(row.get('download_status','')).startswith('FAILED:')]
+          pdf=[row for row in manifest if row.get('media_type') == 'application/pdf']
+          assert not failed, failed
+          assert pdf, 'expected at least one official legacy PDF notice'
+          print(json.dumps({'manifest_rows':len(manifest),'pdf_sources':len(pdf),'failed_sources':0},sort_keys=True))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: suspension-failure-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
-          path: /tmp/suspension-failure-diagnostics.json
+          name: suspension-source-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/suspension-probe/
           retention-days: 7
           if-no-files-found: error
