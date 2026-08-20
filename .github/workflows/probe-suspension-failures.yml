@@ -16,85 +16,92 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probe suspension-related legacy NSE press sources
+      - name: Probe exact legacy NSE press URL set
         run: |
           python - <<'PY'
           import concurrent.futures
-          import html
           import json
           import re
           import time
           import urllib.parse
           import urllib.request
+          from html.parser import HTMLParser
 
           ARCHIVE='https://www.nseindia.com/static/resources/exchange-communication-press-releases-archives'
-          HEADERS={
+          BASE_HEADERS={
               'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 india-active-universe/0.1',
-              'Accept':'text/html,application/xhtml+xml,application/pdf',
+              'Accept':'text/html,application/xhtml+xml',
               'Accept-Language':'en-US,en;q=0.9',
           }
-          KEYWORDS=re.compile(r'suspension|suspended|revocation|recommencement|available\s+for\s+trading', re.I)
-          LINK=re.compile(r'href=["\']([^"\']*/content/press/(\d{2})(\d{2})(\d{4})\.(?:htm|pdf)(?:\?[^"\']*)?)["\']', re.I)
 
-          def get(url, attempts=1):
+          class Links(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.hrefs=[]
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == 'a':
+                      href=dict(attrs).get('href')
+                      if href: self.hrefs.append(href)
+
+          def request(url, *, ranged=False, attempts=1, timeout=8):
               last=None
               for attempt in range(attempts):
                   try:
-                      req=urllib.request.Request(url, headers=HEADERS)
-                      with urllib.request.urlopen(req, timeout=12) as response:
-                          content=response.read()
+                      headers=dict(BASE_HEADERS)
+                      if ranged: headers['Range']='bytes=0-4095'
+                      req=urllib.request.Request(url, headers=headers)
+                      with urllib.request.urlopen(req, timeout=timeout) as response:
+                          content=response.read(8192 if ranged else -1)
                           ctype=response.headers.get('Content-Type','')
                           final=response.geturl()
+                          status=getattr(response,'status',None)
                       if not content:
                           raise ValueError('empty response')
-                      return {'ok':True,'final_url':final,'bytes':len(content),'content_type':ctype}
+                      return {'ok':True,'status':status,'final_url':final,'bytes_read':len(content),'content_type':ctype}
                   except Exception as exc:
                       last=f'{type(exc).__name__}: {exc}'
                       if attempt + 1 < attempts:
-                          time.sleep(min(2.0, 0.5 * (2 ** attempt)))
+                          time.sleep(min(4.0, 0.75 * (2 ** attempt)))
               return {'ok':False,'error':last}
 
-          req=urllib.request.Request(ARCHIVE, headers=HEADERS)
+          req=urllib.request.Request(ARCHIVE, headers=BASE_HEADERS)
           with urllib.request.urlopen(req, timeout=30) as response:
-              body=response.read().decode('utf-8', errors='replace')
-
-          matches=list(LINK.finditer(body))
-          candidates=[]
-          for index, match in enumerate(matches):
-              href, dd, mm, yyyy=match.groups()
-              date=f'{yyyy}-{mm}-{dd}'
-              if not ('2006-01-01' <= date <= '2026-08-10'):
-                  continue
-              end=matches[index+1].start() if index+1 < len(matches) else min(len(body), match.end()+6000)
-              segment=body[match.start():end]
-              text=html.unescape(re.sub(r'<[^>]+>', ' ', segment))
-              text=re.sub(r'\s+', ' ', text).strip()
-              if not KEYWORDS.search(text):
-                  continue
+              archive=response.read()
+          parser=Links(); parser.feed(archive.decode('utf-8', errors='replace'))
+          urls=[]
+          for href in parser.hrefs:
               url=urllib.parse.urljoin(ARCHIVE, href)
-              if url not in {row['source_url'] for row in candidates}:
-                  candidates.append({'source_url':url,'date':date,'archive_summary':text[:1000]})
+              match=re.search(r'/(\d{2})(\d{2})(\d{4})\.htm(?:$|\?)', url, re.I)
+              if not match: continue
+              date=f'{match.group(3)}-{match.group(2)}-{match.group(1)}'
+              if '2006-01-01' <= date <= '2026-08-10' and url not in urls:
+                  urls.append(url)
 
-          def verify(row):
-              url=row['source_url']
-              primary=get(url,2)
+          first_failures=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=64) as pool:
+              future_map={pool.submit(request,url,ranged=True,timeout=8):url for url in urls}
+              for future in concurrent.futures.as_completed(future_map):
+                  if not future.result()['ok']:
+                      first_failures.append(future_map[future])
+
+          def retry(url):
+              primary=request(url, ranged=False, attempts=4, timeout=20)
+              if primary['ok']:
+                  return {'source_url':url,'primary':primary,'resolved':'PRIMARY_RETRY'}
               parsed=urllib.parse.urlsplit(url)
               alt_host='www.nseindia.com' if parsed.netloc == 'nsearchives.nseindia.com' else 'nsearchives.nseindia.com'
               alternate=urllib.parse.urlunsplit((parsed.scheme,alt_host,parsed.path,parsed.query,parsed.fragment))
-              alt=get(alternate,2) if not primary['ok'] else None
-              result=dict(row)
-              result.update({'primary':primary,'alternate_url':alternate,'alternate':alt})
-              return result
+              alt=request(alternate,ranged=False,attempts=4,timeout=20)
+              return {'source_url':url,'primary':primary,'alternate_url':alternate,'alternate':alt,'resolved':'ALTERNATE' if alt['ok'] else 'FAILED'}
 
-          with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
-              checked=list(pool.map(verify,candidates))
-          failed=[row for row in checked if not row['primary']['ok'] and not (row['alternate'] and row['alternate']['ok'])]
-          recovered=[row for row in checked if not row['primary']['ok'] and row['alternate'] and row['alternate']['ok']]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+              retried=list(pool.map(retry,sorted(first_failures)))
+          persistent=[row for row in retried if row['resolved']=='FAILED']
+          recovered=[row for row in retried if row['resolved']!='FAILED']
           print(json.dumps({
-              'archive_press_links':len(matches),
-              'suspension_related_candidates':len(candidates),
-              'recovered_by_alternate_host':recovered,
-              'failed_count':len(failed),
-              'failed_sources':failed,
+              'selected_urls':len(urls),
+              'first_pass_failures':len(first_failures),
+              'recovered_after_retry':recovered,
+              'persistent_failure_count':len(persistent),
+              'persistent_failures':persistent,
           },indent=2,sort_keys=True))
           PY
