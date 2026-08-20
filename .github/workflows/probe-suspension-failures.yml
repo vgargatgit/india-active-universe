@@ -47,15 +47,18 @@ jobs:
               for attempt in range(attempts):
                   try:
                       headers=dict(BASE_HEADERS)
-                      if ranged: headers['Range']='bytes=0-4095'
+                      if ranged: headers['Range']='bytes=0-8191'
                       req=urllib.request.Request(url, headers=headers)
                       with urllib.request.urlopen(req, timeout=timeout) as response:
-                          content=response.read(8192 if ranged else -1)
+                          content=response.read(16384 if ranged else -1)
                           ctype=response.headers.get('Content-Type','')
                           final=response.geturl()
                           status=getattr(response,'status',None)
                       if not content:
                           raise ValueError('empty response')
+                      if b'<html' not in content[:4096].lower() or 'html' not in ctype.lower():
+                          prefix=content[:24].hex()
+                          raise ValueError(f'not-html content_type={ctype!r} bytes_read={len(content)} prefix_hex={prefix} final={final}')
                       return {'ok':True,'status':status,'final_url':final,'bytes_read':len(content),'content_type':ctype}
                   except Exception as exc:
                       last=f'{type(exc).__name__}: {exc}'
