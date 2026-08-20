@@ -1,0 +1,42 @@
+name: probe-suspension-failures
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project
+        run: python -m pip install -e '.[data,dev]'
+      - name: Collect suspension sources and expose failures
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/suspension-probe
+          python scripts/collect_nse_suspension_evidence.py \
+            --raw-dir /tmp/suspension-probe \
+            --out /tmp/suspension-events.parquet \
+            --start 2006-01-01 --end 2026-08-10 \
+            --allow-source-errors
+          python - <<'PY'
+          import json
+          rows=json.load(open('/tmp/suspension-probe/source_manifest.json'))
+          failed=[row for row in rows if str(row.get('download_status','')).startswith('FAILED:')]
+          print(json.dumps({'failed_count': len(failed), 'failed_sources': failed}, indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suspension-source-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/suspension-probe/source_manifest.json
+            /tmp/suspension-events.parquet
+          retention-days: 7
