@@ -171,6 +171,35 @@ jobs:
           pattern: pit-raw-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: /tmp/pit-years
 
+      - name: Retain exact market-source generations permanently
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          if ! gh release view "$RAW_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RAW_RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title 'Official NSE raw market archive v1' \
+              --notes 'Append-only year-sharded official NSE market-source archive. Every retained generation includes acquisition state and a verified SHA-256 year manifest.'
+          fi
+          count=0
+          while IFS= read -r manifest; do
+            package_dir="$(dirname "$manifest")"
+            artifact_dir="$(basename "$package_dir")"
+            year="$(printf '%s' "$artifact_dir" | cut -d- -f3)"
+            if ! [[ "$year" =~ ^[0-9]{4}$ ]]; then
+              echo "Cannot resolve year from artifact directory: $artifact_dir" >&2
+              exit 1
+            fi
+            python -m india_active_universe.raw_bhavcopy_archive verify \
+              --root "$package_dir/payload" --manifest "$manifest"
+            asset="nse-bhavcopy-${year}-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}.tar.gz"
+            tar -czf "/tmp/$asset" -C "$package_dir" payload year_manifest.json acquisition.json
+            gh release upload "$RAW_RELEASE_TAG" "/tmp/$asset" --repo "$GITHUB_REPOSITORY"
+            count=$((count + 1))
+          done < <(find /tmp/pit-years -type f -name year_manifest.json | sort)
+          test "$count" -eq 23
+          echo "Permanently retained $count exact market-source year generations."
+
       - name: Assemble and verify official source history
         run: |
           set -euo pipefail
@@ -348,7 +377,9 @@ jobs:
           gh release create "$HANDOFF_RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title 'FUNDAMENTALS Phase 3 PIT handoff v1' \
-            --notes 'Immutable FUNDAMENTALS_500_V1 PIT handoff plus complete source/gate/rebuild evidence. The ten contractual downstream artifacts remain the narrow PIT-universe handoff; additional Parquets and raw-source archives are retained for permanent reproducibility and do not claim the full canonical Phase 3 research-price release tracked by issue #2.'
+            --notes 'Immutable FUNDAMENTALS_500_V1 PIT handoff plus complete source/gate/rebuild evidence. The ten contractual downstream artifacts remain the narrow PIT-universe handoff; additional rebuild files and raw-source archives are retained for permanent reproducibility and do not claim the full canonical Phase 3 research-price release tracked by issue #2.'
+          mapfile -t rebuilt_assets < <(find /tmp/pit-release -maxdepth 1 -type f -print | sort)
+          test "${#rebuilt_assets[@]}" -gt 0
           gh release upload "$HANDOFF_RELEASE_TAG" \
             "/tmp/${HANDOFF_ID}.tar.gz" \
             "/tmp/${HANDOFF_ID}.tar.gz.sha256" \
@@ -360,7 +391,7 @@ jobs:
             /tmp/pit-persistence/suspension_raw_sources.tar.gz \
             /tmp/pit-persistence/research_invariant_validation.json \
             /tmp/pit-persistence/candidate_promotion_audit.json \
-            /tmp/pit-release/*.parquet \
+            "${rebuilt_assets[@]}" \
             --repo "$GITHUB_REPOSITORY"
 
           rm -rf /tmp/pit-roundtrip && mkdir -p /tmp/pit-roundtrip
