@@ -5,8 +5,13 @@ on:
     paths:
       - '.github/workflows/build-fundamentals-pit-handoff.yml'
       - 'scripts/collect_nse_corporate_actions.py'
+      - 'scripts/collect_nse_suspension_evidence.py'
       - 'scripts/build_fundamentals_pit_handoff.py'
+      - 'scripts/build_pit_persistence_bundle.py'
       - 'tests/test_collect_nse_corporate_actions.py'
+      - 'tests/test_collect_nse_suspension_evidence.py'
+      - 'tests/test_build_fundamentals_pit_handoff.py'
+      - 'tests/test_pit_persistence_bundle.py'
       - 'src/**'
       - 'data/reference/**'
   push:
@@ -14,8 +19,13 @@ on:
     paths:
       - '.github/workflows/build-fundamentals-pit-handoff.yml'
       - 'scripts/collect_nse_corporate_actions.py'
+      - 'scripts/collect_nse_suspension_evidence.py'
       - 'scripts/build_fundamentals_pit_handoff.py'
+      - 'scripts/build_pit_persistence_bundle.py'
       - 'tests/test_collect_nse_corporate_actions.py'
+      - 'tests/test_collect_nse_suspension_evidence.py'
+      - 'tests/test_build_fundamentals_pit_handoff.py'
+      - 'tests/test_pit_persistence_bundle.py'
   workflow_dispatch:
 
 permissions:
@@ -149,7 +159,12 @@ jobs:
       - name: Install project
         run: python -m pip install -e '.[data,dev]'
       - name: Run focused recovery tests
-        run: pytest -q tests/test_collect_nse_corporate_actions.py
+        run: |
+          pytest -q \
+            tests/test_collect_nse_corporate_actions.py \
+            tests/test_collect_nse_suspension_evidence.py \
+            tests/test_build_fundamentals_pit_handoff.py \
+            tests/test_pit_persistence_bundle.py
 
       - uses: actions/download-artifact@v4
         with:
@@ -167,7 +182,6 @@ jobs:
             --out data/raw/manifests/source_manifest.json
           python - <<'PY'
           import json
-          from pathlib import Path
           rows=json.load(open('data/raw/manifests/source_manifest.json'))
           dates=[row['source_date'] for row in rows]
           if not rows or min(dates) > '2004-01-30' or max(dates) < '2026-08-10':
@@ -181,7 +195,7 @@ jobs:
       - name: Build source-backed identity and liquidity layers
         run: |
           set -euo pipefail
-          rm -rf /tmp/pit-build /tmp/pit-release /tmp/pit-handoff data/raw/nse/corporate_actions
+          rm -rf /tmp/pit-build /tmp/pit-release /tmp/pit-handoff /tmp/pit-persistence data/raw/nse/corporate_actions
           mkdir -p /tmp/pit-build /tmp/pit-release
           python scripts/build_nse_universe.py \
             --raw data/raw/nse/bhavcopy \
@@ -210,12 +224,11 @@ jobs:
           import json
           manifest=json.load(open('data/raw/nse/corporate_actions/source_manifest.json'))
           rows=int(manifest['merged_row_count'])
-          # The audited v2.2.8 corpus contained 39,185 normalized corporate-action rows.
-          # Reacquisition may contain later official corrections but must not silently
-          # collapse historical coverage by an order of magnitude.
           if rows < 30000:
               raise SystemExit(f'corporate-action source coverage unexpectedly small: {rows}')
-          print({'corporate_action_source_rows': rows})
+          if any(not row.get('source_file') for row in manifest.get('sources', [])):
+              raise SystemExit('corporate-action source manifest does not retain every source file')
+          print({'corporate_action_source_rows': rows, 'source_documents': len(manifest.get('sources', []))})
           PY
 
       - name: Build price-action and status evidence
@@ -267,7 +280,7 @@ jobs:
             --events-out /tmp/pit-release/suspension_events_resolved.parquet \
             --intervals-out /tmp/pit-release/trading_status_intervals.parquet
 
-      - name: Materialize and gate Phase 3 PIT universe
+      - name: Materialize, gate, and package Phase 3 PIT universe
         run: |
           set -euo pipefail
           python scripts/build_identity_history_artifacts.py \
@@ -285,6 +298,13 @@ jobs:
             --release /tmp/pit-release \
             --control-start 2013-01-01 \
             --out /tmp/pit-candidate-audit.json
+          python scripts/build_pit_persistence_bundle.py build \
+            --corporate-actions-dir data/raw/nse/corporate_actions \
+            --suspensions-dir /tmp/pit-suspensions \
+            --release-dir /tmp/pit-release \
+            --invariant /tmp/pit-invariant.json \
+            --candidate-audit /tmp/pit-candidate-audit.json \
+            --output-dir /tmp/pit-persistence
           python scripts/build_fundamentals_pit_handoff.py \
             --release /tmp/pit-release \
             --invariant /tmp/pit-invariant.json \
@@ -292,6 +312,7 @@ jobs:
             --source-manifest data/raw/manifests/source_manifest.json \
             --corporate-action-source-manifest data/raw/nse/corporate_actions/source_manifest.json \
             --suspension-source-manifest /tmp/pit-suspensions/source_manifest.json \
+            --persistence-manifest /tmp/pit-persistence/pit_rebuild_persistence_manifest.json \
             --output /tmp/pit-handoff \
             --handoff-id "$HANDOFF_ID" \
             --research-start "$RESEARCH_START" --research-end "$RESEARCH_END"
@@ -303,18 +324,20 @@ jobs:
           tar -czf "/tmp/${HANDOFF_ID}.tar.gz" -C /tmp/pit-handoff .
           sha256sum "/tmp/${HANDOFF_ID}.tar.gz" > "/tmp/${HANDOFF_ID}.tar.gz.sha256"
 
-      - uses: actions/upload-artifact@v4
+      - name: Preserve PR evidence bundle
+        uses: actions/upload-artifact@v4
         with:
           name: fundamentals-pit-handoff-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             /tmp/pit-handoff/
+            /tmp/pit-persistence/
             /tmp/${{ env.HANDOFF_ID }}.tar.gz
             /tmp/${{ env.HANDOFF_ID }}.tar.gz.sha256
           retention-days: 90
           if-no-files-found: error
           compression-level: 6
 
-      - name: Publish immutable downstream handoff
+      - name: Publish immutable downstream handoff and rebuild evidence
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
@@ -325,20 +348,30 @@ jobs:
           gh release create "$HANDOFF_RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title 'FUNDAMENTALS Phase 3 PIT handoff v1' \
-            --notes 'Narrow immutable downstream handoff for FUNDAMENTALS_500_V1. Rebuilt from official NSE market/corporate-action/suspension evidence and required to pass the existing Phase 3 PIT invariant and candidate gates. This is not a replacement for the full canonical Phase 3 price release tracked by issue #2.'
+            --notes 'Immutable FUNDAMENTALS_500_V1 PIT handoff plus complete source/gate/rebuild evidence. The ten contractual downstream artifacts remain the narrow PIT-universe handoff; additional Parquets and raw-source archives are retained for permanent reproducibility and do not claim the full canonical Phase 3 research-price release tracked by issue #2.'
           gh release upload "$HANDOFF_RELEASE_TAG" \
             "/tmp/${HANDOFF_ID}.tar.gz" \
             "/tmp/${HANDOFF_ID}.tar.gz.sha256" \
             /tmp/pit-handoff/data_release_manifest.json \
             /tmp/pit-handoff/research_release_manifest.json \
             /tmp/pit-handoff/fundamentals_pit_handoff_manifest.json \
-            /tmp/pit-handoff/release/*.parquet \
+            /tmp/pit-persistence/pit_rebuild_persistence_manifest.json \
+            /tmp/pit-persistence/corporate_action_raw_sources.tar.gz \
+            /tmp/pit-persistence/suspension_raw_sources.tar.gz \
+            /tmp/pit-persistence/research_invariant_validation.json \
+            /tmp/pit-persistence/candidate_promotion_audit.json \
+            /tmp/pit-release/*.parquet \
             --repo "$GITHUB_REPOSITORY"
+
           rm -rf /tmp/pit-roundtrip && mkdir -p /tmp/pit-roundtrip
           gh release download "$HANDOFF_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
-            --pattern "${HANDOFF_ID}.tar.gz*" --dir /tmp/pit-roundtrip
+            --dir /tmp/pit-roundtrip
           cd /tmp/pit-roundtrip
           sha256sum -c "${HANDOFF_ID}.tar.gz.sha256"
+          cd "$GITHUB_WORKSPACE"
+          python scripts/build_pit_persistence_bundle.py verify \
+            --manifest /tmp/pit-roundtrip/pit_rebuild_persistence_manifest.json \
+            --asset-dir /tmp/pit-roundtrip
 
       - name: Summarize handoff
         if: always()
@@ -348,6 +381,7 @@ jobs:
           import json
           value=json.load(open('/tmp/pit-handoff/fundamentals_pit_handoff_manifest.json'))
           c=value['coverage']
+          p=json.load(open('/tmp/pit-persistence/pit_rebuild_persistence_manifest.json'))
           print('# Phase 3 fundamentals PIT handoff')
           print()
           print(f"- Handoff: `{value['handoff_id']}`")
@@ -357,6 +391,10 @@ jobs:
           print(f"- Unique PIT securities: **{c['monthly_unique_securities']}**")
           print(f"- Required research securities: **{c['required_research_security_rows']}**")
           print(f"- Eligible rows missing rank: **{c['eligible_missing_liquidity_rank']}**")
-          print(f"- Logical SHA-256: `{value['logical_content_sha256']}`")
+          print(f"- Handoff logical SHA-256: `{value['logical_content_sha256']}`")
+          print(f"- Persistence logical SHA-256: `{p['logical_content_sha256']}`")
+          print(f"- Persisted rebuilt files: **{len(p['rebuilt_release_files'])}**")
+          print(f"- Corporate-action raw sources: **{p['source_summaries']['corporate_actions']['source_count']}**")
+          print(f"- Suspension raw sources: **{p['source_summaries']['suspensions']['source_count']}**")
           PY
           fi
