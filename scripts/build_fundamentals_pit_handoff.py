@@ -13,6 +13,7 @@ from india_active_universe.profiles import PRIORITY_SCOPE, PROFILE_ID, PROFILE_V
 
 
 HANDOFF_CONTRACT = "fundamentals-pit-handoff-v1"
+PERSISTENCE_CONTRACT = "pit-rebuild-persistence-v1"
 PIT_QUALITY_STATUS = "PIT_UNIVERSE_HIGH_CONFIDENCE"
 REQUIRED_ARTIFACTS = (
     "security_master.parquet",
@@ -69,6 +70,20 @@ def load_pass_invariant(path: Path) -> dict:
     value = json.loads(path.read_text(encoding="utf-8"))
     if value.get("status") != "PASS" or int(value.get("failure_count") or 0) != 0:
         raise PitHandoffError("research invariant validation is not PASS")
+    return value
+
+
+def load_persistence_manifest(path: Path) -> dict:
+    if not path.is_file():
+        raise PitHandoffError("PIT rebuild persistence manifest is missing")
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if value.get("contract") != PERSISTENCE_CONTRACT:
+        raise PitHandoffError("unexpected PIT rebuild persistence manifest contract")
+    if not value.get("logical_content_sha256"):
+        raise PitHandoffError("PIT rebuild persistence manifest has no logical hash")
+    archives = value.get("source_archives") or {}
+    if set(archives) != {"corporate_actions", "suspensions"}:
+        raise PitHandoffError("PIT rebuild persistence manifest lacks required raw source archives")
     return value
 
 
@@ -244,6 +259,7 @@ def build_handoff(
     source_manifest: Path,
     corporate_action_source_manifest: Path,
     suspension_source_manifest: Path | None,
+    persistence_manifest: Path,
     output: Path,
     handoff_id: str,
     research_start: str,
@@ -252,6 +268,7 @@ def build_handoff(
 ) -> dict:
     load_pass_invariant(invariant)
     candidate = load_pass_candidate(candidate_audit, candidate_start, research_start)
+    persistence = load_persistence_manifest(persistence_manifest)
     coverage = validate_monthly_release(
         release, research_start=research_start, research_end=research_end
     )
@@ -261,6 +278,8 @@ def build_handoff(
     output_release.mkdir(parents=True)
     for name in REQUIRED_ARTIFACTS:
         shutil.copy2(release / name, output_release / name)
+    persistence_copy = output / "pit_rebuild_persistence_manifest.json"
+    shutil.copy2(persistence_manifest, persistence_copy)
 
     artifacts = {
         name: sha256_file(output_release / name)
@@ -277,6 +296,16 @@ def build_handoff(
             if suspension_source_manifest and suspension_source_manifest.is_file()
             else None
         ),
+        "pit_rebuild_persistence_manifest_sha256": sha256_file(persistence_copy),
+        "pit_rebuild_persistence_logical_sha256": persistence["logical_content_sha256"],
+        "persistent_source_archives": {
+            name: {
+                "asset_name": row.get("asset_name"),
+                "sha256": row.get("sha256"),
+                "bytes": row.get("bytes"),
+            }
+            for name, row in sorted((persistence.get("source_archives") or {}).items())
+        },
         "research_invariant_validation_sha256": sha256_file(invariant),
         "candidate_promotion_audit_sha256": sha256_file(candidate_audit),
         "candidate_start": candidate_start,
@@ -359,6 +388,7 @@ def build_handoff(
         "coverage": coverage,
         "provenance": provenance,
         "artifacts": artifacts,
+        "pit_rebuild_persistence_manifest_sha256": sha256_file(persistence_copy),
         "data_release_manifest_sha256": sha256_file(output / "data_release_manifest.json"),
         "research_release_manifest_sha256": sha256_file(output / "research_release_manifest.json"),
     }
@@ -378,6 +408,7 @@ def main() -> None:
     parser.add_argument("--source-manifest", required=True)
     parser.add_argument("--corporate-action-source-manifest", required=True)
     parser.add_argument("--suspension-source-manifest")
+    parser.add_argument("--persistence-manifest", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--handoff-id", default="india_active_universe_fundamentals_pit_v1")
     parser.add_argument("--research-start", default="2006-01-31")
@@ -391,6 +422,7 @@ def main() -> None:
         source_manifest=Path(args.source_manifest),
         corporate_action_source_manifest=Path(args.corporate_action_source_manifest),
         suspension_source_manifest=(Path(args.suspension_source_manifest) if args.suspension_source_manifest else None),
+        persistence_manifest=Path(args.persistence_manifest),
         output=Path(args.output),
         handoff_id=args.handoff_id,
         research_start=args.research_start,
