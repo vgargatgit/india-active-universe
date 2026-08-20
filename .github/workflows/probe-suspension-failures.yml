@@ -100,11 +100,21 @@ jobs:
               retried=list(pool.map(retry,sorted(first_failures)))
           persistent=[row for row in retried if row['resolved']=='FAILED']
           recovered=[row for row in retried if row['resolved']!='FAILED']
-          print(json.dumps({
+          result={
               'selected_urls':len(urls),
               'first_pass_failures':len(first_failures),
               'recovered_after_retry':recovered,
               'persistent_failure_count':len(persistent),
               'persistent_failures':persistent,
-          },indent=2,sort_keys=True))
+          }
+          with open('/tmp/suspension-failure-diagnostics.json','w',encoding='utf-8') as handle:
+              json.dump(result,handle,indent=2,sort_keys=True)
+              handle.write('\n')
+          print(json.dumps(result,indent=2,sort_keys=True))
           PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suspension-failure-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/suspension-failure-diagnostics.json
+          retention-days: 7
+          if-no-files-found: error
