@@ -140,7 +140,6 @@ def fetch_year(
             if attempt == attempts:
                 break
             time.sleep(min(8.0, 0.75 * (2 ** (attempt - 1))))
-            # Refresh cookies after NSE expires/challenges the session.
             try:
                 _request(opener, LANDING_URL, accept="text/html,application/xhtml+xml")
             except Exception:
@@ -166,11 +165,19 @@ def collect(
 
     opener = _opener()
     landing = _request(opener, LANDING_URL, accept="text/html,application/xhtml+xml")
+    landing_digest = sha256(landing)
+    landing_target = raw_dir / f"corporate_actions_landing_{landing_digest[:16]}.html"
+    if landing_target.exists() and sha256(landing_target.read_bytes()) != landing_digest:
+        raise CorporateActionRecoveryError(f"cached source hash changed: {landing_target}")
+    if not landing_target.exists():
+        landing_target.write_bytes(landing)
+
     source_rows: list[dict] = [
         {
             "source_type": "NSE_CORPORATE_ACTION_LANDING",
             "source_url": LANDING_URL,
-            "sha256": sha256(landing),
+            "source_file": landing_target.name,
+            "sha256": landing_digest,
             "bytes": len(landing),
             "parser_version": "nse-corporate-actions-recovery-v1",
             "status": "DOWNLOADED",
