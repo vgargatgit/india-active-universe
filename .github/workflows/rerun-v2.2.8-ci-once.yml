@@ -1,0 +1,23 @@
+name: rerun-v2.2.8-ci-once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/rerun-v2.2.8-ci-once.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  rerun-v2-2-8-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-run audited v2.2.8 CI evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: '31564216379'
+        run: |
+          gh run rerun "$RUN_ID" --repo "$GITHUB_REPOSITORY"
+          echo "Triggered exact v2.2.8 CI evidence run $RUN_ID"
