@@ -1,0 +1,26 @@
+name: seed-pre2006-raw-after-recovery-merge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/seed-pre2006-raw-after-recovery-merge.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-pre2006-raw-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch durable 2004-2005 NSE archive seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run archive-nse-bhavcopy.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f start_date=2004-01-01 \
+            -f end_date=2005-12-31
+          echo "Dispatched archive-nse-bhavcopy.yml for 2004-01-01 through 2005-12-31"
