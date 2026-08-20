@@ -131,6 +131,37 @@ def failed_sources(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     ]
 
 
+def validate_source_manifest(
+    *,
+    archive_url: str,
+    selected: list[dict[str, str]],
+    source_rows: list[dict[str, object]],
+) -> None:
+    """Require exactly one terminal manifest row for every selected source URL."""
+
+    expected_urls = [archive_url, *(item["source_url"] for item in selected)]
+    actual_urls = [str(row.get("source_url") or "") for row in source_rows]
+    expected_set = set(expected_urls)
+    actual_set = set(actual_urls)
+    duplicates = sorted(
+        url for url in actual_set if url and actual_urls.count(url) > 1
+    )
+    missing = sorted(expected_set - actual_set)
+    extra = sorted(actual_set - expected_set)
+    if (
+        len(source_rows) != len(expected_urls)
+        or duplicates
+        or missing
+        or extra
+        or "" in actual_set
+    ):
+        raise ValueError(
+            "suspension source manifest is not exhaustive and one-to-one: "
+            f"expected_rows={len(expected_urls)}, actual_rows={len(source_rows)}, "
+            f"duplicates={duplicates}, missing={missing}, extra={extra}"
+        )
+
+
 def _strip_html(value: str) -> str:
     value = re.sub(r"<script\b.*?</script>", " ", value, flags=re.I | re.S)
     value = re.sub(r"<style\b.*?</style>", " ", value, flags=re.I | re.S)
@@ -319,6 +350,9 @@ def main() -> None:
                 )
 
     for index, item in enumerate(selected):
+        document: FetchedDocument | None = None
+        digest: str | None = None
+        target: Path | None = None
         try:
             cached_path = cached_sources.get(item["source_url"])
             if cached_path and cached_path.exists():
@@ -341,6 +375,27 @@ def main() -> None:
                 raise IOError(f"raw source changed: {target}")
             if not target.exists():
                 target.write_bytes(document.content)
+            text = document_text(document)
+            event_text = f"{item['archive_context']}\n{text}"
+            published = article_date(text) or item["publication_date"]
+            if not _EVENT_BODY_RE.search(event_text):
+                raise ValueError(
+                    "official archive and linked document contain no status signal"
+                )
+            rows.append(
+                {
+                    "evidence_id": f"NSE_SUSP_{index:06d}",
+                    "source_file_id": target.name,
+                    "source_url": item["source_url"],
+                    "published_date": published,
+                    "event_type": event_type(event_text),
+                    "effective_date": effective_date(event_text),
+                    "historical_company_names": candidate_names(event_text),
+                    "identity_quality": "IDENTITY_REVIEW_REQUIRED",
+                    "source_quality": "NSE_OFFICIAL_PRESS_ARCHIVE",
+                    "text_excerpt": event_text[:1200],
+                }
+            )
             source_rows.append(
                 {
                     "source_url": item["source_url"],
@@ -353,36 +408,24 @@ def main() -> None:
                     "parser_version": PARSER_VERSION,
                 }
             )
-            text = document_text(document)
-            published = article_date(text) or item["publication_date"]
-            if not _EVENT_BODY_RE.search(text):
-                raise ValueError(
-                    "archive classified source as suspension-related but document text contains no status signal"
-                )
-            rows.append(
-                {
-                    "evidence_id": f"NSE_SUSP_{index:06d}",
-                    "source_file_id": target.name,
-                    "source_url": item["source_url"],
-                    "published_date": published,
-                    "event_type": event_type(text),
-                    "effective_date": effective_date(text),
-                    "historical_company_names": candidate_names(text),
-                    "identity_quality": "IDENTITY_REVIEW_REQUIRED",
-                    "source_quality": "NSE_OFFICIAL_PRESS_ARCHIVE",
-                    "text_excerpt": text[:1200],
-                }
-            )
             time.sleep(0.05)
         except Exception as exc:
             source_rows.append(
                 {
                     "source_url": item["source_url"],
-                    "resolved_source_url": None,
-                    "source_file_id": None,
-                    "sha256": None,
+                    "resolved_source_url": (
+                        document.resolved_url if document is not None else None
+                    ),
+                    "source_file_id": target.name if target is not None else None,
+                    "sha256": digest,
                     "download_status": f"FAILED:{type(exc).__name__}",
                     "error": str(exc),
+                    "failure_stage": (
+                        "PARSE_OR_VALIDATE" if document is not None else "DOWNLOAD"
+                    ),
+                    "media_type": (
+                        document.media_type if document is not None else None
+                    ),
                     "archive_context": item["archive_context"],
                     "parser_version": PARSER_VERSION,
                 }
@@ -414,12 +457,15 @@ def main() -> None:
         json.dumps(source_rows, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    failures = source_failure_count(source_rows)
-    expected_sources = len(selected) + 1
-    if len(source_rows) != expected_sources:
-        raise SystemExit(
-            f"suspension source manifest is not exhaustive: expected {expected_sources} rows, got {len(source_rows)}"
+    try:
+        validate_source_manifest(
+            archive_url=args.archive_url,
+            selected=selected,
+            source_rows=source_rows,
         )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    failures = source_failure_count(source_rows)
     failure_rows = failed_sources(source_rows)
     print(
         json.dumps(
