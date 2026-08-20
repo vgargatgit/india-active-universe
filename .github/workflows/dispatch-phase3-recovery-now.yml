@@ -1,0 +1,30 @@
+name: dispatch-phase3-recovery-now
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dispatch-phase3-recovery-now.yml'
+
+permissions:
+  actions: write
+  issues: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch recovery
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run recover-and-publish-phase3.yml --repo "$GITHUB_REPOSITORY" --ref main
+          sleep 8
+          run_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/recover-and-publish-phase3.yml/runs?event=workflow_dispatch&branch=main&per_page=5" --jq '.workflow_runs[0].id')"
+          if [ -z "$run_id" ]; then
+            echo 'Recovery dispatch succeeded but run ID could not be resolved.' >&2
+            exit 1
+          fi
+          gh issue comment 2 --repo "$GITHUB_REPOSITORY" --body "Phase-3 recovery attempt started: Actions run ${run_id} on commit ${GITHUB_SHA}."
+          echo "RECOVERY_RUN_ID=${run_id}"
