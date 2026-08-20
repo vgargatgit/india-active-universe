@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""Collect official NSE corporate-action rows for a bounded date range."""
-
 from __future__ import annotations
 
 import argparse
@@ -13,115 +10,255 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
+
 LANDING_URL = "https://www.nseindia.com/companies-listing/corporate-filings-actions"
 API_URL = "https://www.nseindia.com/api/corporates-corporateActions"
-USER_AGENT = "india-active-universe/phase3-recovery"
+USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/127.0 Safari/537.36 india-active-universe/0.1"
+)
+REQUIRED_FIELDS = ("symbol", "series", "subject")
 
 
-def sha256_bytes(payload: bytes) -> str:
-    return hashlib.sha256(payload).hexdigest()
+class CorporateActionRecoveryError(RuntimeError):
+    pass
 
 
-def request_bytes(opener: urllib.request.OpenerDirector, url: str, *, referer: str | None = None) -> bytes:
-    headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json,text/html;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.8",
-    }
-    if referer:
-        headers["Referer"] = referer
-    request = urllib.request.Request(url, headers=headers)
-    with opener.open(request, timeout=60) as response:
-        payload = response.read()
-        if response.status != 200:
-            raise RuntimeError(f"NSE returned HTTP {response.status}: {url}")
-        return payload
+def sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
-def fetch_range(opener: urllib.request.OpenerDirector, start: date, end: date) -> tuple[list[dict], bytes, str]:
+def _date_arg(value: date) -> str:
+    return value.strftime("%d-%m-%Y")
+
+
+def build_url(start: date, end: date) -> str:
     query = urllib.parse.urlencode(
         {
             "index": "equities",
-            "from_date": start.strftime("%d-%m-%Y"),
-            "to_date": end.strftime("%d-%m-%Y"),
+            "from_date": _date_arg(start),
+            "to_date": _date_arg(end),
         }
     )
-    url = f"{API_URL}?{query}"
-    payload = request_bytes(opener, url, referer=LANDING_URL)
-    try:
-        rows = json.loads(payload)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"NSE corporate-action response is not JSON for {start}..{end}") from exc
-    if not isinstance(rows, list):
-        raise RuntimeError(f"NSE corporate-action response is not a list for {start}..{end}")
-    if any(not isinstance(row, dict) for row in rows):
-        raise RuntimeError(f"NSE corporate-action response contains a non-object row for {start}..{end}")
-    return rows, payload, url
+    return f"{API_URL}?{query}"
+
+
+def validate_payload(payload: object, *, source_url: str) -> list[dict]:
+    if not isinstance(payload, list):
+        raise CorporateActionRecoveryError(
+            f"corporate-action response is not a JSON list: {source_url}"
+        )
+    rows: list[dict] = []
+    for index, item in enumerate(payload):
+        if not isinstance(item, dict):
+            raise CorporateActionRecoveryError(
+                f"corporate-action row {index} is not an object: {source_url}"
+            )
+        missing = [name for name in REQUIRED_FIELDS if not str(item.get(name) or "").strip()]
+        if missing:
+            raise CorporateActionRecoveryError(
+                f"corporate-action row {index} lacks required fields {missing}: {source_url}"
+            )
+        if not (item.get("exDate") or item.get("recDate")):
+            raise CorporateActionRecoveryError(
+                f"corporate-action row {index} has neither exDate nor recDate: {source_url}"
+            )
+        rows.append(item)
+    return rows
+
+
+def row_identity(row: dict) -> str:
+    """Stable full-row identity; preserves source corrections rather than guessing keys."""
+    return json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def merge_rows(chunks: list[list[dict]]) -> list[dict]:
+    unique: dict[str, dict] = {}
+    for rows in chunks:
+        for row in rows:
+            unique.setdefault(row_identity(row), row)
+    return sorted(
+        unique.values(),
+        key=lambda row: (
+            str(row.get("exDate") or row.get("recDate") or ""),
+            str(row.get("symbol") or ""),
+            str(row.get("series") or ""),
+            str(row.get("subject") or ""),
+            row_identity(row),
+        ),
+    )
+
+
+def _opener() -> urllib.request.OpenerDirector:
+    jar = http.cookiejar.CookieJar()
+    return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+
+
+def _request(opener: urllib.request.OpenerDirector, url: str, *, accept: str) -> bytes:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": accept,
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": LANDING_URL,
+            "Connection": "keep-alive",
+        },
+    )
+    with opener.open(request, timeout=90) as response:
+        body = response.read()
+        status = getattr(response, "status", 200)
+        content_type = response.headers.get("Content-Type", "")
+    if status != 200 or not body:
+        raise CorporateActionRecoveryError(f"HTTP {status} or empty body from {url}")
+    if "json" in accept and "json" not in content_type.lower():
+        raise CorporateActionRecoveryError(
+            f"unexpected content type {content_type!r} from {url}"
+        )
+    return body
+
+
+def fetch_year(
+    opener: urllib.request.OpenerDirector,
+    *,
+    year: int,
+    requested_start: date,
+    requested_end: date,
+    attempts: int = 4,
+) -> tuple[list[dict], bytes, str]:
+    start = max(requested_start, date(year, 1, 1))
+    end = min(requested_end, date(year, 12, 31))
+    url = build_url(start, end)
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            body = _request(opener, url, accept="application/json,text/plain,*/*")
+            payload = json.loads(body.decode("utf-8"))
+            return validate_payload(payload, source_url=url), body, url
+        except Exception as exc:  # network boundary intentionally retried
+            last_error = exc
+            if attempt == attempts:
+                break
+            time.sleep(min(8.0, 0.75 * (2 ** (attempt - 1))))
+            try:
+                _request(opener, LANDING_URL, accept="text/html,application/xhtml+xml")
+            except Exception:
+                pass
+    raise CorporateActionRecoveryError(
+        f"failed to fetch corporate actions for {year}: {last_error}"
+    )
+
+
+def collect(
+    *,
+    start: date,
+    end: date,
+    raw_dir: Path,
+    output: Path,
+    manifest_path: Path,
+) -> dict:
+    if start > end:
+        raise CorporateActionRecoveryError("start must be on or before end")
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    opener = _opener()
+    landing = _request(opener, LANDING_URL, accept="text/html,application/xhtml+xml")
+    landing_digest = sha256(landing)
+    landing_target = raw_dir / f"corporate_actions_landing_{landing_digest[:16]}.html"
+    if landing_target.exists() and sha256(landing_target.read_bytes()) != landing_digest:
+        raise CorporateActionRecoveryError(f"cached source hash changed: {landing_target}")
+    if not landing_target.exists():
+        landing_target.write_bytes(landing)
+
+    source_rows: list[dict] = [
+        {
+            "source_type": "NSE_CORPORATE_ACTION_LANDING",
+            "source_url": LANDING_URL,
+            "source_file": landing_target.name,
+            "sha256": landing_digest,
+            "bytes": len(landing),
+            "parser_version": "nse-corporate-actions-recovery-v1",
+            "status": "DOWNLOADED",
+        }
+    ]
+    chunks: list[list[dict]] = []
+    for year in range(start.year, end.year + 1):
+        rows, body, url = fetch_year(
+            opener,
+            year=year,
+            requested_start=start,
+            requested_end=end,
+        )
+        digest = sha256(body)
+        target = raw_dir / f"corporate_actions_{year}_{digest[:16]}.json"
+        if target.exists() and sha256(target.read_bytes()) != digest:
+            raise CorporateActionRecoveryError(f"cached source hash changed: {target}")
+        if not target.exists():
+            target.write_bytes(body)
+        chunks.append(rows)
+        source_rows.append(
+            {
+                "source_type": "NSE_CORPORATE_ACTION_API",
+                "source_url": url,
+                "year": year,
+                "source_file": target.name,
+                "sha256": digest,
+                "bytes": len(body),
+                "row_count": len(rows),
+                "parser_version": "nse-corporate-actions-recovery-v1",
+                "status": "DOWNLOADED",
+            }
+        )
+        time.sleep(0.15)
+
+    merged = merge_rows(chunks)
+    if not merged:
+        raise CorporateActionRecoveryError("official corporate-action collection returned zero rows")
+    output.write_text(
+        json.dumps(merged, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    manifest = {
+        "contract": "nse-corporate-actions-source-v1",
+        "requested_start": start.isoformat(),
+        "requested_end": end.isoformat(),
+        "merged_row_count": len(merged),
+        "merged_sha256": sha256(output.read_bytes()),
+        "sources": source_rows,
+    }
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return manifest
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser()
     parser.add_argument("--start", default="2006-01-01")
     parser.add_argument("--end", default="2026-08-10")
-    parser.add_argument("--out", default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json")
-    parser.add_argument("--raw-dir", default="data/raw/nse/corporate_actions/responses")
-    parser.add_argument("--manifest", default="data/raw/nse/corporate_actions/source_manifest.json")
+    parser.add_argument(
+        "--raw-dir", default="data/raw/nse/corporate_actions/source"
+    )
+    parser.add_argument(
+        "--output",
+        default="data/raw/nse/corporate_actions/corporate_actions_2006_2026.json",
+    )
+    parser.add_argument(
+        "--manifest",
+        default="data/raw/nse/corporate_actions/source_manifest.json",
+    )
     args = parser.parse_args()
-
-    start = date.fromisoformat(args.start)
-    end = date.fromisoformat(args.end)
-    if start > end:
-        raise SystemExit("--start must be on or before --end")
-
-    raw_dir = Path(args.raw_dir)
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    jar = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-    landing = request_bytes(opener, LANDING_URL)
-    if b"Corporate Actions" not in landing and b"corporate" not in landing.lower():
-        raise SystemExit("official NSE corporate-actions landing page did not validate")
-
-    rows_by_key: dict[str, dict] = {}
-    manifest_rows: list[dict] = [
-        {
-            "source_url": LANDING_URL,
-            "source_file_id": "landing.html",
-            "sha256": sha256_bytes(landing),
-            "download_status": "DOWNLOADED",
-            "parser_version": "nse-corporate-actions-v1",
-        }
-    ]
-    (raw_dir / "landing.html").write_bytes(landing)
-
-    for year in range(start.year, end.year + 1):
-        bounded_start = max(start, date(year, 1, 1))
-        bounded_end = min(end, date(year, 12, 31))
-        rows, payload, url = fetch_range(opener, bounded_start, bounded_end)
-        target = raw_dir / f"{year}.json"
-        target.write_bytes(payload)
-        manifest_rows.append(
-            {
-                "source_url": url,
-                "source_file_id": target.name,
-                "sha256": sha256_bytes(payload),
-                "download_status": "DOWNLOADED",
-                "parser_version": "nse-corporate-actions-v1",
-                "row_count": len(rows),
-            }
-        )
-        for row in rows:
-            key = json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-            rows_by_key[key] = row
-        time.sleep(0.2)
-
-    output_rows = [rows_by_key[key] for key in sorted(rows_by_key)]
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(output_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    manifest = Path(args.manifest)
-    manifest.parent.mkdir(parents=True, exist_ok=True)
-    manifest.write_text(json.dumps(manifest_rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"rows": len(output_rows), "years": end.year - start.year + 1, "output": str(out)}, sort_keys=True))
+    result = collect(
+        start=date.fromisoformat(args.start),
+        end=date.fromisoformat(args.end),
+        raw_dir=Path(args.raw_dir),
+        output=Path(args.output),
+        manifest_path=Path(args.manifest),
+    )
+    print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":
