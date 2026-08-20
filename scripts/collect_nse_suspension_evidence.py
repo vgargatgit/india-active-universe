@@ -95,6 +95,14 @@ def source_failure_count(rows: list[dict[str, object]]) -> int:
     )
 
 
+def failed_sources(rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    return [
+        row
+        for row in rows
+        if str(row.get("download_status") or "").startswith("FAILED:")
+    ]
+
+
 def article_date(text: str) -> str | None:
     match = re.search(r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b", text, re.I)
     if not match:
@@ -195,7 +203,14 @@ def main() -> None:
             rows.append({"evidence_id": f"NSE_SUSP_{index:06d}", "source_file_id": target.name, "source_url": item["source_url"], "published_date": published, "event_type": event_type(text), "effective_date": effective_date(text), "historical_company_names": candidate_names(text), "identity_quality": "IDENTITY_REVIEW_REQUIRED", "source_quality": "NSE_OFFICIAL_PRESS_ARCHIVE", "text_excerpt": text[:1200]})
             time.sleep(0.05)
         except Exception as exc:
-            source_rows.append({"source_url": item["source_url"], "source_file_id": None, "sha256": None, "download_status": f"FAILED:{type(exc).__name__}", "parser_version": "nse-suspension-v1"})
+            source_rows.append({
+                "source_url": item["source_url"],
+                "source_file_id": None,
+                "sha256": None,
+                "download_status": f"FAILED:{type(exc).__name__}",
+                "error": str(exc),
+                "parser_version": "nse-suspension-v1",
+            })
 
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -208,7 +223,8 @@ def main() -> None:
         raise SystemExit(
             f"suspension source manifest is not exhaustive: expected {expected_sources} rows, got {len(source_rows)}"
         )
-    print(json.dumps({"archive_links": len(selected), "evidence_rows": len(rows), "raw_source_rows": len(source_rows), "source_failures": failures}, sort_keys=True))
+    failure_rows = failed_sources(source_rows)
+    print(json.dumps({"archive_links": len(selected), "evidence_rows": len(rows), "raw_source_rows": len(source_rows), "source_failures": failures, "failed_sources": failure_rows}, sort_keys=True))
     if failures and not args.allow_source_errors:
         raise SystemExit(
             f"official suspension source acquisition has {failures} failed pages; see {source_manifest_path}"
