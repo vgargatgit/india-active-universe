@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -10,6 +11,7 @@ SCRIPT = Path(__file__).parents[1] / "scripts" / "collect_nse_suspension_evidenc
 SPEC = importlib.util.spec_from_file_location("collect_nse_suspension_evidence", SCRIPT)
 assert SPEC and SPEC.loader
 module = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = module
 SPEC.loader.exec_module(module)
 
 
