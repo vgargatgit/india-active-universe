@@ -319,6 +319,12 @@ def main() -> None:
     if archive_document.media_type != "text/html":
         raise SystemExit("official NSE press archive index is not HTML")
     archive = archive_document.content
+    archive_path = raw_dir / "suspension_archive.html"
+    archive_digest = sha256(archive)
+    if archive_path.exists() and sha256(archive_path.read_bytes()) != archive_digest:
+        raise SystemExit(f"cached suspension archive hash changed: {archive_path}")
+    if not archive_path.exists():
+        archive_path.write_bytes(archive)
     selected = archive_candidates(
         args.archive_url,
         archive,
@@ -333,8 +339,8 @@ def main() -> None:
         {
             "source_url": args.archive_url,
             "resolved_source_url": archive_document.resolved_url,
-            "source_file_id": "suspension_archive.html",
-            "sha256": sha256(archive),
+            "source_file_id": archive_path.name,
+            "sha256": archive_digest,
             "download_status": "DOWNLOADED",
             "media_type": "text/html",
             "parser_version": PARSER_VERSION,
